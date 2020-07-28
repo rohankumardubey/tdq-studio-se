@@ -29,7 +29,7 @@ import org.talend.dataquality.indicators.mapdb.DBMapCompartor.NullCompareStrateg
  */
 public class DBSet<E> extends AbstractDB<E> implements NavigableSet<E> {
 
-    private NavigableSet<E> dbSet = null;
+    protected NavigableSet<E> dbSet = null;
 
     protected String setName = "testDBSet" + new Random().nextLong(); //$NON-NLS-1$;
 

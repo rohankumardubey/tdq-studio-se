@@ -217,6 +217,7 @@ public class MapDBManager {
         CloseDBTimeTask closeDBTimeTask = closeTaskMap.get(db);
         if (closeDBTimeTask != null) {
             closeDBTimeTask.cancel();
+            // purge method will remove the task which type is cancel
             timer.purge();
             closeTaskMap.remove(db);
         }
