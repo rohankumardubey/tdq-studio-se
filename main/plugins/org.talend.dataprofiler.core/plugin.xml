@@ -1823,6 +1823,12 @@
            name=" create context link files migration"
            version="7.4.1">
      </workspacetask>
+     <workspacetask
+           class="org.talend.dataprofiler.core.migration.impl.AddValidPhoneForRegionCountIndicatorTask"
+           id="org.talend.dataprofiler.core.migration.impl.AddValidPhoneForRegionCountIndicator"
+           name="org.talend.dataprofiler.core.migration.impl.AddValidPhoneForRegionCountIndicator"
+           version="7.4.1">
+     </workspacetask>
   </extension>
   
   <extension
