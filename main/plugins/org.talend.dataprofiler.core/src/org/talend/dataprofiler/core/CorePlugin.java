@@ -13,8 +13,10 @@
 package org.talend.dataprofiler.core;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -119,6 +121,10 @@ public class CorePlugin extends AbstractUIPlugin {
     private BundleContext bundleContext;
 
     private ISemanticStudioService service;
+
+    private boolean showRefreshDuration = true;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
 
     /**
      * Getter for context.
@@ -307,19 +313,47 @@ public class CorePlugin extends AbstractUIPlugin {
     }
 
     public void refreshWorkSpace() {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshWorkSpace() start: " + sdf.format(date1));
+        }
+        // ===========================
         if (refreshAction == null) {
             refreshAction = new RefreshAction(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
         }
         refreshAction.run();
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshWorkSpace() end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshWorkSpace() duration: " + duration);
+        }
     }
 
     /**
      * refresh the whole DQReposirotyView.
      */
     public void refreshDQView() {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshDQView() start: " + sdf.format(date1));
+        }
+        // ===========================
         DQRespositoryView repositoryView = getRepositoryView();
         if (repositoryView != null && repositoryView.getCommonViewer() != null) {
             repositoryView.getCommonViewer().refresh();
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshDQView() end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshDQView() duration: " + duration);
         }
     }
 
@@ -373,6 +407,13 @@ public class CorePlugin extends AbstractUIPlugin {
      * @param object
      */
     public void refreshDQView(Object object) {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = object == null ? "null" : object.toString();
+        if (showRefreshDuration) {
+            log.error("refreshDQView(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         if (object == null) {
             refreshDQView();
         } else {
@@ -381,16 +422,33 @@ public class CorePlugin extends AbstractUIPlugin {
                 repositoryView.getCommonViewer().refresh(object);
             }
         }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshDQView(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshDQView(" + objName + ") duration: " + duration);
+        }
     }
 
     /**
      * after create analysis, do refresh
      */
     public void refresh(ModelElement modelElement) {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = modelElement == null ? "null" : modelElement.toString();
+        if (showRefreshDuration) {
+            log.error("refresh(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         if (modelElement instanceof AnalysisImpl || modelElement instanceof TdReportImpl) {
             // MOD by zshen refresh the folder which contain the modelElement but not select it
-            CorePlugin.getDefault().refreshDQView(
-                    RepositoryNodeHelper.findNearestSystemFolderNode(RepositoryNodeHelper.recursiveFind(modelElement)));
+            CorePlugin
+                    .getDefault()
+                    .refreshDQView(RepositoryNodeHelper
+                            .findNearestSystemFolderNode(RepositoryNodeHelper.recursiveFind(modelElement)));
         } else {
             IRepositoryNode currentSelectionNode = CorePlugin.getDefault().getCurrentSelectionNode();
             // if DqRepositoryView is not opened currentSelectionNode will be null and refreshDQView method will
@@ -403,6 +461,14 @@ public class CorePlugin extends AbstractUIPlugin {
             RepositoryNodeHelper.fillTreeList(null);
             RepositoryNodeHelper
                     .setFilteredNode(RepositoryNodeHelper.getRootNode(ERepositoryObjectType.TDQ_DATA_PROFILING, true));
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refresh(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refresh(" + objName + ") duration: " + duration);
         }
     }
 
@@ -494,6 +560,12 @@ public class CorePlugin extends AbstractUIPlugin {
         if (item == null) {
             return;
         }
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshOpenedEditor(" + item.toString() + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         IWorkbenchPage activePage = CorePlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IEditorReference[] editorReferences = activePage.getEditorReferences();
         Property property = item.getProperty();
@@ -518,6 +590,14 @@ public class CorePlugin extends AbstractUIPlugin {
                 continue;
             }
         }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshOpenedEditor(" + item.toString() + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshOpenedEditor(" + item.toString() + ") duration: " + duration);
+        }
     }
 
     public List<AnalysisEditor> getCurrentOpenAnalysisEditor() {
@@ -540,8 +620,10 @@ public class CorePlugin extends AbstractUIPlugin {
     public ReturnCode initProxyRepository() {
         ReturnCode rc = new ReturnCode();
         Project project = null;
-        RepositoryContext repositoryContext = (RepositoryContext) org.talend.core.runtime.CoreRuntimePlugin.getInstance()
-                .getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY);
+        RepositoryContext repositoryContext = (RepositoryContext) org.talend.core.runtime.CoreRuntimePlugin
+                .getInstance()
+                .getContext()
+                .getProperty(Context.REPOSITORY_CONTEXT_KEY);
         if (repositoryContext != null) {
             project = repositoryContext.getProject();
             User user = repositoryContext.getUser();
@@ -561,7 +643,8 @@ public class CorePlugin extends AbstractUIPlugin {
                 log.error(e, e);
             }
             ProxyRepositoryFactory proxyRepository = ProxyRepositoryFactory.getInstance();
-            IRepositoryFactory repository = RepositoryFactoryProvider.getRepositoriyById(RepositoryConstants.REPOSITORY_LOCAL_ID);
+            IRepositoryFactory repository =
+                    RepositoryFactoryProvider.getRepositoriyById(RepositoryConstants.REPOSITORY_LOCAL_ID);
             if (repository == null) {
                 log.fatal(DefaultMessagesImpl.getString("CorePlugin.noLocalRepositoryFound")); //$NON-NLS-1$
                 rc.setMessage(DefaultMessagesImpl.getString("CorePlugin.noLocalRepositoryFound"));//$NON-NLS-1$
@@ -573,7 +656,8 @@ public class CorePlugin extends AbstractUIPlugin {
                 proxyRepository.checkAvailability();
                 proxyRepository.initialize();
 
-                XmiResourceManager xmiResourceManager = proxyRepository.getRepositoryFactoryFromProvider().getResourceManager();
+                XmiResourceManager xmiResourceManager =
+                        proxyRepository.getRepositoryFactoryFromProvider().getResourceManager();
                 IProject rootProject = ResourceManager.getRootProject();
 
                 if (rootProject.getFile(FileConstants.LOCAL_PROJECT_FILENAME).exists()) {
@@ -589,13 +673,15 @@ public class CorePlugin extends AbstractUIPlugin {
                     user.setPassword(password.getBytes());
                     String projectName = ResourceManager.getRootProjectName();
                     String projectDesc = ResourcesPlugin.getWorkspace().newProjectDescription(projectName).getComment();
-                    Project projectInfor = ProjectHelper.createProject(projectName, projectDesc, ECodeLanguage.JAVA.getName(),
-                            user);
+                    Project projectInfor =
+                            ProjectHelper.createProject(projectName, projectDesc, ECodeLanguage.JAVA.getName(), user);
 
                     // MOD zshen create project by proxyRepository
                     checkFileName(projectInfor.getLabel(), RepositoryConstants.PROJECT_PATTERN);
 
-                    project = proxyRepository.getRepositoryFactoryFromProvider().createProject(user, password, projectInfor);
+                    project = proxyRepository
+                            .getRepositoryFactoryFromProvider()
+                            .createProject(user, password, projectInfor);
                 }
 
                 if (project != null) {
@@ -610,8 +696,9 @@ public class CorePlugin extends AbstractUIPlugin {
                     // 'maven_user_settings.xml').before set, must check user setting first.
                     if (org.talend.commons.utils.platform.PluginChecker.isOnlyTopLoaded()) {
                         if (GlobalServiceRegister.getDefault().isServiceRegistered(IMavenUIService.class)) {
-                            IMavenUIService mavenUIService = (IMavenUIService) GlobalServiceRegister.getDefault().getService(
-                                    IMavenUIService.class);
+                            IMavenUIService mavenUIService = (IMavenUIService) GlobalServiceRegister
+                                    .getDefault()
+                                    .getService(IMavenUIService.class);
                             if (mavenUIService != null) {
                                 mavenUIService.checkUserSettings(new NullProgressMonitor());
                                 mavenUIService.updateMavenResolver(false);
@@ -620,7 +707,8 @@ public class CorePlugin extends AbstractUIPlugin {
                         }
                         // deploy libraries and maven index here
                         if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibrariesService.class)) {
-                            ILibrariesService librariesService = (ILibrariesService) GlobalServiceRegister.getDefault()
+                            ILibrariesService librariesService = (ILibrariesService) GlobalServiceRegister
+                                    .getDefault()
                                     .getService(ILibrariesService.class);
                             if (librariesService != null) {
                                 librariesService.syncLibraries();
@@ -655,7 +743,8 @@ public class CorePlugin extends AbstractUIPlugin {
         repositoryContext.setClearPassword(project.getLabel());
         repositoryContext.setProject(project);
         repositoryContext.setFields(new HashMap<String, String>());
-        //        repositoryContext.getFields().put(IProxyRepositoryFactory.BRANCH_SELECTION + "_" + project.getTechnicalLabel(), ""); //$NON-NLS-1$ //$NON-NLS-2$
+        // repositoryContext.getFields().put(IProxyRepositoryFactory.BRANCH_SELECTION + "_" +
+        // project.getTechnicalLabel(), ""); //$NON-NLS-1$ //$NON-NLS-2$
         ProjectManager.getInstance().setMainProjectBranch(project, null);
 
         ReponsitoryContextBridge.initialized(project.getEmfProject(), project.getAuthor());
@@ -674,14 +763,16 @@ public class CorePlugin extends AbstractUIPlugin {
      */
     private void checkFileName(String fileName, String pattern) {
         if (!Pattern.matches(pattern, fileName)) {
-            throw new IllegalArgumentException(DefaultMessagesImpl.getString(
-                    "ProxyRepositoryFactory.illegalArgumentException.labelNotMatchPattern", new Object[] { fileName, pattern })); //$NON-NLS-1$
+            throw new IllegalArgumentException(DefaultMessagesImpl
+                    .getString("ProxyRepositoryFactory.illegalArgumentException.labelNotMatchPattern", //$NON-NLS-1$
+                            new Object[] { fileName, pattern }));
         }
     }
 
     public ISemanticStudioService getSemanticStudioService() {
         if (service == null) {
-            ServiceReference<?> serviceReference = bundleContext.getServiceReference(ISemanticStudioService.class.getName());
+            ServiceReference<?> serviceReference =
+                    bundleContext.getServiceReference(ISemanticStudioService.class.getName());
             if (serviceReference != null) {
                 service = (ISemanticStudioService) bundleContext.getService(serviceReference);
             }
