@@ -32,6 +32,7 @@ import org.talend.dataquality.indicators.schema.SchemaIndicator;
 import org.talend.dataquality.indicators.schema.util.SchemaSwitch;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.foundation.softwaredeployment.DataProvider;
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
@@ -160,7 +161,7 @@ public class ConnectionEvaluator extends AbstractSchemaEvaluator<DataProvider> {
                         try {
                             connection.setCatalog(catName);
                         } catch (SQLException e) {
-                            log.warn("Exception while executing SQL query " + sqlStatement, e); //$NON-NLS-1$
+                            log.warn(Messages.getString("ColumnAnalysisExecutor.FAILEDTOSELECTCATALOG", catName), e);//$NON-NLS-1$
                         }
                     }
                     CatalogIndicator catalogIndic = SchemaFactory.eINSTANCE.createCatalogIndicator();
@@ -226,7 +227,8 @@ public class ConnectionEvaluator extends AbstractSchemaEvaluator<DataProvider> {
         if (catalogs != null) {
             List<Catalog> temp = new ArrayList<Catalog>();
             for (Catalog catalog : catalogs) {
-                if (checkCatalog(catalog.getName()) && setCatalogOk(connection, catalog.getName())) {
+                // TDQ-18658: fix some type connection cannot support connection.setCatalog. for example: Azure synapse
+                if (checkCatalog(catalog.getName())) {
                     temp.add(catalog);
                 }
             }

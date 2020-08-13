@@ -687,7 +687,16 @@ public abstract class AbstractSchemaEvaluator<T> extends Evaluator<T> {
             Catalog catalog = SwitchHelpers.CATALOG_SWITCH.doSwitch(container);
             if (catalog != null) {
                 try {
-                    getConnection().setCatalog(catalog.getName());
+                    try {
+                        getConnection().setCatalog(catalog.getName());
+                    } catch (SQLException e) {
+                        // TDQ-18628: for Azure Synapse cannot support switch between databases
+                        // log error, but continue.
+                        log
+                                .warn(Messages
+                                        .getString("ColumnAnalysisExecutor.FAILEDTOSELECTCATALOG", catalog.getName()), //$NON-NLS-1$
+                                        e);
+                    }
                     Connection databaseConnection = getDataManager();
                     DatabaseConnection origValueConn = null;
                     if (databaseConnection.isContextMode()) {
