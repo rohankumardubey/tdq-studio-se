@@ -13,8 +13,10 @@
 package org.talend.dataprofiler.core;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -94,6 +96,7 @@ import org.talend.repository.model.RepositoryConstants;
 import org.talend.resource.ResourceManager;
 import org.talend.utils.ProductVersion;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -116,6 +119,10 @@ public class CorePlugin extends AbstractUIPlugin {
     private BundleContext bundleContext;
 
     private ISemanticStudioService service;
+
+    private boolean showRefreshDuration = true;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
 
     /**
      * Getter for context.
@@ -304,19 +311,47 @@ public class CorePlugin extends AbstractUIPlugin {
     }
 
     public void refreshWorkSpace() {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshWorkSpace() start: " + sdf.format(date1));
+        }
+        // ===========================
         if (refreshAction == null) {
             refreshAction = new RefreshAction(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
         }
         refreshAction.run();
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshWorkSpace() end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshWorkSpace() duration: " + duration);
+        }
     }
 
     /**
      * refresh the whole DQReposirotyView.
      */
     public void refreshDQView() {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshDQView() start: " + sdf.format(date1));
+        }
+        // ===========================
         DQRespositoryView repositoryView = getRepositoryView();
         if (repositoryView != null && repositoryView.getCommonViewer() != null) {
             repositoryView.getCommonViewer().refresh();
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshDQView() end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshDQView() duration: " + duration);
         }
     }
 
@@ -370,6 +405,13 @@ public class CorePlugin extends AbstractUIPlugin {
      * @param object
      */
     public void refreshDQView(Object object) {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = object == null ? "null" : object.toString();
+        if (showRefreshDuration) {
+            log.error("refreshDQView(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         if (object == null) {
             refreshDQView();
         } else {
@@ -378,12 +420,27 @@ public class CorePlugin extends AbstractUIPlugin {
                 repositoryView.getCommonViewer().refresh(object);
             }
         }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshDQView(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshDQView(" + objName + ") duration: " + duration);
+        }
     }
 
     /**
      * after create analysis, do refresh
      */
     public void refresh(ModelElement modelElement) {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = modelElement == null ? "null" : modelElement.toString();
+        if (showRefreshDuration) {
+            log.error("refresh(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         if (modelElement instanceof AnalysisImpl || modelElement instanceof TdReportImpl) {
             // MOD by zshen refresh the folder which contain the modelElement but not select it
             CorePlugin.getDefault().refreshDQView(
@@ -400,6 +457,14 @@ public class CorePlugin extends AbstractUIPlugin {
             RepositoryNodeHelper.fillTreeList(null);
             RepositoryNodeHelper
                     .setFilteredNode(RepositoryNodeHelper.getRootNode(ERepositoryObjectType.TDQ_DATA_PROFILING, true));
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refresh(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refresh(" + objName + ") duration: " + duration);
         }
     }
 
@@ -491,6 +556,12 @@ public class CorePlugin extends AbstractUIPlugin {
         if (item == null) {
             return;
         }
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        if (showRefreshDuration) {
+            log.error("refreshOpenedEditor(" + item.toString() + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         IWorkbenchPage activePage = CorePlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IEditorReference[] editorReferences = activePage.getEditorReferences();
         Property property = item.getProperty();
@@ -514,6 +585,14 @@ public class CorePlugin extends AbstractUIPlugin {
                 log.error(e);
                 continue;
             }
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showRefreshDuration) {
+            log.error("refreshOpenedEditor(" + item.toString() + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("refreshOpenedEditor(" + item.toString() + ") duration: " + duration);
         }
     }
 

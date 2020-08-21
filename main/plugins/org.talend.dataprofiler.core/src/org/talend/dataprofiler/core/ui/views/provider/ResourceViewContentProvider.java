@@ -12,9 +12,11 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.views.provider;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -93,6 +95,10 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
 
     private IPropertyChangeListener mergeRefListener;
 
+    private boolean showDuration = true;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
+
     /**
      * DOC sgandon Comment method "registerMergeRefListgener".
      */
@@ -148,7 +154,23 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
             if (element instanceof IWorkspaceRoot) {
                 return createWorkspaceRootChildren(element);
             } else if (element instanceof RepositoryNode) {
-                return getRepositoryNodeChildren(element);
+                long start = System.currentTimeMillis();
+                Date date1 = new Date();
+                String eName = element.toString();
+                if (showDuration) {
+                    log.error("repositoryNodeChildren(" + eName + ") start: " + sdf.format(date1));
+                }
+                // ===========================
+                Object[] repositoryNodeChildren = getRepositoryNodeChildren(element);
+                // ===========================
+                Date date2 = new Date();
+                long end = System.currentTimeMillis();
+                if (showDuration) {
+                    log.error("repositoryNodeChildren(" + eName + ") end: " + sdf.format(date2));
+                    long duration = end - start;
+                    log.error("repositoryNodeChildren(" + eName + ") duration: " + duration);
+                }
+                return repositoryNodeChildren;
             }
         } catch (CoreException e) {
             log.error(e);
@@ -400,6 +422,13 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
      * @return
      */
     private List<IRepositoryNode> findChildren(Object element) {
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = element == null ? "null" : element.toString();
+        if (showDuration) {
+            log.error("findChildren(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
         List<IRepositoryNode> children = new ArrayList<IRepositoryNode>();
         IRepositoryNode node = (IRepositoryNode) element;
         List<IRepositoryNode> allFilteredNodeList = RepositoryNodeHelper.getAllFilteredNodeList();
@@ -415,6 +444,14 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
                     children.add(iRepositoryNode);
                 }
             }
+        }
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showDuration) {
+            log.error("findChildren(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("findChildren(" + objName + ") duration: " + duration);
         }
         return children;
     }
@@ -445,7 +482,23 @@ public class ResourceViewContentProvider extends WorkbenchContentProvider {
      * @return
      */
     protected Object[] sortRepositoryNode(Object[] array) {
-        return sortRepositoryNode(array, ComparatorsFactory.REPOSITORY_NODE_COMPARATOR_ID);
+        long start = System.currentTimeMillis();
+        Date date1 = new Date();
+        String objName = array == null ? "null" : "array[" + array.length + "]";
+        if (showDuration) {
+            log.error("sortRepositoryNode(" + objName + ") start: " + sdf.format(date1));
+        }
+        // ===========================
+        Object[] sortRepositoryNode = sortRepositoryNode(array, ComparatorsFactory.REPOSITORY_NODE_COMPARATOR_ID);
+        // ===========================
+        Date date2 = new Date();
+        long end = System.currentTimeMillis();
+        if (showDuration) {
+            log.error("sortRepositoryNode(" + objName + ") end: " + sdf.format(date2));
+            long duration = end - start;
+            log.error("sortRepositoryNode(" + objName + ") duration: " + duration);
+        }
+        return sortRepositoryNode;
     }
 
     /**
