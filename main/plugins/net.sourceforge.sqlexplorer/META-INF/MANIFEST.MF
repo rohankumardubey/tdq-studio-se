@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SQLExplorer Plugin
 Bundle-SymbolicName: net.sourceforge.sqlexplorer; singleton:=true
-Bundle-Version: 7.3.1.qualifier
+Bundle-Version: 7.4.1.qualifier
 Bundle-Activator: net.sourceforge.sqlexplorer.plugin.SQLExplorerPlugin
 Bundle-Vendor: Eclipse SQL Explorer Project (eclipsesql.sourceforge.net)
 Require-Bundle: org.eclipse.ui;bundle-version="3.2.0",
@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.2.0",
  org.talend.dataprofiler.service
 Bundle-ClassPath: sqlexplorer.jar,
  lib/rowset.jar,
- lib/dom4j.jar,
+ lib/dom4j-2.1.1.jar,
  lib/squirrel.jar,
  lib/hibernate3.2.4.sp1.jar,
  net.sourceforge.sqlexplorer.oracle_3.6.1.v20120708_SR6.jar

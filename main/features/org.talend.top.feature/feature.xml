@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<feature id="org.talend.top.feature" label="Top_feature Feature" version="7.3.1.qualifier" provider-name=".Talend SA."> 
+<feature id="org.talend.top.feature" label="Top_feature Feature" version="7.4.1.qualifier" provider-name=".Talend SA."> 
   <description url="http://www.example.com/description">[Enter Feature Description here.]</description>  
   <copyright url="http://www.example.com/copyright">[Enter Copyright Description here.]</copyright>  
   <license url="http://www.example.com/license">[Enter License Description here.]</license>  
@@ -21,7 +21,7 @@
     <import plugin="com.thoughtworks.paranamer" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="net.jeeeyul.eclipse.themes" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="net.jeeeyul.swtend" version="0.0.0" match="greaterOrEqual"/>
-    <import plugin="org.apache.commons.beanutils" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.apache.commons.commons-beanutils" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.apache.commons.codec" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.apache.commons.collections" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.apache.commons.httpclient" version="0.0.0" match="greaterOrEqual"/>

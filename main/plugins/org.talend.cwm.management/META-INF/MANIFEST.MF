@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CWM Management Plug-in
 Bundle-SymbolicName: org.talend.cwm.management;singleton:=true
-Bundle-Version: 7.3.1.qualifier
+Bundle-Version: 7.4.1.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.navigator,
  org.talend.dataquality;visibility:=reexport,
  org.talend.daikon.exception,
  org.talend.utils,
  org.apache.commons.collections,
- org.apache.commons.beanutils,
+ org.apache.commons.commons-beanutils,
  org.apache.commons.lang,
  org.talend.libraries.custom,
  org.talend.libraries.jung;resolution:=optional,

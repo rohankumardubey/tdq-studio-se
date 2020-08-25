@@ -48,9 +48,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionStatusValidator;
+import org.talend.commons.ui.utils.InLineHelpUtil;
 import org.talend.commons.utils.platform.PluginChecker;
 import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
@@ -150,7 +150,7 @@ public class MatchRuleElementTreeSelectionDialog extends ElementTreeSelectionDia
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp("org.talend.help.match_rule_selector");//$NON-NLS-1$
+                    InLineHelpUtil.displayHelp("org.talend.help.match_rule_selector");//$NON-NLS-1$
                 }
             });
         }

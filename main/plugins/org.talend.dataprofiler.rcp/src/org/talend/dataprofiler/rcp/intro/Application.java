@@ -14,6 +14,7 @@ package org.talend.dataprofiler.rcp.intro;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -43,6 +44,7 @@ import org.talend.dataprofiler.rcp.i18n.Messages;
 import org.talend.registration.register.proxy.HttpProxyUtil;
 // import org.talend.dataprofiler.rcp.intro.linksbar.Workbench3xImplementation4CoolBar;
 import org.talend.registration.wizards.register.TalendForgeDialog;
+import org.talend.utils.StudioKeysFileCheck;
 import org.talend.utils.sugars.ReturnCode;
 
 /**
@@ -60,7 +62,19 @@ public class Application implements IApplication {
      */
     @Override
     public Object start(IApplicationContext context) {
+
+        StudioKeysFileCheck.check(ConfigurationScope.INSTANCE.getLocation().toFile());
+
         Display display = PlatformUI.createDisplay();
+        try {
+            StudioKeysFileCheck.validateJavaVersion();
+        } catch (Exception e) {
+            Shell shell = new Shell(display, SWT.NONE);
+            MessageDialog.openError(shell, null, // $NON-NLS-1$
+                    Messages.getString("JavaVersion.CheckError", StudioKeysFileCheck.JAVA_VERSION_MINIMAL_STRING,
+                            StudioKeysFileCheck.getJavaVersion()));
+            return IApplication.EXIT_RELAUNCH;
+        }
         Shell shell = DisplayUtils.getDefaultShell(false);
         // TDQ-12221: do check before use to make sure can popup the "Connect to TalendForge"
         checkBrowserSupport();

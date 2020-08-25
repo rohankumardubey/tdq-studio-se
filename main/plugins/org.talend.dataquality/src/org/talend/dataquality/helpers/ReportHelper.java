@@ -37,6 +37,7 @@ import org.talend.dataquality.reports.ReportsFactory;
 import org.talend.dataquality.reports.TdReport;
 import org.talend.utils.properties.PropertiesLoader;
 import org.talend.utils.properties.TypedProperties;
+
 import orgomg.cwm.objectmodel.core.TaggedValue;
 import orgomg.cwmx.analysis.informationreporting.Report;
 
@@ -679,6 +680,15 @@ public final class ReportHelper {
         return taggedValue.getValue();
     }
 
+    public static String getWarehouse(Report report) {
+        TaggedValue taggedValue =
+                TaggedValueHelper.getTaggedValue(TaggedValueHelper.REP_DBINFO_WAREHOUSE, report.getTaggedValue());
+        if (taggedValue == null) {
+            return PluginConstant.EMPTY_STRING;
+        }
+        return taggedValue.getValue();
+    }
+
     /**
      * DOC xqliu Comment method "getDbName".
      *
@@ -856,6 +866,10 @@ public final class ReportHelper {
      */
     public static boolean setDbVersion(String dbVersion, Report report) {
         return TaggedValueHelper.setTaggedValue(report, TaggedValueHelper.REP_DBINFO_DBVERSION, dbVersion);
+    }
+
+    public static boolean setWarehouse(String warehouse, Report report) {
+        return TaggedValueHelper.setTaggedValue(report, TaggedValueHelper.REP_DBINFO_WAREHOUSE, warehouse);
     }
 
     /**

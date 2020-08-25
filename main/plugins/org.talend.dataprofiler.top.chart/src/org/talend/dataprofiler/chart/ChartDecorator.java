@@ -581,6 +581,12 @@ public final class ChartDecorator {
         public Paint getItemPaint(final int row, final int column) {
             return (column > 8) ? COLOR_LIST.get(2) : COLOR_LIST.get(0);
         }
+
+        // TDQ-16760 unify the legend color same as getItemPaint(...)
+        @Override
+        public Paint lookupSeriesPaint(int series) {
+            return COLOR_LIST.get(0);
+        }
     }
 
     /**

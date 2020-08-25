@@ -43,6 +43,7 @@ import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.runtime.model.repository.ERepositoryStatus;
 import org.talend.commons.utils.WorkspaceUtils;
+import org.talend.core.model.context.link.ContextLinkService;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
@@ -101,6 +102,7 @@ import org.talend.dataquality.rules.WhereRule;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.dq.CWMPlugin;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.helper.RepositoryNodeHelper;
@@ -444,12 +446,16 @@ public class FileSystemImportWriter implements IImportWriter {
         for (int j = 1, size = uri1.segmentCount(); j < size - 1; ++j) {
             if (root.getLocation().segment(j) != null && root.getLocation().segment(j).equals(uri1.segment(j))) {
                 continue;
-            } else if (uri1.segment(j).equals(this.tempFolder.getName())) {
+            }
+            if (uri1.segment(j).equals(this.tempFolder.getName())) {
                 // continue and next one should be project name
                 continue;
-            } else if (!URI
+            }
+            // TDQ-18491 make sure the uri2Segment>=0
+            int uri2Segment = uri2.segmentCount() - (uri1.segmentCount() - j);
+            if (uri2Segment >= 0 && !URI
                     .decode(uri1.segment(j))
-                    .equals(URI.decode(uri2.segment(uri2.segmentCount() - (uri1.segmentCount() - j))))) {
+                    .equals(URI.decode(uri2.segment(uri2Segment)))) {
                 isSamePath = false;
                 break;
             }
@@ -581,6 +587,32 @@ public class FileSystemImportWriter implements IImportWriter {
                 return toImportMap;
             }
             toImportMap.put(record.getPropertyPath(), propDesPath);
+
+            // TDQ-18173 msjian: import the context link file of analysis, report, connection from .settings\links\
+            if (property != null) {
+                Item item = property.getItem();
+                if (ContextHelper.isDQSupportContextItem(item)) {
+                    try {
+                        IPath contextlinkFileDesPath = ContextLinkService.calContextLinkFile(item).getLocation();
+                        String importCalLinksFilePath =
+                                ContextLinkService.calLinksFilePath(basePath.toOSString(), item.getProperty().getId());
+                        IPath contextlinkFileImportPath = new Path(importCalLinksFilePath);
+                        // some items may not use context
+                        if (contextlinkFileImportPath.toFile().exists()) {
+                            if (log.isInfoEnabled()) {
+                                log
+                                        .info(DefaultMessagesImpl
+                                                .getString("FileSystemImportWriter.Importing", //$NON-NLS-1$
+                                                        contextlinkFileImportPath));
+                            }
+                            toImportMap.put(contextlinkFileImportPath, contextlinkFileDesPath);
+                        }
+                    } catch (Exception e) {
+                        log.error(e, e);
+                    }
+                }
+            }
+            // TDQ-18173
         }
 
         return toImportMap;
@@ -747,10 +779,12 @@ public class FileSystemImportWriter implements IImportWriter {
                                         .getString("FileSystemImportWriter.Importing", record.getName()));//$NON-NLS-1$
 
                         if (record.isValid()) {
-                            log
-                                    .info(DefaultMessagesImpl
-                                            .getString("FileSystemImportWriter.Importing", //$NON-NLS-1$
-                                                    record.getFile().getAbsolutePath()));
+                            if (log.isInfoEnabled()) {
+                                log
+                                        .info(DefaultMessagesImpl
+                                                .getString("FileSystemImportWriter.Importing", //$NON-NLS-1$
+                                                        record.getFile().getAbsolutePath()));
+                            }
 
                             // Delete the conflict node before import.
                             IRepositoryViewObject object = record.getConflictObject();

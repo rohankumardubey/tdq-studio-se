@@ -63,6 +63,7 @@ import org.talend.dataprofiler.core.ui.progress.ProgressUI;
 import org.talend.dataprofiler.core.ui.utils.HadoopClusterUtils;
 import org.talend.dataprofiler.core.ui.utils.WorkbenchUtils;
 import org.talend.dataprofiler.core.ui.views.provider.RepositoryNodeBuilder;
+import org.talend.dataprofiler.migration.MigrationPlugin;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.properties.TDQSourceFileItem;
 import org.talend.dq.factory.ModelElementFileFactory;
@@ -77,6 +78,7 @@ import org.talend.resource.EResourceConstant;
 import org.talend.resource.ResourceManager;
 import org.talend.resource.ResourceService;
 import org.talend.utils.ProductVersion;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -419,7 +421,9 @@ public final class DQStructureManager {
                     String extendtion = name.substring(indexOf + 1);
                     createSourceFileItem(file, Path.EMPTY, label, extendtion);
                 } else {
-                    copyFileToFolder(openStream, fileName, folder);
+                    // TDQ-18018 Add parameter 'import' as true so as to avoid to call ProxyRepositoryFactory 335
+                    // "checkIfHaveDuplicateName(...)" make not change SystemIndicator path to empty
+                    copyFileToFolder(openStream, fileName, folder, true);
                 }
 
                 openStream.close();
@@ -571,7 +575,8 @@ public final class DQStructureManager {
         }
 
         ProductVersion wVersion = WorkspaceVersionHelper.getVesion();
-        ProductVersion cVersion = CorePlugin.getDefault().getProductVersion();
+        // TDQ-18627: use the display version to compare to support monthly release patch version check
+        ProductVersion cVersion = MigrationPlugin.getDefault().getProductDisplayVersionWithPatch();
         return wVersion.compareTo(cVersion) < 0;
     }
 

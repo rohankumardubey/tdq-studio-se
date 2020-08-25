@@ -90,6 +90,7 @@ import org.talend.dq.writer.impl.ElementWriterFactory;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.resource.relational.NamedColumnSet;
 
@@ -658,4 +659,14 @@ public class BusinessRuleAnalysisDetailsPage extends DynamicAnalysisMasterPage i
         return eReceiver;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage#getConnectionsWithoutDeleted()
+     */
+    @Override
+    protected List<IRepositoryNode> getConnectionsWithoutDeleted() {
+        // ADD msjian TDQ-8713 20191015: Disable to ability file connenction for Business Rule analysis
+        return RepositoryNodeHelper.getConnectionRepositoryNodes(false, false);
+    }
 }

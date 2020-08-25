@@ -85,7 +85,8 @@ public class ModelElementIndicatorRuleTest {
             // Soundex Frequency Statistics
             IndicatorEnum.SoundexIndicatorEnum, IndicatorEnum.SoundexLowIndicatorEnum,
             // Phone Number Statistics
-            IndicatorEnum.ValidPhoneCountIndicatorEnum, IndicatorEnum.ValidRegCodeCountIndicatorEnum,
+            IndicatorEnum.ValidPhoneCountIndicatorEnum, IndicatorEnum.ValidPhoneForRegionCountIndicatorEnum,
+            IndicatorEnum.ValidRegCodeCountIndicatorEnum,
             IndicatorEnum.InvalidRegCodeCountIndicatorEnum, IndicatorEnum.PossiblePhoneCountIndicatorEnum,
             IndicatorEnum.WellFormIntePhoneCountIndicatorEnum, IndicatorEnum.WellFormNationalPhoneCountIndicatorEnum,
             IndicatorEnum.WellFormE164PhoneCountIndicatorEnum, IndicatorEnum.FormatFreqPieIndictorEnum,
@@ -122,6 +123,7 @@ public class ModelElementIndicatorRuleTest {
             false, false, false, false,
             // Phone Number Statistics
             true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false,
+            true, false,
             // Fraud Detection
             true, true,
             // User Defined Indicators
@@ -149,7 +151,7 @@ public class ModelElementIndicatorRuleTest {
             // Soundex Frequency Statistics
             true, true, true, true,
             // Phone Number Statistics
-            true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false,
+            true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false,true, false,
             // Fraud Detection
             true, true,
             // User Defined Indicators
@@ -177,6 +179,7 @@ public class ModelElementIndicatorRuleTest {
             false, false, false, false,
             // Phone Number Statistics
             true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false,
+            true, false,
             // Fraud Detection
             false, false,
             // User Defined Indicators
@@ -205,7 +208,7 @@ public class ModelElementIndicatorRuleTest {
             false, false, false, false,
             // Phone Number Statistics
             false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-            false,
+            false, false, false,
             // Fraud Detection
             false, false,
             // User Defined Indicators

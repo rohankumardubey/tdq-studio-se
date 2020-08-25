@@ -222,7 +222,9 @@ public abstract class DataExplorer implements IDataExplorer {
         }
         int b = instantiatedSQL.indexOf(this.dbmsLanguage.from());
         String fromClause = instantiatedSQL.substring(b);
-        return fromClause;
+        // TDQ-18118 msjian: fix just when the column name is "count",
+        // caused column reference "count" is ambiguous error
+        return fromClause.replace("COUNT(*) FROM", "COUNT(*) as mycount FROM"); //$NON-NLS-1$//$NON-NLS-2$ ;
     }
 
     /**
