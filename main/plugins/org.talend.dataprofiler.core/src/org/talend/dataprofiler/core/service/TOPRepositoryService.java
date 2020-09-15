@@ -405,7 +405,7 @@ public class TOPRepositoryService implements ITDQRepositoryService {
     }
 
     @Override
-    public boolean hasClientDependences(ConnectionItem connItem) {
+    public boolean hasClientDependences(ConnectionItem connItem) {      
         if (connItem != null) {
             Connection connection = connItem.getConnection();
             if (connection != null) {
@@ -769,8 +769,8 @@ public class TOPRepositoryService implements ITDQRepositoryService {
     }
 
     @Override
-    public void popupSwitchContextFailedMessage(String chooseContext) {
-        SwitchContextAction.popupSwitchContextFailedMessage(chooseContext);
+    public boolean popupSwitchContextFailedMessage(String chooseContext) {
+        return SwitchContextAction.popupSwitchContextConfirmDialog(chooseContext);
     }
 
 }
