@@ -24,16 +24,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
-import net.sourceforge.sqlexplorer.dbstructure.nodes.TableNode;
-import net.sourceforge.sqlexplorer.plugin.SQLExplorerPlugin;
-import net.sourceforge.sqlexplorer.sessiontree.model.utility.Dictionary;
-
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.IWordDetector;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.jface.util.Assert;
+
+import net.sourceforge.sqlexplorer.dbstructure.nodes.TableNode;
+import net.sourceforge.sqlexplorer.plugin.SQLExplorerPlugin;
+import net.sourceforge.sqlexplorer.sessiontree.model.utility.Dictionary;
 
 public class UnsignedWordRule implements IRule {
 
