@@ -1,6 +1,5 @@
 package net.sourceforge.sqlexplorer.rcp;
 
-import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -11,7 +10,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
  * 
  * @author Davy Vanherbergen
  */
-public class SQLExplorerApplication implements IPlatformRunnable {
+public class SQLExplorerApplication {
 
         
     /**
@@ -27,7 +26,7 @@ public class SQLExplorerApplication implements IPlatformRunnable {
             display = PlatformUI.createDisplay();
             WorkbenchAdvisor advisor = new SQLExplorerWorkbenchAdvisor();
             int rc = PlatformUI.createAndRunWorkbench(display, advisor);            
-            return (rc == PlatformUI.RETURN_RESTART ? IPlatformRunnable.EXIT_RESTART : IPlatformRunnable.EXIT_OK);
+            return (rc == PlatformUI.RETURN_RESTART ? Integer.valueOf(23) : Integer.valueOf(0));
     
         } finally {
             
