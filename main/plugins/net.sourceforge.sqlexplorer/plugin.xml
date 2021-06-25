@@ -122,14 +122,6 @@
       </wizard>
    </extension>
 
-   <extension
-         id="application"
-         point="org.eclipse.core.runtime.applications">
-      <application>
-         <run class="net.sourceforge.sqlexplorer.rcp.SQLExplorerApplication"/>
-      </application>
-   </extension>
-
    <extension-point id="nodeContextAction" name="Database Structure Node Context Menu Action" schema="schema/nodeContextAction.exsd"/>
    <extension-point id="node" name="Database Structure Node" schema="schema/node.exsd"/>
    <extension-point id="nodeDetailTab" name="Database Structure Node Detail Tab" schema="schema/nodeDetailTab.exsd"/>
