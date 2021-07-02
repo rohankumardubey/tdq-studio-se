@@ -501,4 +501,10 @@ public class TopService implements ICoreService {
         ProxyRepositoryFactory.getInstance().executeRepositoryWorkUnit(workUnit);
     }
 
+    @Override
+    public void installComponents() {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
