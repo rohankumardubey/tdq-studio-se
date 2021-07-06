@@ -502,7 +502,7 @@ public class TopService implements ICoreService {
     }
 
     @Override
-    public void installComponents() {
+    public void installComponents(IProgressMonitor monitor) {
         // TODO Auto-generated method stub
         
     }
