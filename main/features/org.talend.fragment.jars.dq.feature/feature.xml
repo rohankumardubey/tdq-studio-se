@@ -30,28 +30,4 @@
          version="0.0.0"
          unpack="false"/>
 
-   <plugin
-         id="org.talend.dataprofiler.top.chart.nl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="org.talend.dataquality.standardization.nl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="net.sourceforge.sqlexplorer.nl"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
 </feature>
