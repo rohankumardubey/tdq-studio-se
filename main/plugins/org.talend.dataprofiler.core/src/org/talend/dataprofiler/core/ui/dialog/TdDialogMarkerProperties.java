@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.e4.ui.internal.workspace.markers.Translation;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -55,6 +56,7 @@ public class TdDialogMarkerProperties extends TrayDialog {
 
     private static final String DIALOG_SETTINGS_SECTION = "DialogMarkerPropertiesDialogSettings"; //$NON-NLS-1$
 
+    private final Translation translation = new Translation();
     /**
      * The marker being shown, or <code>null</code> for a new marker.
      */
@@ -404,7 +406,10 @@ public class TdDialogMarkerProperties extends TrayDialog {
             creationTime.setText(Util.getCreationTime(marker));
         }
         if (resourceText != null) {
-            resourceText.setText(Util.getResourceName(marker));
+            // Util.getResourceName(marker) was removed in
+            // https://github.com/eclipse/eclipse.platform.ui/commit/a720a7a1ed985302d8d02d2327fa2083162800f1
+            // here we use translation.name instead
+            resourceText.setText(translation.name(marker).orElse(""));
         }
         if (folderText != null) {
             folderText.setText(Util.getContainerName(marker));

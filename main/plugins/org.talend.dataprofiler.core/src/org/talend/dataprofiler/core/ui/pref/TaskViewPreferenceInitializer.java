@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -13,8 +13,8 @@
 package org.talend.dataprofiler.core.ui.pref;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
-import org.eclipse.ui.internal.views.markers.MarkerSupportInternalUtilities;
 import org.talend.commons.ui.runtime.CommonUIPlugin;
 
 /**
@@ -22,6 +22,8 @@ import org.talend.commons.ui.runtime.CommonUIPlugin;
  *
  */
 public class TaskViewPreferenceInitializer extends AbstractPreferenceInitializer {
+
+    private static final String MIGRATE_PREFERENCE_CONSTANT = "_MIGRATE";
 
     /**
      * TaskViewPreferenceInitializer constructor.
@@ -43,7 +45,10 @@ public class TaskViewPreferenceInitializer extends AbstractPreferenceInitializer
             return;
         }
 
-        String migrationPreference = MarkerSupportInternalUtilities.MIGRATE_TASK_FILTERS;
+        // constant was removed from
+        // https://github.com/eclipse/eclipse.platform.ui/commit/e8aaa0aa525c27b16b932bda46e68fa3c254c6be
+        // so here try to use the old String instead
+        String migrationPreference = IDEInternalPreferences.TASKS_FILTERS + MIGRATE_PREFERENCE_CONSTANT;
         // Already migrated
         if (IDEWorkbenchPlugin.getDefault().getPreferenceStore().getBoolean(migrationPreference)) {
             return;

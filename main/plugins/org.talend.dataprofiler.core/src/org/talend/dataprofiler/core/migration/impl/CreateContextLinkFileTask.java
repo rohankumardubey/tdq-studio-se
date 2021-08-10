@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -75,8 +75,7 @@ public class CreateContextLinkFileTask extends AbstractWorksapceUpdateTask {
      * @see org.talend.dataprofiler.core.migration.IWorkspaceMigrationTask#getOrder()
      */
     public Date getOrder() {
-        // because this release is R2020-07, so need the date after 0619 to support R2020-06 patch
-        return createDate(2020, 7, 24);// set R2020-07 release date, so that QA can test
+        return createDate(2020, 9, 10);
     }
 
 }

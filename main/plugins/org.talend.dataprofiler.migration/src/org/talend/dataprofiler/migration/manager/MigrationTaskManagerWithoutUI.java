@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -16,12 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.talend.commons.utils.VersionUtils;
 import org.talend.dataprofiler.migration.IMigrationTask;
 import org.talend.dataprofiler.migration.IMigrationTask.MigrationTaskCategory;
 import org.talend.dataprofiler.migration.IWorkspaceMigrationTask;
@@ -65,7 +63,7 @@ public class MigrationTaskManagerWithoutUI {
         }
 
         if (currentVersion == null) {
-            this.currentVersion = MigrationPlugin.getDefault().getProductVersion();
+            this.currentVersion = MigrationPlugin.getDefault().getProductDisplayVersionWithPatch();
         } else {
             this.currentVersion = currentVersion;
         }
@@ -95,64 +93,36 @@ public class MigrationTaskManagerWithoutUI {
         // TDQ-18624: not output debug log because cause studio slowly
         boolean isDebugEnabled = log.isDebugEnabled();
         if (isDebugEnabled) {
-            log.info("workspaceVersion: " + workspaceVersion); //$NON-NLS-1$
+            log.info("old workspaceVersion: " + workspaceVersion); //$NON-NLS-1$
+        }
+        // consider 7.3.1,7.2.1...old migration tasks work as before.
+        if (workspaceVersion.toString().length() < 6) {// means versions like "7.3.1" or "7.2.1"
+            // for master, when import 7.3.1,7.2.1..., make all task version is 7.3.1,7.2.1... to be invalid
+            workspaceVersion = new ProductVersion(workspaceVersion.getMajor(), workspaceVersion.getMinor(),
+                    workspaceVersion.getMicro(), "99999999"); //$NON-NLS-1$
+        }
+        if (isDebugEnabled) {
+            log.info("new workspaceVersion: " + workspaceVersion); //$NON-NLS-1$
             log.info("currentVersion: " + currentVersion); //$NON-NLS-1$
         }
         for (IMigrationTask task : tasks) {
             if (task.getTaskCategory() == MigrationTaskCategory.WORKSPACE) {
                 IWorkspaceMigrationTask wTask = (IWorkspaceMigrationTask) task;
                 ProductVersion taskVersion = ProductVersion.fromString(wTask.getVersion());
+                // migration task Display Version format like 7.3.1.20200910
+                ProductVersion taskDisplayVersion = new ProductVersion(taskVersion, task.getOrder());
                 if (isDebugEnabled) {
-                    log.info("one new task check begin and current taskVersion: " + taskVersion); //$NON-NLS-1$
+                    log.info("one new task's DisplayVersion is: " + taskDisplayVersion); //$NON-NLS-1$
                 }
-                if (taskVersion.compareTo(workspaceVersion) > 0 && taskVersion.compareTo(currentVersion) <= 0) {
+                if (taskDisplayVersion.compareTo(workspaceVersion) > 0
+                        && taskDisplayVersion.compareTo(currentVersion) <= 0) {
                     if (isDebugEnabled) {
                         log
-                                .info(taskVersion + " > " + workspaceVersion + "&&" + taskVersion + "<=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                                .info(taskDisplayVersion + " > " + workspaceVersion + "&&" + taskDisplayVersion + "<=" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                                         + currentVersion + ", so"); //$NON-NLS-1$
                         log.info(task.getId() + " is valid task"); //$NON-NLS-1$
                     }
                     validTasks.add(task);
-                } else if (taskVersion.compareTo(workspaceVersion) == 0) {
-                    // support the patch monthly release migration.
-                    // for example: when workspace is 731 or 731R4
-                    // 7.3.1-R2020-04 DisplayVersion format is: 7.3.1.20200417_1111-patch
-                    String displayVersion = VersionUtils.getDisplayVersion();
-                    if (isDebugEnabled) {
-                        log.info("taskVersion = workspaceVersion: " + taskVersion + " = " + workspaceVersion); //$NON-NLS-1$ //$NON-NLS-2$
-                        log.info("current studio displayVersion is: " + displayVersion); //$NON-NLS-1$
-                    }
-                    if (displayVersion.endsWith("-patch")) { //$NON-NLS-1$
-                        if (isDebugEnabled) {
-                            log.info("current studio is a patched studio"); //$NON-NLS-1$
-                        }
-                        ProductVersion displayVersionE = ProductVersion.fromString(displayVersion, true, true);
-                        Date taskDate = task.getOrder();
-                        // migration task Version format is: 7.3.1.20200724
-                        ProductVersion taskVersionE = new ProductVersion(taskVersion, taskDate);
-                        if (displayVersionE.compareTo(taskVersionE) < 0) {
-                            if (isDebugEnabled) {
-                                log
-                                        .info("displayVersionE < taskVersionE: " + displayVersionE + "<" + taskVersionE //$NON-NLS-1$ //$NON-NLS-2$
-                                                + ", so"); //$NON-NLS-1$
-                                log.info(task.getId() + " is valid task"); //$NON-NLS-1$
-                            }
-                            validTasks.add(task);
-                        } else {
-                            if (isDebugEnabled) {
-                                log
-                                        .info("displayVersionE is not < taskVersionE: " + displayVersionE //$NON-NLS-1$
-                                                + " is not < " //$NON-NLS-1$
-                                                + taskVersionE + ", so"); //$NON-NLS-1$
-                                log.info(task.getId() + " is NOT valid task"); //$NON-NLS-1$
-                            }
-                        }
-                    } else {
-                        if (isDebugEnabled) {
-                            log.info("current studio is a NOT patched studio, so"); //$NON-NLS-1$
-                            log.info(task.getId() + " is NOT valid task"); //$NON-NLS-1$
-                        }
-                    }
                 } else {
                     if (isDebugEnabled) {
                         log.info(task.getId() + " is NOT valid task"); //$NON-NLS-1$
@@ -181,18 +151,11 @@ public class MigrationTaskManagerWithoutUI {
         if (taskType != null) {
             return getTaskByType(taskType);
         } else {
-            return getWorksapceTasks();
+            return getWorkspaceTasks();
         }
     }
 
-    /**
-     * DOC bZhou Comment method "getWorksapceTasks".
-     *
-     * @param wVersion
-     *
-     * @return
-     */
-    public List<IMigrationTask> getWorksapceTasks() {
+    public List<IMigrationTask> getWorkspaceTasks() {
         List<IMigrationTask> validTasks = getValidTasks(workspaceVersion, currentVersion, allMigrationTask);
 
         Iterator<IMigrationTask> it = validTasks.iterator();

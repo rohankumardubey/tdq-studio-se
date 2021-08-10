@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -131,6 +131,8 @@ public class DbmsLanguage {
     public static final String SNOWFLAKE = "Snowflake"; //$NON-NLS-1$
 
     public static final String MARIADB = "MariaDB"; //$NON-NLS-1$
+
+    public static final String SAPHANA = SupportDBUrlType.SAPHANA.getLanguage();
 
     /**
      * Ansi SQL.
@@ -378,7 +380,7 @@ public class DbmsLanguage {
      * @return
      */
     protected String handleContextModeOrAddQuotes(String param) {
-        if (param.startsWith("context.")) { //$NON-NLS-1$
+        if (param != null && param.startsWith("context.")) { //$NON-NLS-1$
             return "<%=" + param + "%>"; //$NON-NLS-1$ //$NON-NLS-2$
         }
         return this.quote(param);
@@ -1309,7 +1311,7 @@ public class DbmsLanguage {
      * @param regex
      * @return false if every one is not empty else return true
      */
-    private boolean existEmptyInParameter(String element, String regex) {
+    protected boolean existEmptyInParameter(String element, String regex) {
         return null == element || PluginConstant.EMPTY_STRING.equals(element) || null == regex
                 || PluginConstant.EMPTY_STRING.equals(regex);
     }

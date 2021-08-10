@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Data Profiler Core Plug-in
 Bundle-SymbolicName: org.talend.dataprofiler.core; singleton:=true
-Bundle-Version: 7.4.1.qualifier
+Bundle-Version: 8.0.1.qualifier
 Bundle-Activator: org.talend.dataprofiler.core.CorePlugin
 Bundle-Vendor: .Talend SA.
 Require-Bundle: org.eclipse.nebula.widgets.tablecombo,
@@ -25,7 +25,6 @@ Require-Bundle: org.eclipse.nebula.widgets.tablecombo,
  org.talend.libraries.jung,
  org.talend.dataprofiler.ecos,
  org.talend.cwm.compare,
- org.talend.model.migration,
  org.talend.model.edit,
  org.talend.core.runtime,
  org.talend.core.repository,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<feature id="org.talend.rcp.branding.top.feature" label="Top_feature Feature" version="7.4.1.qualifier" provider-name=".Talend SA."> 
+<feature id="org.talend.rcp.branding.top.feature" label="Top_feature Feature" version="8.0.1.qualifier" provider-name=".Talend SA."> 
   <description>Talend Open Studio for Data Quality main feature.</description>  
   <copyright url="http://www.example.com/copyright">Talend Open Studio for Data Quality Copyright.</copyright>  
   <license>Talend Open Studio for Data Quality is licensed under the Apache License Version 2.0.</license>  
@@ -14,7 +14,6 @@
     <import plugin="org.talend.designer.maven.ui" version="0.0.0" match="greaterOrEqual"/>
   </requires>  
   <plugin id="org.talend.dataprofiler.rcp" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-  <plugin id="org.talend.dataprofiler.rcp.nl" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
   <plugin id="org.talend.designer.maven.tos" download-size="0" install-size="0" version="0.0.0" fragment="true"/>
   <plugin id="org.talend.rcp.branding.top" download-size="0" install-size="0" version="0.0.0"/>
 </feature>

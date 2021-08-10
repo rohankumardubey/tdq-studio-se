@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -25,6 +25,7 @@ import org.talend.cwm.helper.PackageHelper;
 import org.talend.cwm.relational.TdTable;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
+
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
@@ -72,7 +73,7 @@ public class DBTableRepNode extends ColumnSetRepNode {
      * @param object
      * @return
      */
-    private RepositoryNode createParentNode() {
+    protected RepositoryNode createParentNode() {
         DBTableFolderRepNode dbTableFolderRepNode = new DBTableFolderRepNode(getParentViewObject(), null,
                 ENodeType.TDQ_REPOSITORY_ELEMENT, getProject());
         dbTableFolderRepNode.setId(NO_ID);

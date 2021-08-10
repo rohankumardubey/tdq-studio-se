@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2021 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -388,6 +388,13 @@ public final class DQStructureComparer {
                 // bug 11934 MOD zshen judge the tableOwner when database is sybase.
                 if (oldTable.getName().equals(table.getName())) {
                     // ~11934
+                    toReloadcolumnSet = table;
+                    break;
+                }
+            }
+            tables = PackageHelper.getCalculationViews(toReloadPackage);
+            for (TdTable table : tables) {
+                if (oldTable.getName().equals(table.getName())) {
                     toReloadcolumnSet = table;
                     break;
                 }
