@@ -100,7 +100,7 @@ public class AbstractCommonActionProvider extends CommonActionProvider {
         IRepositoryNode firstContextNode = getFirstRepositoryNode();
         ERepositoryObjectType contentType = firstContextNode.getContentType();
         if (contentType != null) {
-            if (contentType == ERepositoryObjectType.SVN_ROOT || contentType == ERepositoryObjectType.REFERENCED_PROJECTS) {
+            if (contentType == ERepositoryObjectType.REFERENCED_PROJECTS) {
                 return false;
             }
         }
