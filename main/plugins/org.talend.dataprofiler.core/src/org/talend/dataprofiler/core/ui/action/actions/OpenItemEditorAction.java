@@ -29,6 +29,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -150,6 +151,7 @@ public class OpenItemEditorAction extends Action implements IIntroAction {
     protected void duRun(IRepositoryNode repNode) throws BusinessException {
         // TDQ-12200: fix a NPE when the open item is unsynchronized status(for example is deleted by others).
         repositoryObjectCRUD.refreshDQViewForRemoteProject();
+        IEditorInput itemEditorInput = null;
 
         // TDQ-13357: fix NPE, because for ReportFileRepNode, repNode.getObject() == null
         if (repNode.getObject() != null) {
@@ -158,6 +160,14 @@ public class OpenItemEditorAction extends Action implements IIntroAction {
                 return;
             }
             // TDQ-12200~
+            itemEditorInput = computeEditorInput(repNode, true);
+            if (itemEditorInput != null) {
+                IEditorPart findEditor = CorePlugin.getDefault().findEditor(itemEditorInput);
+                if (findEditor != null) {
+                    CorePlugin.getDefault().activeEditor(findEditor);
+                    return;
+                }
+            }
 
             // TDQ-12034: before open the object editor, reload it first especially for git remote project
             // TDQ-12771: for local, also can avoid error when the cache node is changed but not save it.
@@ -170,10 +180,9 @@ public class OpenItemEditorAction extends Action implements IIntroAction {
             }
         }
         // TDQ-12034~
-        IEditorInput itemEditorInput = computeEditorInput(repNode, true);
         if (itemEditorInput != null) {
             // open ItemEditorInput
-            CorePlugin.getDefault().openEditor(itemEditorInput, editorID);
+            CorePlugin.getDefault().openEditorDirectly(itemEditorInput, editorID);
         } else {
             // not find ItemEditorInput
             if (repNode.getObject() == null) {

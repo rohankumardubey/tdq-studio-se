@@ -254,11 +254,54 @@ public class CorePlugin extends AbstractUIPlugin {
      */
     public IEditorPart openEditor(IEditorInput editorInput, String editorId) {
         try {
-            return this.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(editorInput, editorId);
+            IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            IEditorPart theEditor = activePage.findEditor(editorInput);
+            if (theEditor == null) {
+                return activePage.openEditor(editorInput, editorId);
+            } else {
+                activePage.activate(theEditor);
+                return theEditor;
+            }
         } catch (PartInitException e) {
             ExceptionHandler.process(e);
             return null;
         }
+    }
+
+    /**
+     * DOC mzhao open editor with editor input.
+     *
+     * @param editorInput
+     * @param editorId
+     * @return
+     */
+    public IEditorPart openEditorDirectly(IEditorInput editorInput, String editorId) {
+        try {
+            return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().openEditor(editorInput, editorId);
+        } catch (PartInitException e) {
+            ExceptionHandler.process(e);
+            return null;
+        }
+    }
+
+    /**
+     * Find the editor which already opened.
+     *
+     * @param editorInput
+     * @return
+     */
+    public IEditorPart findEditor(IEditorInput editorInput) {
+        return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findEditor(editorInput);
+    }
+
+    /**
+     * Find the editor which already opened.
+     *
+     * @param editorInput
+     * @return
+     */
+    public void activeEditor(IEditorPart editorPart) {
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(editorPart);
     }
 
     /**
