@@ -43,13 +43,4 @@ public class JrxmlTempleteRepNode extends DQRepositoryNode {
         }
         return null;
     }
-
-    @Override
-    public String getLabel() {
-        if (this.getJrxmlItem() != null) {
-            return this.getJrxmlItem().getName();
-        }
-        return super.getLabel();
-    }
-
 }

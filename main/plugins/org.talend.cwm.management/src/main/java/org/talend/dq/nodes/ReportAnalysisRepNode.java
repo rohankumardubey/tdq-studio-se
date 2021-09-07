@@ -56,14 +56,6 @@ public class ReportAnalysisRepNode extends DQRepositoryNode {
         super(object, parent, type, inWhichProject);
     }
 
-    @Override
-    public String getLabel() {
-        if (this.getAnalysis() != null) {
-            return this.getAnalysis().getName();
-        }
-        return super.getLabel();
-    }
-
     /**
      * return the report's Item object.
      *
