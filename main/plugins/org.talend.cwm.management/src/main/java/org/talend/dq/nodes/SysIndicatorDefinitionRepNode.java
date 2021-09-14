@@ -65,15 +65,11 @@ public class SysIndicatorDefinitionRepNode extends DQRepositoryNode {
      */
     @Override
     public String getLabel() {
-        if (this.getIndicatorDefinition() != null && !this.getIndicatorDefinition().eIsProxy()) {
-            if (this.isSystemIndicator) {
-                Property property = PropertyHelper.getProperty(this.getIndicatorDefinition());
-                // MOD sizhaoliu TDQ-7454 internationalize the display name here
-                return InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
-            }
-            if (this.getIndicatorDefinition().getName() != null) {
-                return this.getIndicatorDefinition().getName();
-            }
+        if (this.getIndicatorDefinition() != null && !this.getIndicatorDefinition().eIsProxy()
+                && this.isSystemIndicator) {
+            Property property = PropertyHelper.getProperty(this.getIndicatorDefinition());
+            // MOD sizhaoliu TDQ-7454 internationalize the display name here
+            return InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
         }
         return super.getLabel();
     }

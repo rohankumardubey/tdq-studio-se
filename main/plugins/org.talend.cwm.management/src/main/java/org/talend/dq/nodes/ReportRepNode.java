@@ -73,14 +73,6 @@ public class ReportRepNode extends DQRepositoryNode {
     }
 
     @Override
-    public String getLabel() {
-        if (this.getReport() != null && this.getReport().getName() != null) {
-            return this.getReport().getName();
-        }
-        return super.getLabel();
-    }
-
-    @Override
     public boolean canExpandForDoubleClick() {
         return false;
     }
