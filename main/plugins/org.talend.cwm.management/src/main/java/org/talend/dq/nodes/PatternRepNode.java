@@ -75,14 +75,6 @@ public class PatternRepNode extends DQRepositoryNode {
     }
 
     @Override
-    public String getLabel() {
-        if (this.getPattern() != null && this.getPattern().getName() != null) {
-            return this.getPattern().getName();
-        }
-        return super.getLabel();
-    }
-
-    @Override
     public boolean canExpandForDoubleClick() {
         return false;
     }
