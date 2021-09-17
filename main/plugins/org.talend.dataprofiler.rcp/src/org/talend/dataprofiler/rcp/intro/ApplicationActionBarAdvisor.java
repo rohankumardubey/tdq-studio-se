@@ -33,7 +33,6 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.cheatsheets.actions.CheatSheetCategoryBasedSelectionAction;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.talend.dataprofiler.core.ui.perspective.ChangePerspectiveAction;
@@ -150,11 +149,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
         helpMenu.add(welcomeAction);
         helpMenu.add(helpAction);
         helpMenu.add(aboutAction);
-
-        // ADD qiongli 2010-6-3,bug 0012874
-        CheatSheetCategoryBasedSelectionAction cscAction = new CheatSheetCategoryBasedSelectionAction();
-        cscAction.setText(Messages.getString("ApplicationActionBarAdvisor.CheatSheets"));//$NON-NLS-1$
-        helpMenu.add(cscAction);
     }
 
     private static final String[] ACTIONSETID = new String[] { "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
@@ -165,7 +159,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
             "org.eclipse.jdt.ui.actions.OpenExternalJavaDoc", "org.eclipse.jdt.ui.actions.OpenSuperImplementation", //$NON-NLS-1$ //$NON-NLS-2$
             "org.eclipse.jdt.ui.actions.CopyQualifiedName", "org.eclipse.jdt.ui.actions.Open", //$NON-NLS-1$ //$NON-NLS-2$
             "org.eclipse.jdt.ui.actions.OpenTypeHierarchy", "org.eclipse.jdt.ui.actions.OpenCallHierarchy", //$NON-NLS-1$ //$NON-NLS-2$
-            "org.talend.repository.bootTalendActionSet" }; //$NON-NLS-1$
+            "org.eclipse.ui.cheatsheets.actionSet", "org.talend.repository.bootTalendActionSet" }; //$NON-NLS-1$ //$NON-NLS-2$
 
     private void beforefillMenuBar() {
         this.removeAction();

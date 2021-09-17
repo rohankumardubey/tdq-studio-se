@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.help.ui,
  org.eclipse.help,
  org.eclipse.equinox.http.jetty,
- org.apache.log4j
+ org.apache.log4j,
+ org.eclipse.ui.cheatsheets
 Bundle-ActivationPolicy: lazy
 Export-Package: org.talend.dataprofiler.help
 Bundle-Vendor: .Talend SA.
