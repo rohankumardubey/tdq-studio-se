@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.dataquality.indicators.mapdb;
 
+import java.sql.Date;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -68,6 +70,9 @@ public class DBMapCompartorTest {
         Assert.assertEquals("1 should be less than null", -1, compare);
         compare = dbMapCompartor.compare(null, null);
         Assert.assertEquals("null should be equals with null", 0, compare);
+
+        compare = dbMapCompartor.compare("1919-06-02", new java.sql.Date(19, 5, 2));
+        Assert.assertEquals("String should be equals with Date", 0, compare);
     }
 
 }

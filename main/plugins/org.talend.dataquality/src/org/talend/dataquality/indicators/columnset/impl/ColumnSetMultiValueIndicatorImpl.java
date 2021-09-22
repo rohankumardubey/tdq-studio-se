@@ -879,6 +879,9 @@ public class ColumnSetMultiValueIndicatorImpl extends CompositeIndicatorImpl imp
         for (List<Object> key : resultMap.keySet()) {
             if (key != null) {
                 Long val = resultMap.get(key);
+                if (val == null) {
+                    val = 1l;
+                }
                 rowcount += val;
                 if (val == 1) {
                     uniq++;

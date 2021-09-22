@@ -13,6 +13,7 @@
 package org.talend.dataquality.indicators.mapdb;
 
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.Comparator;
 import java.util.List;
 
@@ -89,8 +90,16 @@ public class DBMapCompartor implements Comparator<Object>, Serializable {
             return -1;
         }
 
-        if (Comparable.class.isInstance(o1)) {
-            return ((Comparable) o1).compareTo(o2);
+        try {
+            if (Comparable.class.isInstance(o1)) {
+                return ((Comparable) o1).compareTo(o2);
+            }
+        } catch (java.lang.ClassCastException e) {
+            // TDQ-19717 msjian: when we get original value is Date(o2), but we save is String(o1)
+            if (String.class.isInstance(o1) && Date.class.isInstance(o2)) {
+                return ((Comparable) o1).compareTo(((Date) o2).toString());
+            }
+            // TDQ-19717~
         }
 
         if (List.class.isInstance(o1)) {
