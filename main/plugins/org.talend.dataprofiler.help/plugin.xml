@@ -63,12 +63,20 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="menu:help?after=tdq">
+            locationURI="menu:help?after=talend">
          <command
                commandId="org.talend.dataprofiler.help.show.viewBookmark.command"
                icon="icons/bookmarks_view.gif"
                id="org.talend.dataprofiler.help.show.viewBookmark.menus.command"
                style="push">
+            <visibleWhen>
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.talend.dataprofiler.DataProfilingPerspective">
+                  </equals>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>
@@ -90,11 +98,19 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="menu:help?after=tdq">
+            locationURI="menu:help?after=talend">
          <command
                commandId="org.talend.dataprofiler.help.show.cheatSheet.command"
                id="org.talend.dataprofiler.help.show.cheatSheet.menu.command"
                style="push">
+            <visibleWhen>
+               <with
+                     variable="activeWorkbenchWindow.activePerspective">
+                  <equals
+                        value="org.talend.dataprofiler.DataProfilingPerspective">
+                  </equals>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>
