@@ -34,7 +34,7 @@
     <import plugin="org.apache.servicemix.bundles.avro" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.eclipse.nebula.widgets.nattable.core" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.ops4j.pax.url.mvn" version="0.0.0" match="greaterOrEqual"/>
-    <import plugin="org.apache.commons.configuration" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.apache.commons.configuration2" version="0.0.0" match="greaterOrEqual"/>
   </requires>
   <plugin id="org.talend.cwm.compare" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
   <plugin id="org.talend.cwm.compare.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
