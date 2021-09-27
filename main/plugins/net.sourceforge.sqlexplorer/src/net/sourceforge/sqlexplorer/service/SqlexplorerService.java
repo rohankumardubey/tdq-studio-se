@@ -341,7 +341,7 @@ public class SqlexplorerService implements ISqlexplorerService {
             // "librariesIndex.xml".
             try {
                 List<String> jarNames = EDatabaseVersion4Drivers.getDrivers(dbType, dbVersion);
-                if (jarNames.isEmpty() && "JDBC".equals(dbType)) {
+				if (jarNames.isEmpty() && ("JDBC".equals(dbType) || "General JDBC".equals(dbType))) {
                     String driverJarPath = JavaSqlFactory.getDriverJarPath(dbConn);
                     if (driverJarPath != null) {
                         String[] pathArray = driverJarPath.split(";"); //$NON-NLS-1$
