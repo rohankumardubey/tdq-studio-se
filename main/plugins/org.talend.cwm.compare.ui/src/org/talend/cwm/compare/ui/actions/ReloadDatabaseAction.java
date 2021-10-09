@@ -128,14 +128,6 @@ public class ReloadDatabaseAction extends Action {
             if (open == -1) {
                 return;
             }
-
-            // when click compare
-            // if (open == 0) {
-            // // go to compare instead of reloading now
-            //                new PopComparisonUIAction(selectedObject, Messages.getString("ReloadDatabaseAction.CompareLabel")).run();//$NON-NLS-1$
-            //                returnCode.setReturnCode(Messages.getString("ReloadDatabaseAction.IsContinue"), false);//$NON-NLS-1$
-            // return;
-            // }// ~
         }
 
         Connection conn = getConnection();

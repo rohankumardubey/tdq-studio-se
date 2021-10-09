@@ -20,7 +20,6 @@ import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.cwm.compare.exception.ReloadCompareException;
 import org.talend.cwm.compare.factory.IUIHandler;
 import org.talend.cwm.compare.i18n.Messages;
-import org.talend.cwm.compare.ui.editor.ModelElementCompareEditorLauncher;
 import org.talend.dataprofiler.core.ui.dialog.message.DeleteModelElementConfirmDialog;
 
 import orgomg.cwm.objectmodel.core.ModelElement;
@@ -39,7 +38,7 @@ public class UiHandler implements IUIHandler {
      */
     public void popComparisonUI(IPath diffResourcePath, String dbName, Object selectedObject, boolean compareEachOther)
             throws ReloadCompareException {
-        new ModelElementCompareEditorLauncher(dbName, selectedObject, compareEachOther).open(diffResourcePath);
+        // do nothing
     }
 
     /*
