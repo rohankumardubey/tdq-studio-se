@@ -14,6 +14,7 @@ package org.talend.dq.dbms;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1916,7 +1917,35 @@ public class DbmsLanguage {
         return connection.createStatement();
     }
 
-    /**
+	/**
+	 * get the PreparedStatement.
+	 *
+	 * @param connection
+	 * @param fetchSize
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
+	public PreparedStatement preparedStatement(java.sql.Connection connection, int fetchSize, String sql)
+			throws SQLException {
+		PreparedStatement preparedStatement = preparedStatement(connection, sql);
+		preparedStatement.setFetchSize(fetchSize);
+		return preparedStatement;
+	}
+
+	/**
+	 * get the PreparedStatement.
+	 *
+	 * @param connection
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
+	public PreparedStatement preparedStatement(java.sql.Connection connection, String sql) throws SQLException {
+		return connection.prepareStatement(sql);
+	}
+
+	/**
      *
      * Get query string with prefix (catalog/schema.table.column) given column array.
      *

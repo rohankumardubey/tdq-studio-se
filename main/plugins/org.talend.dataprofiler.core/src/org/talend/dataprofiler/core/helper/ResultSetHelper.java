@@ -12,9 +12,9 @@
 // ============================================================================
 package org.talend.dataprofiler.core.helper;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.talend.core.model.metadata.IMetadataConnection;
 import org.talend.core.model.metadata.builder.ConvertionHelper;
@@ -25,6 +25,7 @@ import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.utils.sugars.TypedReturnCode;
+
 import orgomg.cwm.objectmodel.core.Expression;
 
 /**
@@ -53,15 +54,15 @@ public class ResultSetHelper {
         }
 
         DbmsLanguage dbmsLanguage = DbmsLanguageFactory.createDbmsLanguage(tdDataProvider);
-        Statement createStatement = null;
-        if (maxRows != 0) {// TOPN algorithm, it has row limited,no need the fetch size.
-            createStatement = dbmsLanguage.createStatement(sqlConn);
-        } else {// Resevoir Sample algorithm
-            createStatement = dbmsLanguage.createStatement(sqlConn, 1000);
-        }
-        createStatement.setMaxRows(maxRows);
-
+        PreparedStatement preparedStatement = null;
         Expression columnQueryExpression = dbmsLanguage.getTableQueryExpression(metadataTable, whereExpression);
-        return createStatement.executeQuery(columnQueryExpression.getBody());
+        if (maxRows != 0) {// TOPN algorithm, it has row limited,no need the fetch size.
+            preparedStatement = dbmsLanguage.preparedStatement(sqlConn, columnQueryExpression.getBody());
+        } else {// Resevoir Sample algorithm
+            preparedStatement = dbmsLanguage.preparedStatement(sqlConn, 1000, columnQueryExpression.getBody());
+        }
+        preparedStatement.setMaxRows(maxRows);
+
+        return preparedStatement.executeQuery();
     }
 }
