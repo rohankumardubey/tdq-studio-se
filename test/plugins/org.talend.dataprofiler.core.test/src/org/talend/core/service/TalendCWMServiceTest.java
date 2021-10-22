@@ -12,6 +12,9 @@
 // ============================================================================
 package org.talend.core.service;
 
+import java.util.HashMap;
+
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -33,6 +36,7 @@ import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.properties.PropertiesFactory;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.utils.ContextParameterUtils;
+import org.talend.core.repository.model.ProjectRepositoryNode;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.dataprofiler.core.helper.UnitTestBuildHelper;
@@ -55,6 +59,7 @@ public class TalendCWMServiceTest {
     private static Project currentProject;
 
     final static String dqTestProjectName = "testForSoftWareTDQ"; //$NON-NLS-1$
+    private static Logger log = Logger.getLogger(TalendCWMServiceTest.class);
 
     /**
      * DOC talend Comment method "setUp".
@@ -85,7 +90,17 @@ public class TalendCWMServiceTest {
     public static void backToCurrentProject() throws Exception {
         if (currentProject != null) {
             ProxyRepositoryFactory.getInstance().logOffProject();
+            Context ctx = CoreRuntimePlugin.getInstance().getContext();
+            RepositoryContext repositoryContext = (RepositoryContext) ctx.getProperty(Context.REPOSITORY_CONTEXT_KEY);
+            repositoryContext.setProject(currentProject);
+            repositoryContext.setUser(currentProject.getAuthor());
+            repositoryContext.setFields(new HashMap<String, String>());
             ProxyRepositoryFactory.getInstance().logOnProject(currentProject, null);
+            if (dqTestProjectName.equalsIgnoreCase(ProjectRepositoryNode.getInstance().getLabel())) {
+                ProjectRepositoryNode.getInstance().setEnableDisposed(true);
+                ProjectRepositoryNode.getInstance().dispose();
+            }
+            log.info("Project after dispose:" + ProjectRepositoryNode.getInstance().getLabel());
         }
 
         // clean test project
