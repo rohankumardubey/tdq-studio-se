@@ -16,10 +16,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -45,6 +47,7 @@ import org.talend.core.model.properties.DatabaseConnectionItem;
 import org.talend.core.model.properties.PropertiesFactory;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.utils.ContextParameterUtils;
+import org.talend.core.repository.model.ProjectRepositoryNode;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.cwm.helper.CatalogHelper;
@@ -68,6 +71,7 @@ import orgomg.cwm.resource.relational.Schema;
 public class SwitchContextGroupNameImplTest {
 
     final static String dqTestProjectName = "testForContextGroupTDQ"; //$NON-NLS-1$
+    private static Logger log = Logger.getLogger(SwitchContextGroupNameImplTest.class);
 
     DatabaseConnectionItem createDatabaseConnectionItem = null;
 
@@ -126,7 +130,17 @@ public class SwitchContextGroupNameImplTest {
     public static void backToCurrentProject() throws Exception {
         if (currentProject != null) {
             ProxyRepositoryFactory.getInstance().logOffProject();
+            Context ctx = CoreRuntimePlugin.getInstance().getContext();
+            RepositoryContext repositoryContext = (RepositoryContext) ctx.getProperty(Context.REPOSITORY_CONTEXT_KEY);
+            repositoryContext.setProject(currentProject);
+            repositoryContext.setUser(currentProject.getAuthor());
+            repositoryContext.setFields(new HashMap<String, String>());
             ProxyRepositoryFactory.getInstance().logOnProject(currentProject, null);
+            if (dqTestProjectName.equalsIgnoreCase(ProjectRepositoryNode.getInstance().getLabel())) {
+                ProjectRepositoryNode.getInstance().setEnableDisposed(true);
+                ProjectRepositoryNode.getInstance().dispose();
+            }
+            log.info("Project after dispose:" + ProjectRepositoryNode.getInstance().getLabel());
         }
         // clean test project
         IProject testProject = ResourcesPlugin.getWorkspace().getRoot().getProject(dqTestProjectName.toUpperCase());
