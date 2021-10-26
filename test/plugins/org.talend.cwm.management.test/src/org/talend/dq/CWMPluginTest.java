@@ -54,8 +54,7 @@ public class CWMPluginTest extends TestCase {
                 EDatabaseTypeName.JAVADB.getXmlName(), EDatabaseTypeName.JAVADB_DERBYCLIENT.getXmlName(),
                 EDatabaseTypeName.JAVADB_EMBEDED.getXmlName(), EDatabaseTypeName.JAVADB_JCCJDBC.getXmlName(),
                 EDatabaseTypeName.GREENPLUM.getXmlName(), EDatabaseTypeName.HBASE.getXmlName(),
-                EDatabaseTypeName.H2.getXmlName(), EDatabaseTypeName.INTERBASE.getXmlName(),
-                EDatabaseTypeName.MAXDB.getXmlName(), EDatabaseTypeName.PARACCEL.getXmlName(),
+                EDatabaseTypeName.H2.getXmlName(), EDatabaseTypeName.MAXDB.getXmlName(), 
                 EDatabaseTypeName.SAS.getXmlName(), EDatabaseTypeName.VECTORWISE.getXmlName() };
         for (String dbType : allNoSupportedType) {
             dbConn.setDatabaseType(dbType);
