@@ -59,11 +59,6 @@ public enum PatternLanguageType {
            SupportDBUrlType.SYBASEDEFAULTURL.getLanguage(),
            SupportDBUrlType.SYBASEDEFAULTURL.getLanguage(),
            PatternToExcelEnum.SybaseRegexp),
-    INGRES(
-           7,
-           SupportDBUrlType.INGRESDEFAULTURL.getLanguage(),
-           SupportDBUrlType.INGRESDEFAULTURL.getLanguage(),
-           PatternToExcelEnum.IngresRegexp),
     INFORMIX(
              8,
              SupportDBUrlType.INFORMIXDEFAULTURL.getLanguage(),

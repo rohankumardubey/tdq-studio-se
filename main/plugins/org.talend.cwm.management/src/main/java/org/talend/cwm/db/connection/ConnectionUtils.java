@@ -91,6 +91,7 @@ import org.talend.metadata.managment.utils.DatabaseConstant;
 import org.talend.utils.ProductVersion;
 import org.talend.utils.sql.metadata.constants.GetColumn;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.foundation.softwaredeployment.DataProvider;
 import orgomg.cwm.objectmodel.core.ModelElement;
@@ -499,23 +500,6 @@ public final class ConnectionUtils {
     }
 
     /**
-     * mzhao bug: TDQ-4622 Is the connection is an ingres connection?
-     *
-     * @param connection
-     * @return true if connection is ingres, false otherwise
-     */
-    public static boolean isIngres(Connection connection) throws SQLException {
-        DatabaseConnection dbConn = SwitchHelpers.DATABASECONNECTION_SWITCH.doSwitch(connection);
-        if (dbConn != null) {
-            String databaseType =
-                    dbConn.getDatabaseType() == null ? org.talend.dataquality.PluginConstant.EMPTY_STRING : dbConn
-                            .getDatabaseType();
-            return EDatabaseTypeName.INGRES.getXmlName().equalsIgnoreCase(databaseType);
-        }
-        return false;
-    }
-
-    /**
      * mzhao bug: TDQ-4622 Is the connection is an informix connection?
      *
      * @param connection
@@ -793,28 +777,6 @@ public final class ConnectionUtils {
         DatabaseMetaData connectionMetadata = org.talend.utils.sql.ConnectionUtils.getConnectionMetadata(connection);
         if (connectionMetadata.getDriverName() != null
                 && connectionMetadata.getDriverName().toLowerCase().startsWith(DatabaseConstant.ODBC_DRIVER_NAME)
-                && connectionMetadata.getDatabaseProductName() != null
-                && connectionMetadata
-                        .getDatabaseProductName()
-                        .toLowerCase()
-                        .indexOf(DatabaseConstant.INGRES_PRODUCT_NAME) > -1) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * DOC xqliu Comment method "isJdbcIngres".
-     *
-     * @param connection
-     * @return
-     * @throws SQLException
-     */
-    @SuppressWarnings("deprecation")
-    public static boolean isJdbcIngres(java.sql.Connection connection) throws SQLException {
-        DatabaseMetaData connectionMetadata = org.talend.utils.sql.ConnectionUtils.getConnectionMetadata(connection);
-        if (connectionMetadata.getDriverName() != null
-                && connectionMetadata.getDriverName().equals(DatabaseConstant.JDBC_INGRES_DEIVER_NAME)
                 && connectionMetadata.getDatabaseProductName() != null
                 && connectionMetadata
                         .getDatabaseProductName()
