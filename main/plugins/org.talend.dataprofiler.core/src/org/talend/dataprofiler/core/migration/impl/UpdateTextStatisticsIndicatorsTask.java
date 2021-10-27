@@ -38,8 +38,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
 
     private final static String LANG_DB2 = "DB2"; //$NON-NLS-1$
 
-    private final static String LANG_INGRES = "Ingres"; //$NON-NLS-1$
-
     private final static String LANG_SQLITE = "SQLite"; //$NON-NLS-1$
 
     private final static String LANG_HIVE = "Hive"; //$NON-NLS-1$
@@ -53,7 +51,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
         clearLanguages.add(LANG_ORACLE);
         clearLanguages.add(LANG_SQL_SERVER);
         clearLanguages.add(LANG_DB2);
-        clearLanguages.add(LANG_INGRES);
         clearLanguages.add(LANG_SQLITE);
         clearLanguages.add(LANG_HIVE);
     }
@@ -250,7 +247,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_AVGBN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_AVGBN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_AVGBN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_AVGBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_AVGBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_AVGBN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -264,7 +260,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_AVGB_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_AVGB_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_AVGB_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_AVGB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_AVGB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_AVGB_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -278,7 +273,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_AVGN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_AVGN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_AVGN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_AVGN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_AVGN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_AVGN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -292,7 +286,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_AVG_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_AVG_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_AVG_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_AVG_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_AVG_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_AVG_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -306,7 +299,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MAXBN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MAXBN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MAXBN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MAXBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MAXBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MAXBN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -320,7 +312,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MAXB_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MAXB_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MAXB_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MAXB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MAXB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MAXB_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -334,7 +325,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MAXN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MAXN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MAXN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MAXN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MAXN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MAXN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -348,7 +338,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MAX_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MAX_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MAX_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MAX_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MAX_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MAX_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -362,7 +351,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MINBN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MINBN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MINBN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MINBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MINBN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MINBN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -376,7 +364,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MINB_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MINB_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MINB_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MINB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MINB_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MINB_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -390,7 +377,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MINN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MINN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MINN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MINN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MINN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MINN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
@@ -404,7 +390,6 @@ public class UpdateTextStatisticsIndicatorsTask extends AbstractWorksapceUpdateT
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_ORACLE, BODY_MIN_ORACLE);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQL_SERVER, BODY_MIN_SQL_SERVER);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_DB2, BODY_MIN_DISH);
-            IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_INGRES, BODY_MIN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_SQLITE, BODY_MIN_DISH);
             IndicatorDefinitionFileHelper.addSqlExpression(definition, LANG_HIVE, BODY_MIN_DISH);
             result = result && IndicatorDefinitionFileHelper.save(definition);
