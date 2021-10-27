@@ -52,6 +52,7 @@ import org.talend.dataquality.indicators.sql.IndicatorSqlFactory;
 import org.talend.dataquality.indicators.sql.UserDefIndicator;
 import org.talend.utils.ProductVersion;
 import org.talend.utils.dates.DateUtils;
+
 import orgomg.cwm.objectmodel.core.CoreFactory;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.resource.relational.Catalog;
@@ -492,7 +493,7 @@ public class DbmsLanguageTest {
     @Test
     public void testGetPatternFinderFunctionStringEListOfCharactersMappingCase1() {
 
-        String expectedResult = "TRANSLATE(name , \'abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789Netezza\' , \'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Netezza\')"; //$NON-NLS-1$
+        String expectedResult = "TRANSLATE(name , \'abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789Netezza\' , \'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Netezza\')"; //$NON-NLS-1$
         NetezzaDbmsLanguage netezzaDbmsLanguage = (NetezzaDbmsLanguage) DbmsLanguageFactory
                 .createDbmsLanguage(SupportDBUrlType.NETEZZADEFAULTURL);
 
@@ -502,7 +503,7 @@ public class DbmsLanguageTest {
         // mysql
         createCharactersMapping.setLanguage(SupportDBUrlType.MYSQLDEFAULTURL.getLanguage());
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789MySql"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789MySql"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999MySql"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -511,7 +512,7 @@ public class DbmsLanguageTest {
         // default
         createCharactersMapping.setLanguage(DbmsLanguage.SQL);
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789Default"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789Default"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Default"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -520,7 +521,7 @@ public class DbmsLanguageTest {
         // netezza
         createCharactersMapping.setLanguage(SupportDBUrlType.NETEZZADEFAULTURL.getLanguage());
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789Netezza"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789Netezza"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Netezza"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -539,7 +540,7 @@ public class DbmsLanguageTest {
     @Test
     public void testGetPatternFinderFunctionStringEListOfCharactersMappingCase2() {
 
-        String expectedResult = "TRANSLATE(name , \'abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789Default\' , \'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Default\')"; //$NON-NLS-1$
+        String expectedResult = "TRANSLATE(name , \'abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789Default\' , \'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Default\')"; //$NON-NLS-1$
         NetezzaDbmsLanguage netezzaDbmsLanguage = (NetezzaDbmsLanguage) DbmsLanguageFactory
                 .createDbmsLanguage(SupportDBUrlType.NETEZZADEFAULTURL);
 
@@ -549,7 +550,7 @@ public class DbmsLanguageTest {
         // mysql
         createCharactersMapping.setLanguage(SupportDBUrlType.MYSQLDEFAULTURL.getLanguage());
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789MySql"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789MySql"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999MySql"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -558,7 +559,7 @@ public class DbmsLanguageTest {
         // default
         createCharactersMapping.setLanguage(DbmsLanguage.SQL);
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789Default"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789Default"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999Default"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -588,7 +589,7 @@ public class DbmsLanguageTest {
         // mysql
         createCharactersMapping.setLanguage(SupportDBUrlType.MYSQLDEFAULTURL.getLanguage());
         createCharactersMapping
-                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzçâêîôûéèùïöüABCDEFGHIJKLMNOPQRSTUVWXYZÇÂÊÎÔÛÉÈÙÏÖÜ0123456789MySql"); //$NON-NLS-1$
+                .setCharactersToReplace("abcdefghijklmnopqrstuvwxyzÃ§Ã¢ÃªÃ®Ã´Ã»Ã©Ã¨Ã¹Ã¯Ã¶Ã¼ABCDEFGHIJKLMNOPQRSTUVWXYZÃ‡Ã‚ÃŠÃŽÃ”Ã›Ã‰ÃˆÃ™Ã�Ã–Ãœ0123456789MySql"); //$NON-NLS-1$
         createCharactersMapping
                 .setReplacementCharacters("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9999999999MySql"); //$NON-NLS-1$
         charactersMapping.add(createCharactersMapping);
@@ -1061,11 +1062,6 @@ public class DbmsLanguageTest {
         indicatorDefinition.setName("user define"); //$NON-NLS-1$
         userDefIndicator.setName(indicatorDefinition.getName());
         userDefIndicator.setIndicatorDefinition(indicatorDefinition);
-
-        TdExpression newTdExp = BooleanExpressionHelper.createTdExpression("Ingres", //$NON-NLS-1$
-                sql_1, null);
-        newTdExp.setModificationDate(DateUtils.getCurrentDate(DateUtils.PATTERN_5));
-        indicatorDefinition.getSqlGenericExpression().add(newTdExp);
 
         DbmsLanguage dbms = getMysqlDbmsLanguage();
         Expression sqlExpression = dbms.getSqlExpression(indicatorDefinition);
