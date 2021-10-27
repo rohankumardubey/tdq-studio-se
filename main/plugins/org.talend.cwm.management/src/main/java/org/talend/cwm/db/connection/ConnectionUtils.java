@@ -766,28 +766,6 @@ public final class ConnectionUtils {
     }
 
     /**
-     * DOC xqliu Comment method "isOdbcIngres".
-     *
-     * @param connection
-     * @return
-     * @throws SQLException
-     */
-    public static boolean isOdbcIngres(java.sql.Connection connection) throws SQLException {
-        @SuppressWarnings("deprecation")
-        DatabaseMetaData connectionMetadata = org.talend.utils.sql.ConnectionUtils.getConnectionMetadata(connection);
-        if (connectionMetadata.getDriverName() != null
-                && connectionMetadata.getDriverName().toLowerCase().startsWith(DatabaseConstant.ODBC_DRIVER_NAME)
-                && connectionMetadata.getDatabaseProductName() != null
-                && connectionMetadata
-                        .getDatabaseProductName()
-                        .toLowerCase()
-                        .indexOf(DatabaseConstant.INGRES_PRODUCT_NAME) > -1) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * DOC xqliu Comment method "isSqlite".
      *
      * @param connection

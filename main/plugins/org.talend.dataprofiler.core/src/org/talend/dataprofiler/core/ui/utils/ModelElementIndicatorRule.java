@@ -114,9 +114,6 @@ public final class ModelElementIndicatorRule {
         // MOD msjian 2013-5-15 TDQ-7275 need to disabled indicators for teradata with sql engine.
         boolean isTeradataSQL = connection == null ? false : ConnectionHelper.isTeradata(connection) && isSQLEngine;
 
-        // MOD msjian 2016-8-25 TDQ-12349 need to disabled indicators for ingres with sql engine.
-        boolean isIngres = connection == null ? false : ConnectionHelper.isIngress(connection) && isSQLEngine;
-
         // MOD msjian 2016-8-25 TDQ-12464 need to disabled indicators for sybase with sql engine.
         boolean isSybase = connection == null ? false : ConnectionHelper.isSybase(connection) && isSQLEngine;
 
@@ -205,7 +202,7 @@ public final class ModelElementIndicatorRule {
             return true;
         case PatternFreqIndicatorEnum:
         case PatternLowFreqIndicatorEnum:
-            if (isTeradataSQL || isIngres || isSybase) {
+            if (isTeradataSQL || isSybase) {
                 return false;
             }
             if (isTeradataInterval == Java2SqlType.TERADATA_INTERVAL_TO && isSQLEngine) {

@@ -123,11 +123,6 @@
 		</url>
 		<jars />
 	</driver>
-	<driver id="-3">
-		<name>InterClient</name>
-		<url>jdbc:interbase://&lt;server&gt;/&lt;full_db_path&gt;</url>
-		<jars />
-	</driver>
 	<driver id="-6">
 		<name>MySQL Driver</name>
 		<url>jdbc:mysql://&lt;hostname&gt;[&lt;:3306&gt;]/&lt;dbname&gt;</url>
@@ -171,11 +166,6 @@
 		<name>AS400</name>
 		<url>jdbc:as400://&lt;host&gt;/&lt;DBNAME&gt;</url>
 		<jars />
-	</driver>
-	<driver id="-88">
-		<name>Ingres</name>
-		<url>jdbc:ingres://&lt;host&gt;/&lt;DBNAME&gt;</url>
-		<jars></jars>
 	</driver>
 	<driver id="-66">
         <name>Netezza</name>
