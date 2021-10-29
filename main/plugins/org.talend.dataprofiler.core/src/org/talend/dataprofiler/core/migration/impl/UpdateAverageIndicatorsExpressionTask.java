@@ -39,8 +39,6 @@ public class UpdateAverageIndicatorsExpressionTask extends AbstractWorksapceUpda
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> WHERE (<%=__COLUMN_NAMES__%> IS NOT NULL ) <%=__AND_WHERE_CLAUSE__%>");
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "DB2",
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> WHERE (<%=__COLUMN_NAMES__%> IS NOT NULL ) <%=__AND_WHERE_CLAUSE__%>");
-            IndicatorDefinitionFileHelper.updateSqlExpression(definition, "Ingres",
-                            "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> WHERE (<%=__COLUMN_NAMES__%> IS NOT NULL ) <%=__AND_WHERE_CLAUSE__%>");
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "SQLite",
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> WHERE (<%=__COLUMN_NAMES__%> IS NOT NULL ) <%=__AND_WHERE_CLAUSE__%>");
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "Hive",
@@ -65,8 +63,6 @@ public class UpdateAverageIndicatorsExpressionTask extends AbstractWorksapceUpda
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "Oracle",
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> <%=__WHERE_CLAUSE__%>");
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "DB2",
-                            "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> <%=__WHERE_CLAUSE__%>");
-            IndicatorDefinitionFileHelper.updateSqlExpression(definition, "Ingres",
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> <%=__WHERE_CLAUSE__%>");
             IndicatorDefinitionFileHelper.updateSqlExpression(definition, "SQLite",
                             "SELECT SUM(LENGTH(<%=__COLUMN_NAMES__%>)), COUNT(*) FROM <%=__TABLE_NAME__%> <%=__WHERE_CLAUSE__%>");

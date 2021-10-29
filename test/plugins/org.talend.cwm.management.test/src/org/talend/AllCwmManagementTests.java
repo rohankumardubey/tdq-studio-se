@@ -44,7 +44,6 @@ import org.talend.dq.dbms.DB2DbmsLanguageTest;
 import org.talend.dq.dbms.DbmsLanguageFactoryTest;
 import org.talend.dq.dbms.DbmsLanguageTest;
 import org.talend.dq.dbms.InfomixDbmsLanguageTest;
-import org.talend.dq.dbms.IngresDbmsLanguageTest;
 import org.talend.dq.dbms.MSSqlDbmsLanguageTest;
 import org.talend.dq.dbms.MySQLDbmsLanguageTest;
 import org.talend.dq.dbms.NetezzaDbmsLanguageTest;
@@ -75,7 +74,7 @@ import org.talend.dq.writer.AElementPersistanceRealTest;
         TextStatisticsExplorerTest.class, SummaryStastictisExplorerRealTest.class, SummaryStastictisExplorerTest.class,
         ColumnAnalysisExecutorTest.class, ExecuteMatchRuleHandlerTest.class, MatchAnalysisExecutorTest.class,
         MultiColumnAnalysisExecutorTest.class, CategoryHandlerTest.class, TdqAnalysisConnectionPoolTest.class,
-        DbmsLanguageTest.class, InfomixDbmsLanguageTest.class, IngresDbmsLanguageTest.class, MSSqlDbmsLanguageTest.class,
+        DbmsLanguageTest.class, InfomixDbmsLanguageTest.class, MSSqlDbmsLanguageTest.class,
         DB2DbmsLanguageTest.class, MySQLDbmsLanguageTest.class, AnalysisExecutorHelperTest.class, ContextHelperTest.class,
         ParameterUtilTest.class, PropertyHelperTest.class, ProxyRepositoryManagerTest.class, ReportUtilsRealTest.class,
         RepositoryNodeHelperRealTest.class, DbmsLanguageFactoryTest.class, RepositoryNodeHelperTest.class, UDIHelperTest.class,

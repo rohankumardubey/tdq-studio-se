@@ -478,8 +478,7 @@ public final class RepNodeUtils {
             }
 
             if (connection != null
-                    && (ConnectionHelper.isTeradata(connection) || ConnectionHelper.isIngress(connection) || ConnectionHelper
-                            .isSybase(connection))) {
+                    && (ConnectionHelper.isTeradata(connection) || ConnectionHelper.isSybase(connection))) {
                 return false;
             }
         }

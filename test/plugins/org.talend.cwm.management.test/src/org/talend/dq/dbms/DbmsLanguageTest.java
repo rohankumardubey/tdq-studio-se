@@ -1062,11 +1062,6 @@ public class DbmsLanguageTest {
         userDefIndicator.setName(indicatorDefinition.getName());
         userDefIndicator.setIndicatorDefinition(indicatorDefinition);
 
-        TdExpression newTdExp = BooleanExpressionHelper.createTdExpression("Ingres", //$NON-NLS-1$
-                sql_1, null);
-        newTdExp.setModificationDate(DateUtils.getCurrentDate(DateUtils.PATTERN_5));
-        indicatorDefinition.getSqlGenericExpression().add(newTdExp);
-
         DbmsLanguage dbms = getMysqlDbmsLanguage();
         Expression sqlExpression = dbms.getSqlExpression(indicatorDefinition);
         Assert.assertNull(sqlExpression);
