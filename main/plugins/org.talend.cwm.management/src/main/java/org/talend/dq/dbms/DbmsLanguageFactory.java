@@ -140,8 +140,6 @@ public final class DbmsLanguageFactory {
             dbmsLanguage = new SQLiteDbmsLanguage(dbmsSubtype, dbVersion);
         } else if (isTeradata(dbmsSubtype)) {
             dbmsLanguage = new TeradataDbmsLanguage(dbmsSubtype, dbVersion);
-        } else if (isIngres(dbmsSubtype)) {
-            dbmsLanguage = new IngresDbmsLanguage(dbmsSubtype, dbVersion);
         } else if (isDelimitedFile(dbmsSubtype)) {
             dbmsLanguage = new DelimitedFileLanguage(dbmsSubtype, dbVersion);
         } else if (isInfomix(dbmsSubtype)) {
@@ -276,10 +274,6 @@ public final class DbmsLanguageFactory {
 
     private static boolean isTeradata(String dbms) {
         return compareDbmsLanguage(DbmsLanguage.TERADATA, dbms);
-    }
-
-    private static boolean isIngres(String dbms) {
-        return compareDbmsLanguage(DbmsLanguage.INGRES, dbms);
     }
 
     private static boolean isDelimitedFile(String dbms) {

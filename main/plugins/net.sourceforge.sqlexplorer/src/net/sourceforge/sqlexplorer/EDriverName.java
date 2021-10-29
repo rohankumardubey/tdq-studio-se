@@ -19,14 +19,14 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import net.sourceforge.sqlexplorer.dbproduct.DriverManager;
-import net.sourceforge.sqlexplorer.dbproduct.ManagedDriver;
-import net.sourceforge.sqlexplorer.plugin.SQLExplorerPlugin;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
+
+import net.sourceforge.sqlexplorer.dbproduct.DriverManager;
+import net.sourceforge.sqlexplorer.dbproduct.ManagedDriver;
+import net.sourceforge.sqlexplorer.plugin.SQLExplorerPlugin;
 
 /**
  * DOC qzhang class global comment. Detailled comment <br/>
@@ -74,10 +74,6 @@ public enum EDriverName {
                         "org.postgresql.Driver", //$NON-NLS-1$
                         "-7",
                         "postgresql-8.1-405.jdbc3.jar"),
-    INTERBASEDEFAULTURL("Interbase", //$NON-NLS-1$
-                        "interbase.interclient.Driver", //$NON-NLS-1$
-                        "-3",
-                        "interclient.jar"),
     SYBASEDEFAULTURL("Sybase", //$NON-NLS-1$
                      "com.sybase.jdbc3.jdbc.SybDriver", //$NON-NLS-1$
                      "-9",
@@ -98,8 +94,6 @@ public enum EDriverName {
                        "tdgssconfig.jar"),
     SQLITE3DEFAULTURL("SQLite", "org.sqlite.JDBC", "-30", "sqlitejdbc-v056.jar"),
     AS400DEFAULTURL("AS400", "com.ibm.as400.access.AS400JDBCDriver", "-51", "jt400_V5R3.jar"),
-    // MOD klliu bug 14791 add ingres database url and modify default_driver.xml
-    INGRESDEFAULTURL("Ingres", "ca.ingres.jdbc.IngresDriver", "-88", "iijdbc.jar"),
     NETEZZADEFAULTURL("Netezza", "org.netezza.Driver", "-66", "nzjdbc.jar"), //$NON-NLS-1$
     VERTICA("Vertica", "com.vertica.Driver", "-70", "vertica_4.1.14_jdk_5.jar"), //$NON-NLS-1$
     VERTICA2("Vertica", "com.vertica.jdbc.Driver", "-71", "vertica-jdk5-6.0.0-0.jar"), //$NON-NLS-1$
