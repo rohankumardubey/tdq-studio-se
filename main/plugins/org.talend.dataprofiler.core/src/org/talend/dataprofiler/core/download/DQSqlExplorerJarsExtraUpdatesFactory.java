@@ -23,7 +23,6 @@ public class DQSqlExplorerJarsExtraUpdatesFactory extends AbstractDQMissingJarsE
     protected List<String> getJarFileNames() {
         List<String> jarFiles = new ArrayList<String>();
         jarFiles.add(SqlExplorerUtils.JAR_FILE_NAME);
-        jarFiles.add(SqlExplorerUtils.JAR_NL_FILE_NAME);
         return jarFiles;
     }
 
@@ -36,7 +35,6 @@ public class DQSqlExplorerJarsExtraUpdatesFactory extends AbstractDQMissingJarsE
     protected List<String> getJarFileWithVersionNames() {
         List<String> jarFiles = new ArrayList<String>();
         jarFiles.add(SqlExplorerUtils.JAR_FILE_NAME_WITH_VERSION);
-        jarFiles.add(SqlExplorerUtils.JAR_NL_FILE_NAME_WITH_VERSION);
         return jarFiles;
     }
 

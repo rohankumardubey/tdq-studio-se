@@ -67,10 +67,6 @@ public class SqlExplorerUtils extends AbstractOSGIServiceUtils {
 
     public static final String JAR_FILE_NAME_WITH_VERSION = PLUGIN_NAME + VERSION_IN_FILENAME + ".jar"; //$NON-NLS-1$
 
-    public static final String JAR_NL_FILE_NAME = PLUGIN_NAME + ".nl" + ".jar"; //$NON-NLS-1$ //$NON-NLS-2$
-
-    public static final String JAR_NL_FILE_NAME_WITH_VERSION = PLUGIN_NAME + ".nl" + VERSION_IN_FILENAME + ".jar"; //$NON-NLS-1$ //$NON-NLS-2$
-
     public static final String TALENDDATASET_CLASS_NAME = "net.sourceforge.sqlexplorer.dataset.mapdb.TalendDataSet"; //$NON-NLS-1$
 
     private static SqlExplorerUtils sqlExplorerUtils;

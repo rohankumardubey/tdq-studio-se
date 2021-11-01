@@ -27,7 +27,6 @@ public class DQChartJarsExtraUpdatesFactory extends AbstractDQMissingJarsExtraUp
     protected List<String> getJarFileNames() {
         List<String> jarFiles = new ArrayList<String>();
         jarFiles.add(ITOPChartService.JAR_FILE_NAME);
-        jarFiles.add(ITOPChartService.JAR_NL_FILE_NAME);
         return jarFiles;
     }
 
@@ -40,7 +39,6 @@ public class DQChartJarsExtraUpdatesFactory extends AbstractDQMissingJarsExtraUp
     protected List<String> getJarFileWithVersionNames() {
         List<String> jarFiles = new ArrayList<String>();
         jarFiles.add(ITOPChartService.JAR_FILE_NAME_WITH_VERSION);
-        jarFiles.add(ITOPChartService.JAR_NL_FILE_NAME_WITH_VERSION);
         return jarFiles;
     }
 
