@@ -13,13 +13,11 @@
 package org.talend.dq.helper;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.services.IServiceLocator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.service.IDQJarManagementService;
+import org.talend.core.service.IUpdateService;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.dq.CWMPlugin;
 
@@ -32,8 +30,6 @@ public abstract class AbstractOSGIServiceUtils {
     private static Logger log = Logger.getLogger(AbstractOSGIServiceUtils.class);
 
     private boolean hasShowDownloadWizard = false;
-
-    public static final String COMMAND_ID = "org.talend.updates.show.wizard.command"; //$NON-NLS-1$
 
     /**
      * get the plugin name
@@ -68,12 +64,13 @@ public abstract class AbstractOSGIServiceUtils {
         } else if (isNeedDownload) {
             if (!hasShowDownloadWizard) {
                 // show download jar dialog
-                IServiceLocator serviceLocator = PlatformUI.getWorkbench();
-                ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
                 try {
-                    Command command = commandService.getCommand(COMMAND_ID);
-                    command.executeWithChecks(new ExecutionEvent());
-                    hasShowDownloadWizard = true;
+                    if (GlobalServiceRegister.getDefault().isServiceRegistered(IDQJarManagementService.class)) {
+                        IDQJarManagementService service =
+                                GlobalServiceRegister.getDefault().getService(IDQJarManagementService.class);
+                        service.checkSqlexplorerTopchartLibraries();
+                        hasShowDownloadWizard = true;
+                    }
                 } catch (Exception e) {
                     log.error(e);
                 }

@@ -1844,6 +1844,13 @@
              class="org.talend.dataprofiler.core.ui.pref.TaskViewPreferenceInitializer">
        </initializer>
     </extension>
+   <extension
+         point="org.talend.core.runtime.service">
+      <Service
+            class="org.talend.dataprofiler.core.service.DQJarManagementService"
+            serviceId="IDQJarManagementService">
+      </Service>
+   </extension>
 
 </plugin>
 

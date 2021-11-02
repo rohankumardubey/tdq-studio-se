@@ -110,7 +110,7 @@ public abstract class AbstractDQMissingJarsExtraUpdatesFactory extends AbstractE
                     return;
                 }
 
-                // else something to dowload to return the Extra feature to dowload.
+                // else something to download to return the Extra feature to download.
                 addToSet(
                         uninstalledExtraFeatures,
                         new TalendWebServiceUpdateExtraFeature(modulesForAutomaticInstall, DefaultMessagesImpl
