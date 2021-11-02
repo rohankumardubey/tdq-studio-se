@@ -300,7 +300,7 @@ public class ExportWizardPage extends WizardPage {
             }
 
             private String openFileDialog() {
-                FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell());
+                FileDialog dialog = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
                 dialog.setFilterExtensions(FILE_EXPORT_MASK);
                 if (archTxt.getText() != null) {
                     dialog.setFileName(archTxt.getText());
