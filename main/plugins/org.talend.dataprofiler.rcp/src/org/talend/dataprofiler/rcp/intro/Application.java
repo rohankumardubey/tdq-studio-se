@@ -14,6 +14,7 @@ package org.talend.dataprofiler.rcp.intro;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -117,6 +118,11 @@ public class Application implements IApplication {
      * DOC ggu Comment method "checkForBrowser".
      */
     private void checkBrowserSupport() {
+        if (StringUtils.equals(Platform.OS_LINUX, Platform.getOS())
+                && StringUtils.equals(Platform.ARCH_AARCH64, Platform.getOSArch())) {
+            System.setProperty("USE_BROWSER", Boolean.FALSE.toString());
+            return;
+        }
         Shell shell = new Shell();
         try {
             Browser browser = new Browser(shell, SWT.BORDER);
