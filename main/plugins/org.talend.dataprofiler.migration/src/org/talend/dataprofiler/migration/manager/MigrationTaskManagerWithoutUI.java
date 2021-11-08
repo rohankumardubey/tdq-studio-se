@@ -212,6 +212,17 @@ public class MigrationTaskManagerWithoutUI {
 
             @Override
             public int compare(IMigrationTask o1, IMigrationTask o2) {
+                // TDQ-19780 msjian: put the UpdateDBVersionTask execute first, especially for installer
+                String updateDBVersionTaskId =
+                        "org.talend.dataprofiler.datamart.migration.database.UpdateDBVersionTask"; //$NON-NLS-1$
+                if (updateDBVersionTaskId.equals(o1.getId())) {
+                    return 1;
+                }
+                if (updateDBVersionTaskId.equals(o2.getId())) {
+                    return -1;
+                }
+                // TDQ-19780~
+
                 if (o1.getOrder() == null || o2.getOrder() == null) {
                     return 0;
                 }
