@@ -207,28 +207,18 @@ public class MigrationTaskManagerWithoutUI {
      *
      * @param tasks
      */
-    private static void sortTasks(List<IMigrationTask> tasks) {
+    public static void sortTasks(List<IMigrationTask> tasks) {
         Collections.sort(tasks, new Comparator<IMigrationTask>() {
 
             @Override
             public int compare(IMigrationTask o1, IMigrationTask o2) {
-                // TDQ-19780 msjian: put the UpdateDBVersionTask execute first, especially for installer
-                String updateDBVersionTaskId =
-                        "org.talend.dataprofiler.datamart.migration.database.UpdateDBVersionTask"; //$NON-NLS-1$
-                if (updateDBVersionTaskId.equals(o1.getId())) {
-                    return 1;
-                }
-                if (updateDBVersionTaskId.equals(o2.getId())) {
-                    return -1;
-                }
-                // TDQ-19780~
-
                 if (o1.getOrder() == null || o2.getOrder() == null) {
                     return 0;
                 }
                 if (o1 instanceof IWorkspaceMigrationTask && o2 instanceof IWorkspaceMigrationTask) {
-                    int compareResult = ((IWorkspaceMigrationTask) o1).getVersion().compareToIgnoreCase(
-                            ((IWorkspaceMigrationTask) o2).getVersion());
+                    int compareResult = ((IWorkspaceMigrationTask) o1)
+                            .getVersion()
+                            .compareToIgnoreCase(((IWorkspaceMigrationTask) o2).getVersion());
                     if (compareResult != 0) {
                         return compareResult;
                     }
@@ -239,6 +229,16 @@ public class MigrationTaskManagerWithoutUI {
             }
 
         });
+
+        // TDQ-19780 msjian: put the UpdateDBVersionTask execute first, especially for installer
+        String updateDBVersionTaskId = "org.talend.dataprofiler.datamart.migration.database.UpdateDBVersionTask"; //$NON-NLS-1$
+        for (IMigrationTask task : tasks) {
+            if (updateDBVersionTaskId.equals(task.getId())) {
+                tasks.remove(task);
+                tasks.add(0, task);
+            }
+        }
+        // TDQ-19780~
     }
 
     /**
