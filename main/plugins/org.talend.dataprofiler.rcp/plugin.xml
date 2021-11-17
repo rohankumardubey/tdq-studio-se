@@ -1010,8 +1010,8 @@
               context="Microsolft Sqlserver dbwizard"
               language="java"
               message="Microsolft dbwizard for TOP"
-              mvn_uri="mvn:com.nimbusds/oauth2-oidc-sdk/6.5"
-              name="oauth2-oidc-sdk-6.5.jar"
+              mvn_uri="mvn:com.nimbusds/oauth2-oidc-sdk/9.7"
+              name="oauth2-oidc-sdk-9.7.jar"
               required="true">
         </libraryNeeded>
         <libraryNeeded
@@ -1050,8 +1050,8 @@
               context="Microsolft Sqlserver dbwizard"
               language="java"
               message="Microsolft dbwizard for TOP"
-              mvn_uri="mvn:com.microsoft.azure/adal4j/1.6.5"
-              name="adal4j-1.6.5.jar"
+              mvn_uri="mvn:com.microsoft.azure/adal4j/1.6.7"
+              name="adal4j-1.6.7.jar"
               required="true">
         </libraryNeeded>
         <libraryNeeded
@@ -1060,6 +1060,14 @@
               message="Microsolft dbwizard for TOP"
               mvn_uri="mvn:net.minidev/accessors-smart/2.4.7"
               name="accessors-smart-2.4.7.jar"
+              required="true">
+        </libraryNeeded>
+        <libraryNeeded
+              context="Microsolft Sqlserver dbwizard"
+              language="java"
+              message="Microsolft dbwizard for TOP"
+              mvn_uri="mvn:com.nimbusds/content-type/2.1"
+              name="content-type-2.1.jar"
               required="true">
         </libraryNeeded>
    </extension>
