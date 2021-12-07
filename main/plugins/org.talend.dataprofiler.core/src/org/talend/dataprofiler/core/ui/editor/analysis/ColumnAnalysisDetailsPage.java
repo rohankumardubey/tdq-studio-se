@@ -586,6 +586,8 @@ public class ColumnAnalysisDetailsPage extends DynamicAnalysisMasterPage {
             ModelElementIndicator indicator = (ModelElementIndicator) ((Widget) evt.getNewValue())
                     .getData(AbstractColumnDropTree.MODELELEMENT_INDICATOR_KEY);
             expandChart(indicator);
+        } else {
+            super.propertyChange(evt);
         }
     }
 

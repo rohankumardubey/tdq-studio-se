@@ -72,6 +72,8 @@ public final class PluginConstant {
 
     public static final String ISDIRTY_PROPERTY = "ISDIRTY_PROPERTY"; //$NON-NLS-1$
 
+    public static final String LAZY_LOAD_DATA = "LAZY_LOAD_DATA"; //$NON-NLS-1$
+
     public static final String DATAFILTER_PROPERTY = "DATAFILTER_PROPERTY"; //$NON-NLS-1$
 
     public static final String REPORT_FOLDER_PATH = "/Data Profiling/Reports"; //$NON-NLS-1$

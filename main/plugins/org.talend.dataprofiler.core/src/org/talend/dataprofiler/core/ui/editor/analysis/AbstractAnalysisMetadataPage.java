@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.dataprofiler.core.ui.editor.analysis;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -1010,15 +1011,18 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
         dataPreviewTableCom.setLayout(new GridLayout(1, true));
         createConnBindWidget(dataPreviewTableCom);
         Composite buttonComposite = toolkit.createComposite(dataPreviewTableCom, SWT.NONE);
-        buttonComposite.setLayout(new GridLayout(6, false));
-        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP).grab(true, false).applyTo(buttonComposite);
+        int numberOfSubWiget = 4;
         createConnectionButton(buttonComposite, dataPreviewSection);
         if (hasSelectColumnsButton) {
             createColumnSelectButton(buttonComposite);
+            numberOfSubWiget++;
         }
         if (hasSelectIndicatorButton) {
             createIndicatorSelectButton(buttonComposite);
+            numberOfSubWiget++;
         }
+        buttonComposite.setLayout(new GridLayout(numberOfSubWiget, false));
+        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.TOP).grab(true, false).applyTo(buttonComposite);
         createRefreshDataButtonComp(buttonComposite);
         dataPreviewRunButton = createRunButton(buttonComposite);
         createRunSampleDataButton(buttonComposite);
@@ -1190,7 +1194,7 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
         // TDQ-11981: when get the preview data use the data filter real value when set a context value
         sampleTable.setDataFilter(getDataFilterStr());
 
-        sampleTable.reDrawTable(getSelectedColumns(), loadData);
+        sampleTable.reDrawTableInBackground(getSelectedColumns(), loadData);
         redrawWarningLabel();
     }
 
@@ -1614,7 +1618,6 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
                         if (rowLoadedText == null) {
                             return;
                         }
-
                         refreshPreviewData();
                     }
                 });
@@ -1784,5 +1787,12 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
             return ((AnalysisItemEditorInput) editorInput).getRepNode();
         }
         return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (org.talend.dataprofiler.core.PluginConstant.LAZY_LOAD_DATA.equals(evt.getPropertyName())) {
+            redrawWarningLabel();
+        }
     }
 }

@@ -282,6 +282,8 @@ public class FunctionalDependencyAnalysisDetailsPage extends AbstractAnalysisMet
             ((AnalysisEditor) currentEditor).setRefreshResultPage(true);
         } else if (PluginConstant.DATAFILTER_PROPERTY.equals(evt.getPropertyName())) {
             this.setDirty(true);
+        } else {
+            super.propertyChange(evt);
         }
     }
 

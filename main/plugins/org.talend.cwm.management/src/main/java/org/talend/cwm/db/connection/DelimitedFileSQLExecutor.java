@@ -34,10 +34,11 @@ import org.talend.dataquality.matchmerge.Record;
 import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.FileUtils;
 import org.talend.fileprocess.FileInputDelimited;
-import orgomg.cwm.foundation.softwaredeployment.DataManager;
-import orgomg.cwm.objectmodel.core.ModelElement;
 
 import com.talend.csv.CSVReader;
+
+import orgomg.cwm.foundation.softwaredeployment.DataManager;
+import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
  * DOC yyin class global comment. Detailled comment
@@ -203,7 +204,7 @@ public class DelimitedFileSQLExecutor extends SQLExecutor {
         try {
             File file = iPath.toFile();
             if (!file.exists()) {
-                return new ArrayList<Object[]>();
+                throw new SQLException("The file does not exist"); //$NON-NLS-1$
             }
 
             if (Escape.CSV.equals(delimitedFileconnection.getEscapeType())) {
@@ -214,8 +215,10 @@ public class DelimitedFileSQLExecutor extends SQLExecutor {
             endQuery();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
+            throw new SQLException(e.getMessage(), e);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new SQLException(e.getMessage(), e);
         }
         return getDataFromTable();
     }

@@ -726,7 +726,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
     @Override
     public void refreshPreviewData() {
         if (isValidateRowCount()) {
-            refreshDataFromConnection(true);
+            refreshDataFromConnectionInBackground(true);
         } else {
             MessageDialog.openWarning(null, DefaultMessagesImpl.getString("MatchMasterDetailsPage.NotValidate"), //$NON-NLS-1$
                     DefaultMessagesImpl.getString("MatchMasterDetailsPage.LoadedRowCountError")); //$NON-NLS-1$
@@ -816,11 +816,13 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      * connect to db/file/mdm connection to fetch the newest data, and refresh the table to display.
      */
     protected void refreshDataFromConnection() {
-        refreshDataFromConnection(false);
+        refreshDataFromConnectionInBackground(false);
     }
 
     /**
      * connect to db/file/mdm connection to fetch the newest data, and refresh the table to display.
+     * 
+     * @deprecated replaced by {@link #refreshDataFromConnectionInBackground(boolean)}
      */
     protected void refreshDataFromConnection(boolean refreshDataSample) {
         // execute the query to fetch the data,
@@ -848,6 +850,53 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
             }
         }
 
+    }
+
+    /**
+     * connect to db/file/mdm connection to fetch the newest data, and refresh the table to display.
+     */
+    protected void refreshDataFromConnectionInBackground(boolean refreshDataSample) {
+        final int previewLimit = getPreviewLimit();
+        final boolean showRandomData = this.isShowRandomData();
+        // execute the query to fetch the data,
+        Thread fechDataAndRefreshThread = new Thread() {
+
+            @Override
+            public void run() {
+                final List<Object[]> listOfData = fetchDataForTable(previewLimit, showRandomData);
+                Display.getDefault().asyncExec(new Thread() {
+
+                    @Override
+                    public void run() {
+                        blockingKeySection.setDataInput(listOfData);
+                        if (selectAlgorithmSection.isVSRMode()) {
+                            matchingKeySection.setDataInput(listOfData);
+                        } else {
+                            matchAndSurvivorKeySection.setDataInput(listOfData);
+                        }
+
+                        if (refreshDataSample) {
+                            refreshTable(listOfData);
+                        }
+
+                        // after refresh the table, need to check if it is in select key mode, then need also to set the
+                        // column color
+                        if (isBlockingKeyButtonPushed) {
+                            changeColumnColorByCurrentKeys(blockingKeySection.getSelectedColumnAsBlockKeys(), false);
+                        } else if (isMatchingKeyButtonPushed) {
+                            if (selectAlgorithmSection.isVSRMode()) {
+                                changeColumnColorByCurrentKeys(matchingKeySection.getCurrentMatchKeyColumn(), true);
+                            } else {
+                                changeColumnColorByCurrentKeys(matchAndSurvivorKeySection.getCurrentMatchKeyColumn(), true);
+                            }
+                        }
+                    }
+                });
+
+            }
+
+        };
+        fechDataAndRefreshThread.start();
     }
 
     private void registerEvents(Composite dataSampleComposite) {
@@ -1160,12 +1209,16 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
             return;
         }
         // dispose the data table composite
-        disposeDataTable();
-        // create the data table composite
-        createNatTable(listOfData);
-        redrawWarningLabel();
-        dataTableComp.getParent().layout();
-        dataTableComp.layout();
+        if (dataTableComp != null && !dataTableComp.isDisposed()) {
+            for (Control control : dataTableComp.getChildren()) {
+                control.dispose();
+            }
+            // create the data table composite
+            createNatTable(listOfData);
+            redrawWarningLabel();
+            dataTableComp.getParent().layout();
+            dataTableComp.layout();
+        }
     }
 
     // no need to fetch the data after select data, only do fetch when "refresh" or run analysis
@@ -1363,7 +1416,8 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
 
     /**
      * fetch the data according to the connection type(db,file,mdm)
-     *
+     * 
+     * @deprecated replace by {@link #fetchDataForTable(int, boolean)}
      * @return
      */
     private List<Object[]> fetchDataForTable() {
@@ -1391,24 +1445,47 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
     }
 
     /**
+     * fetch the data according to the connection type(db,file,mdm)
+     *
+     * @return
+     */
+    private List<Object[]> fetchDataForTable(int previewLimit, boolean showRandomData) {
+        // TDQ-8267 when the file is changed, and the columns cleared, the analysis is unloaded
+        if (analysisHandler.getAnalysis().eIsProxy()) {
+            analysisHandler.setAnalysis((Analysis) EObjectHelper.resolveObject(analysisHandler.getAnalysis()));
+            if (analysisHandler.getAnalysis().getContext().getConnection() == null) {
+                // when all columns cleared, keys also need to be cleared.
+                this.clearAllKeys();
+            }
+        }
+        try {
+            DataPreviewHandler dataPreviewHandler = new DataPreviewHandler();
+            isDataAvailable = new ReturnCode();
+            return dataPreviewHandler.createPreviewData(getSelectedColumnsFromHandler(), previewLimit, showRandomData);
+        } catch (SQLException e) {
+            isDataAvailable.setMessage(e.getMessage());
+            isDataAvailable.setOk(false);
+            return new ArrayList<Object[]>();
+        }
+    }
+
+    /**
      * DOC zshen Comment method "getSelectedColumns".
      *
      * @return
      */
     private ModelElement[] getSelectedColumnsFromHandler() {
-        return analysisHandler.getSelectedColumns();
+
+        return resolveModelElements(analysisHandler.getSelectedColumns());
     }
 
-    /**
-     * DOC zshen Comment method "disposeDataTable".
-     */
-
-    private void disposeDataTable() {
-        if (dataTableComp != null && !dataTableComp.isDisposed()) {
-            for (Control control : dataTableComp.getChildren()) {
-                control.dispose();
+    private ModelElement[] resolveModelElements(ModelElement[] selectedColumns) {
+        for (int index = 0; index < selectedColumns.length; index++) {
+            if (selectedColumns[index].eIsProxy()) {
+                selectedColumns[index] = (ModelElement) EObjectHelper.resolveObject(selectedColumns[index]);
             }
         }
+        return selectedColumns;
     }
 
     private ModelElement[] translateSelectedNodeIntoModelElement() {
