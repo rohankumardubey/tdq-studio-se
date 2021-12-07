@@ -704,6 +704,8 @@ public class ColumnSetAnalysisDetailsPage extends AbstractAnalysisMetadataPage i
             ((AnalysisEditor) currentEditor).firePropertyChange(IEditorPart.PROP_DIRTY);
         } else if (PluginConstant.DATAFILTER_PROPERTY.equals(evt.getPropertyName())) {
             this.columnSetAnalysisHandler.setStringDataFilter((String) evt.getNewValue());
+        } else {
+            super.propertyChange(evt);
         }
 
     }

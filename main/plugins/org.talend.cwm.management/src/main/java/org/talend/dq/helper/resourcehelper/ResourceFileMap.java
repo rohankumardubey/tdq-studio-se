@@ -63,7 +63,7 @@ public abstract class ResourceFileMap<T extends ModelElement> {
      * DOC bZhou Comment method "getFileResource".
      *
      * @param file
-     * @return get null if the file is not exist.
+     * @return get null if the file does not exist.
      */
     public synchronized Resource getFileResource(IFile file) {
         if (file.exists()) {

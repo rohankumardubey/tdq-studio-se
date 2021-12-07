@@ -84,6 +84,7 @@ import org.talend.dataquality.record.linkage.ui.composite.utils.ImageLib;
 import org.talend.dataquality.record.linkage.ui.composite.utils.MatchRuleAnlaysisUtils;
 import org.talend.dataquality.record.linkage.utils.MatchAnalysisConstant;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -1037,6 +1038,7 @@ public class DataSampleTable implements TDQObserver<ModelElement[]>, Observerabl
      *
      * @param columns New input columns
      * @param withData where need to reload data with same time
+     * @deprecated replace by {@link #reDrawTableInBackground(ModelElement[],boolean)}
      */
     public void reDrawTable(ModelElement[] columns, boolean withData) {
         if (tablePanel != null && !tablePanel.isDisposed()) {
@@ -1057,6 +1059,51 @@ public class DataSampleTable implements TDQObserver<ModelElement[]>, Observerabl
 
         drawCanvas.setVisible(columns != null && columns.length > 0);
         drawCanvas.layout();
+    }
+
+    /**
+     *
+     * Redraw the table by special columns and reload the data if needed
+     *
+     * @param columns New input columns
+     * @param withData where need to reload data with same time
+     */
+    public void reDrawTableInBackground(ModelElement[] columns, boolean withData) {
+        if (tablePanel != null && !tablePanel.isDisposed()) {
+            tablePanel.dispose();
+        }
+        needLoadData = withData;
+
+        Thread fechDataAndRefreshThread = new Thread() {
+
+            @Override
+            public void run() {
+                List<Object[]> listOfData = null;
+                try {
+                    listOfData = getPreviewData(columns, withData);
+                    isDataAvailable = new ReturnCode();
+                } catch (SQLException e) {
+                    isDataAvailable.setMessage(e.getMessage());
+                    isDataAvailable.setOk(false);
+                    needLoadData = false;
+                }
+                final List<Object[]> finalListOfData = listOfData;
+                Display.getDefault().asyncExec(new Thread() {
+
+                    @Override
+                    public void run() {
+                        if (!drawCanvas.isDisposed()) {
+                            tablePanel.dispose();
+                            createNatTable(finalListOfData, drawCanvas, columns);
+                            drawCanvas.setVisible(columns != null && columns.length > 0);
+                            drawCanvas.layout();
+                            listeners.firePropertyChange(MatchAnalysisConstant.LAZY_LOAD_DATA, true, false);
+                        }
+                    }
+                });
+            }
+        };
+        fechDataAndRefreshThread.start();
     }
 
     /**
@@ -1168,7 +1215,7 @@ public class DataSampleTable implements TDQObserver<ModelElement[]>, Observerabl
      */
     @Override
     public void update(ModelElement[] columns) {
-        reDrawTable(columns, needLoadData);
+        reDrawTableInBackground(columns, needLoadData);
     }
 
     /*
