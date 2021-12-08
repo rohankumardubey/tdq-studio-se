@@ -1097,7 +1097,7 @@ public class DataSampleTable implements TDQObserver<ModelElement[]>, Observerabl
                             createNatTable(finalListOfData, drawCanvas, columns);
                             drawCanvas.setVisible(columns != null && columns.length > 0);
                             drawCanvas.layout();
-                            listeners.firePropertyChange(MatchAnalysisConstant.LAZY_LOAD_DATA, true, false);
+                            listeners.firePropertyChange("", true, false);
                         }
                     }
                 });
