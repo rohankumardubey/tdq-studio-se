@@ -12,9 +12,9 @@
 // ============================================================================
 package org.talend.dq.dbms;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -568,7 +568,7 @@ public class DbmsLanguage {
      *
      * @param query
      * @param n
-     * @return the n first row of the given query
+     * @return the first n row of the given query
      */
     public String getTopNQuery(String query, int n) {
         return query + " LIMIT " + n; //$NON-NLS-1$
