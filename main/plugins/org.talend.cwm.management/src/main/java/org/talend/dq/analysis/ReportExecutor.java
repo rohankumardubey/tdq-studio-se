@@ -17,6 +17,7 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.EList;
 import org.talend.cwm.exception.AnalysisExecutionException;
 import org.talend.cwm.management.i18n.Messages;
@@ -27,6 +28,7 @@ import org.talend.dataquality.reports.AnalysisMap;
 import org.talend.dataquality.reports.TdReport;
 import org.talend.dq.analysis.connpool.TdqAnalysisConnectionPool;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.dq.helper.ProxyRepositoryManager;
 import org.talend.utils.sugars.ReturnCode;
 
 /**
@@ -83,6 +85,10 @@ public class ReportExecutor implements IReportExecutor {
                     strBuilder.append("Report " + report.getName() + ": Analysis " + analysis.getName() + " skipped.\n");
                 }
             }
+        }
+        // TDQ-17188 After execute and save each analysis, commit once for remote project.
+        if (Platform.isRunning()) {
+            ProxyRepositoryManager.getInstance().save();
         }
         // log execution
         if (log.isInfoEnabled()) {
