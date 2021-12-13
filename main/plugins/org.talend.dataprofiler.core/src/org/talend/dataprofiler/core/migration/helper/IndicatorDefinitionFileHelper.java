@@ -150,7 +150,7 @@ public final class IndicatorDefinitionFileHelper {
         if (!e.getLanguage().equals(language)) {
             return false;
         }
-        if (version == null || version[0] == null) {
+        if (version == null || version.length == 0 || version[0] == null) {
             return e.getVersion() == null;
         } else {
             return version[0].equals(e.getVersion());
