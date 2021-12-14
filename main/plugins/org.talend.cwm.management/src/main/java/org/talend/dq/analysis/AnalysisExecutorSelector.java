@@ -23,7 +23,6 @@ import org.talend.dataquality.analysis.AnalysisType;
 import org.talend.dataquality.analysis.ExecutionLanguage;
 import org.talend.dataquality.helpers.AnalysisHelper;
 import org.talend.dataquality.properties.TDQAnalysisItem;
-import org.talend.dq.helper.resourcehelper.AnaResourceFileHelper;
 import org.talend.dq.writer.impl.AnalysisWriter;
 import org.talend.dq.writer.impl.ElementWriterFactory;
 import org.talend.utils.sugars.ReturnCode;
@@ -204,7 +203,8 @@ public final class AnalysisExecutorSelector {
                 Display.getDefault().asyncExec(new Runnable() {
 
                     public void run() {
-                        AnaResourceFileHelper.getInstance().save(analysis);
+                        AnalysisWriter writer = ElementWriterFactory.getInstance().createAnalysisWrite();
+                        writer.save(analysis, Boolean.FALSE);
                     }
                 });
             }
