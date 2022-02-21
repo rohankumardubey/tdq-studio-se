@@ -149,19 +149,24 @@ public final class ConnectionUtils {
      */
     public static boolean checkConnection(DataManager datamanager, String analysisName) {
         Connection analysisDataProvider = ConnectionUtils.getConnectionFromDatamanager(datamanager);
+        return checkConnection(analysisDataProvider, analysisName);
+    }
+
+    public static boolean checkConnection(Connection analysisDataProvider, String analysisName) {
         ReturnCode connectionAvailable = isConnectionAvailable(analysisDataProvider);
         if (!connectionAvailable.isOk()) {
             log.error(connectionAvailable.getMessage());
-            MessageDialogWithToggle.openError(Display.getCurrent().getActiveShell(),
-                    Messages.getString("ConnectionUtils.checkConnFailTitle"),//$NON-NLS-1$
-                    Messages.getString("ConnectionUtils.checkConnFailMsg", analysisName));//$NON-NLS-1$
+            MessageDialogWithToggle
+                    .openError(Display.getCurrent().getActiveShell(),
+                            Messages.getString("ConnectionUtils.checkConnFailTitle"), //$NON-NLS-1$
+                            Messages.getString("ConnectionUtils.checkConnFailMsg", analysisName));//$NON-NLS-1$
             return false;
         }
         return true;
     }
 
     /**
-     * This method is used to check conectiton is avalible for analysis or report ,when analysis or report runs.
+     * This method is used to check connection is available for analysis or report ,when analysis or report runs.
      *
      * @param analysisDataProvider
      * @return
@@ -202,7 +207,6 @@ public final class ConnectionUtils {
             }
         }
 
-        // MOD klliu check file connection is available
         if (analysisDataProvider instanceof FileConnection) {
             FileConnection fileConn = (FileConnection) analysisDataProvider;
             // ADD msjian TDQ-4559 2012-2-28: when the fileconnection is context mode, getOriginalFileConnection.
@@ -232,10 +236,6 @@ public final class ConnectionUtils {
             }
             return returnCode;
         }
-        // ~
-        Properties props = new Properties();
-        props.put(TaggedValueHelper.USER, JavaSqlFactory.getUsername(analysisDataProvider));
-        props.put(TaggedValueHelper.PASSWORD, JavaSqlFactory.getPassword(analysisDataProvider));
 
         if (analysisDataProvider instanceof DatabaseConnection) {
             // MOD qiongli TDQ-11507,for GeneralJdbc,should check connection too after validation jar and jdbc driver .
@@ -1247,15 +1247,9 @@ public final class ConnectionUtils {
         ProductVersion version = null;
 
         Connection conn = (Connection) connection.getCurrentConnection();
-        Properties props = new Properties();
         String userName = JavaSqlFactory.getUsername(conn);
         String password = JavaSqlFactory.getPassword(conn);
-        props.put(TaggedValueHelper.USER, userName);
-        props.put(TaggedValueHelper.PASSWORD, password);
         String dbType = connection.getDbType();
-        if (dbType != null) {
-            props.put(TaggedValueHelper.DBTYPE, dbType);
-        }
 
         java.sql.Connection createConnection = null;
         try {

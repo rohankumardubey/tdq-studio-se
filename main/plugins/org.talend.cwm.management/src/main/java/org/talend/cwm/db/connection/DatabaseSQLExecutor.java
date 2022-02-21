@@ -33,6 +33,8 @@ import org.talend.dataquality.matchmerge.Record;
 import org.talend.dataquality.record.linkage.iterator.ResultSetIterator;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
+import org.talend.dq.helper.ContextHelper;
+import org.talend.dq.helper.EObjectHelper;
 import org.talend.utils.sql.ResultSetUtils;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
@@ -67,7 +69,9 @@ public class DatabaseSQLExecutor extends SQLExecutor {
      * @throws SQLException
      */
     private TypedReturnCode<java.sql.Connection> getSQLConnection(DataManager connection) throws SQLException {
-        TypedReturnCode<java.sql.Connection> sqlconnection = JavaSqlFactory.createConnection((Connection) connection);
+        org.talend.core.model.metadata.builder.connection.Connection copyConnection =
+                ContextHelper.getPromptContextValuedConnection((Connection) connection);
+        TypedReturnCode<java.sql.Connection> sqlconnection = JavaSqlFactory.createConnection(copyConnection);
         if (!sqlconnection.isOk()) {
             throw new SQLException(sqlconnection.getMessage());
         }

@@ -45,6 +45,7 @@ import org.talend.dq.analysis.memory.AnalysisThreadMemoryChangeNotifier;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.AnalysisExecutorHelper;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.helper.UDIHelper;
 import org.talend.dq.indicators.Evaluator;
@@ -427,7 +428,9 @@ public abstract class AnalysisExecutor implements IAnalysisExecutor {
             return rc;
         } else {
             // create other type connection
-            TypedReturnCode<java.sql.Connection> connection = JavaSqlFactory.createConnection(dataprovider);
+            org.talend.core.model.metadata.builder.connection.Connection copyConnection =
+                    ContextHelper.getPromptContextValuedConnection(dataprovider);
+            TypedReturnCode<java.sql.Connection> connection = JavaSqlFactory.createConnection(copyConnection);
             if (!connection.isOk()) {
                 rc.setReturnCode(connection.getMessage(), false);
                 return rc;

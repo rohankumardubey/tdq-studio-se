@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
@@ -28,6 +29,8 @@ import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.context.JobContextManager;
 import org.talend.core.model.context.link.ContextLinkService;
 import org.talend.core.model.context.link.ItemContextLink;
+import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.properties.Item;
@@ -82,7 +85,13 @@ public final class ContextHelper {
                         for (Object obj : ct.getContextParameter()) {
                             ContextParameterType cpt = (ContextParameterType) obj;
                             if (cpt.getName().equals(contextName)) {
-                                value = cpt.getRawValue();
+                                if (cpt.isPromptNeeded() && Platform.isRunning()) {
+                                    value = JavaSqlFactory
+                                            .getReportPromptConValueFromCache(contextGroupName,
+                                                    cpt.getRepositoryContextId(), contextVarName);
+                                } else {
+                                    value = cpt.getRawValue();
+                                }
                                 findContext = true;
                                 break;
                             }
@@ -161,7 +170,14 @@ public final class ContextHelper {
             if (contextType.getName().equals(contextGroupName)) {
                 for (Object obj : contextType.getContextParameter()) {
                     ContextParameterType cpt = (ContextParameterType) obj;
-                    contextValues.put(ContextParameterUtils.getNewScriptCode(cpt.getName(), LANGUAGE), cpt.getRawValue());
+                    String contextVarName = ContextParameterUtils.getNewScriptCode(cpt.getName(), LANGUAGE);
+                    String value = cpt.getRawValue();
+                    if (cpt.isPromptNeeded() && Platform.isRunning()) {
+                        value = JavaSqlFactory
+                                .getReportPromptConValueFromCache(contextGroupName, cpt.getRepositoryContextId(),
+                                        contextVarName);
+                    }
+                    contextValues.put(contextVarName, value);
                 }
                 break;
             }
@@ -301,8 +317,27 @@ public final class ContextHelper {
     public static String getUrlWithoutContext(String contextualizeUrl, Map<String, String> contextValues) {
         String result = contextualizeUrl;
         for (String key : contextValues.keySet()) {
+            // msjian: fix a wrong replacement bug when have two keys as follow(one is a part of another):
+            // for example: context.mysql_context_Port and context.mysql_context_Port_dataMart.
+            // jdbc:mysql://context.rep_Server:context.rep_Port/context.rep_Database?context.rep_AdditionalParams
+            // host
+            result = StringUtils.replace(result, "//" + key + ":", "//" + contextValues.get(key) + ":"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            result = StringUtils.replace(result, "@" + key + ":", "@" + contextValues.get(key) + ":"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            // port
+            result = StringUtils.replace(result, ":" + key + "/", ":" + contextValues.get(key) + "/"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            result = StringUtils.replace(result, ":" + key + ":", ":" + contextValues.get(key) + ":"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            // Database
+            result = StringUtils.replace(result, "/" + key + "?", "/" + contextValues.get(key) + "?"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+
+            // AdditionalParams
+            result = StringUtils.replace(result, "?" + key, "?" + contextValues.get(key)); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+
+        // use normal replace to handle the left. for example: when oracle sid url
+        for (String key : contextValues.keySet()) {
             result = StringUtils.replace(result, key, contextValues.get(key));
         }
+
         return result;
     }
 
@@ -448,6 +483,12 @@ public final class ContextHelper {
     private static Map<String, String> compareContextParamName(Item item, ItemContextLink itemContextLink) {
         List<ContextType> contextTypeList = getAllContextType(item);
         return ContextUtils.compareContextParamName(contextTypeList, itemContextLink);
+    }
+
+    public static Connection getPromptContextValuedConnection(Connection connection) {
+        Connection copyConnection = EObjectHelper.deepCopy(connection);
+        JavaSqlFactory.setPromptContextValues(copyConnection);
+        return copyConnection;
     }
 
 }

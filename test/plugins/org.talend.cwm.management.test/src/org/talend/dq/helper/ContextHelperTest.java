@@ -13,7 +13,9 @@
 package org.talend.dq.helper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.talend.cwm.helper.TaggedValueHelper;
@@ -221,19 +223,104 @@ public class ContextHelperTest {
 
         // TDQ-18578: fix a StringIndexOutOfBoundsException
         varName = ""; //$NON-NLS-1$
-        Assert.assertEquals("", ContextHelper.removeContextPreffix(varName));
+        Assert.assertEquals("", ContextHelper.removeContextPreffix(varName)); //$NON-NLS-1$
 
         varName = "        "; //$NON-NLS-1$
-        Assert.assertEquals("        ", ContextHelper.removeContextPreffix(varName));
+        Assert.assertEquals("        ", ContextHelper.removeContextPreffix(varName)); //$NON-NLS-1$
 
         varName = "varName"; //$NON-NLS-1$
-        Assert.assertEquals("varName", ContextHelper.removeContextPreffix(varName));
+        Assert.assertEquals("varName", ContextHelper.removeContextPreffix(varName)); //$NON-NLS-1$
 
         varName = "context.varName"; //$NON-NLS-1$
-        Assert.assertEquals("varName", ContextHelper.removeContextPreffix(varName));
+        Assert.assertEquals("varName", ContextHelper.removeContextPreffix(varName)); //$NON-NLS-1$
 
         varName = "contextvarName"; //$NON-NLS-1$
-        Assert.assertEquals("contextvarName", ContextHelper.removeContextPreffix(varName));
+        Assert.assertEquals("contextvarName", ContextHelper.removeContextPreffix(varName)); //$NON-NLS-1$
+
+    }
+
+    /**
+     * Test method for {@link org.talend.dq.helper.ContextHelper#getUrlWithoutContext(java.lang.String,
+     * java.util.Map<String, String>)}.
+     */
+    @Test
+    public void testGetUrlWithoutContext() {
+        String contextualizeUrl =
+                "jdbc:mysql://context.mysql_context_Server_dataMart:context.mysql_context_Port_dataMart/talend_dq?characterEncoding=UTF8"; //$NON-NLS-1$
+
+        String expectResultUrl = "jdbc:mysql://10.67.8.81:3306/talend_dq?characterEncoding=UTF8"; //$NON-NLS-1$
+        Map<String, String> contextValues = new HashMap<String, String>();
+        contextValues.put("context.mysql_context_Login", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Server_dataMart", "10.67.8.81"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Password_dataMart", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Password", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Database", "tbi"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues
+                .put("context.mysql_context_AdditionalParams", //$NON-NLS-1$
+                        "noDatetimeStringSync=true&enabledTLSProtocols=TLSv1.2,TLSv1.1,TLSv1"); //$NON-NLS-1$
+        contextValues.put("context.mysql_context_Database_dataMart", "tbi"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Login_dataMart", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Port", "3308"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.mysql_context_Server", "10.67.8.78"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues
+                .put("context.mysql_context_AdditionalParams_dataMart", //$NON-NLS-1$
+                        "noDatetimeStringSync=true&enabledTLSProtocols=TLSv1.2,TLSv1.1,TLSv1"); //$NON-NLS-1$
+        contextValues.put("context.mysql_context_Port_dataMart", "3306"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        String urlWithoutContext = ContextHelper.getUrlWithoutContext(contextualizeUrl, contextValues);
+        Assert.assertEquals(expectResultUrl, urlWithoutContext);
+
+        // jdbc:mysql://context.rep_Server:context.rep_Port/context.rep_Database?context.rep_AdditionalParams
+
+    }
+
+    /**
+     * Test method for {@link org.talend.dq.helper.ContextHelper#getUrlWithoutContext(java.lang.String,
+     * java.util.Map<String, String>)}.
+     */
+    @Test
+    public void testGetUrlWithoutContext_2() {
+        String contextualizeUrl =
+                "jdbc:mysql://context.rep_Server:context.rep_Port/context.rep_Database?context.rep_AdditionalParams"; //$NON-NLS-1$
+
+        String expectResultUrl = "jdbc:mysql://10.67.8.76:3306/talend_dq888context?characterEncoding=UTF8"; //$NON-NLS-1$
+        Map<String, String> contextValues = new HashMap<String, String>();
+        contextValues.put("context.rep_Login", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.rep_Database", "talend_dq888context"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.rep_Password", "root"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.rep_Server", "10.67.8.76"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.rep_AdditionalParams", "characterEncoding=UTF8"); //$NON-NLS-1$ //$NON-NLS-2$
+        contextValues.put("context.rep_Port", "3306"); //$NON-NLS-1$ //$NON-NLS-2$
+
+        String urlWithoutContext = ContextHelper.getUrlWithoutContext(contextualizeUrl, contextValues);
+        Assert.assertEquals(expectResultUrl, urlWithoutContext);
+
+    }
+
+    /**
+     * Test method for {@link org.talend.dq.helper.ContextHelper#getUrlWithoutContext(java.lang.String,
+     * java.util.Map<String, String>)}.
+     */
+    @Test
+    public void testGetUrlWithoutContext_3Oracle() {
+        String contextualizeUrl =
+                "jdbc:oracle:thin:@context.TdqContext_Server:context.TdqContext_Port:context.TdqContext_Database"; //$NON-NLS-1$
+
+        String expectResultUrl = "jdbc:oracle:thin:@192.168.31.20:1521:xe"; //$NON-NLS-1$
+        Map<String, String> contextValues = new HashMap<String, String>();
+        contextValues.put("context.TdqContext_Schema", "SYSTEM");
+        contextValues.put("context.TdqContext_OutputFolder", "");
+        contextValues.put("context.TdqContext_Warehouse", "");
+        contextValues.put("context.TdqContext_Port", "1521");
+        contextValues.put("context.TdqContext_AdditionalParams", "");
+        contextValues.put("context.TdqContext_Server", "192.168.31.20");
+        contextValues.put("context.TdqContext_LogoFile", "");
+        contextValues.put("context.TdqContext_Password", "oracle");
+        contextValues.put("context.TdqContext_Database", "xe");
+        contextValues.put("context.TdqContext_Login", "system");
+
+        String urlWithoutContext = ContextHelper.getUrlWithoutContext(contextualizeUrl, contextValues);
+        Assert.assertEquals(expectResultUrl, urlWithoutContext);
 
     }
 }

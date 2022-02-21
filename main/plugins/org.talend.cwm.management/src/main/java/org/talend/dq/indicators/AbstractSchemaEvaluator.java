@@ -45,6 +45,7 @@ import org.talend.dataquality.indicators.schema.TableIndicator;
 import org.talend.dataquality.indicators.schema.ViewIndicator;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.metadata.managment.model.MetadataFillFactory;
 import org.talend.utils.sugars.ReturnCode;
@@ -308,7 +309,9 @@ public abstract class AbstractSchemaEvaluator<T> extends Evaluator<T> {
             log.error(Messages.getString("AbstractSchemaEvaluator.ReloadProblem", connClosed.getMessage())); //$NON-NLS-1$
         }
         Connection dp = this.getDataManager();
-        TypedReturnCode<java.sql.Connection> conn = JavaSqlFactory.createConnection(dp);
+        org.talend.core.model.metadata.builder.connection.Connection copyConnection =
+                ContextHelper.getPromptContextValuedConnection(dp);
+        TypedReturnCode<java.sql.Connection> conn = JavaSqlFactory.createConnection(copyConnection);
         if (!conn.isOk()) {
             log.error(conn.getMessage());
             return;
