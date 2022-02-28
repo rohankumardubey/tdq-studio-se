@@ -320,7 +320,34 @@ public final class ContextViewHelper {
             jobParam.setContext(jobContext);
             jobParam.setComment(repoParam.getComment());
             jobParam.setPrompt(repoParam.getPrompt());
+            jobParam.setPromptNeeded(repoParam.isPromptNeeded());
             jobParam.setSource(repositoryContextId);
+            jobParam.setType(repoParam.getType());
+            jobParam.setValue(repoParam.getValue());
+            jobParam.setInternalId(repoParam.getInternalId());
+            jobContext.getContextParameterList().add(jobParam);
+        }
+        return jobContext;
+    }
+
+    public static IContext convert2IContextForReport(ContextType contextType) {
+        if (contextType == null) {
+            return null;
+        }
+        List<ContextParameterType> repoParams = contextType.getContextParameter();
+        if (repoParams == null || repoParams.isEmpty()) {
+            return null;
+        }
+
+        IContext jobContext = new JobContext(contextType.getName());
+        for (ContextParameterType repoParam : repoParams) {
+            IContextParameter jobParam = new JobContextParameter();
+            jobParam.setName(repoParam.getName());
+            jobParam.setContext(jobContext);
+            jobParam.setComment(repoParam.getComment());
+            jobParam.setPrompt(repoParam.getPrompt());
+            jobParam.setPromptNeeded(repoParam.isPromptNeeded());
+            jobParam.setSource(repoParam.getRepositoryContextId());
             jobParam.setType(repoParam.getType());
             jobParam.setValue(repoParam.getValue());
             jobParam.setInternalId(repoParam.getInternalId());

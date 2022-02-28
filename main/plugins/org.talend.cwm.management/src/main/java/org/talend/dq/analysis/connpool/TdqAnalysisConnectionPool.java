@@ -34,6 +34,7 @@ import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dq.analysis.AnalysisHandler;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.metadata.managment.connection.manager.HiveConnectionManager;
 import org.talend.metadata.managment.hive.handler.HiveConnectionHandler;
@@ -242,7 +243,10 @@ public class TdqAnalysisConnectionPool {
 
         TypedReturnCode<Connection> trcConn = null;
 
-        IMetadataConnection metadataConnection = ConvertionHelper.convert(dataprovider);
+        org.talend.core.model.metadata.builder.connection.Connection copyConnection =
+                ContextHelper.getPromptContextValuedConnection(dataprovider);
+
+        IMetadataConnection metadataConnection = ConvertionHelper.convert(copyConnection);
 
         if (metadataConnection != null && EDatabaseTypeName.HIVE.getXmlName().equalsIgnoreCase(metadataConnection.getDbType())) {
             trcConn = new TypedReturnCode<Connection>(false);
@@ -267,7 +271,7 @@ public class TdqAnalysisConnectionPool {
                 log.error(e);
             }
         } else {
-            trcConn = JavaSqlFactory.createConnection(dataprovider);
+            trcConn = JavaSqlFactory.createConnection(copyConnection);
         }
         if (trcConn != null && trcConn.isOk()) {
             conn = trcConn.getObject();

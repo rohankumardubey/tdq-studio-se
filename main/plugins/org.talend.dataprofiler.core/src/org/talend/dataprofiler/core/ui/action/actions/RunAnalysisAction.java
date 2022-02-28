@@ -20,9 +20,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -39,9 +41,14 @@ import org.eclipse.ui.cheatsheets.ICheatSheetManager;
 import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
+import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.metadata.builder.connection.DelimitedFileConnection;
+import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
+import org.talend.core.model.process.IContext;
+import org.talend.core.model.process.IContextParameter;
+import org.talend.core.model.properties.ContextItem;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.cwm.compare.exception.ReloadCompareException;
 import org.talend.cwm.compare.factory.ComparisonLevelFactory;
@@ -51,6 +58,7 @@ import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.exception.ExceptionFactory;
 import org.talend.dataprofiler.core.exception.ExceptionHandler;
+import org.talend.dataprofiler.core.helper.ContextViewHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.IRuningStatusListener;
 import org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage;
@@ -69,9 +77,12 @@ import org.talend.dataquality.analysis.AnalysisType;
 import org.talend.dataquality.analysis.ExecutionLanguage;
 import org.talend.dataquality.helpers.AnalysisHelper;
 import org.talend.dataquality.properties.TDQAnalysisItem;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.dq.analysis.AnalysisExecutorSelector;
 import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.connpool.TdqAnalysisConnectionPool;
+import org.talend.dq.helper.EObjectHelper;
+import org.talend.dataprofiler.core.ui.editor.composite.PromptDialog;
 import org.talend.dq.helper.ProxyRepositoryManager;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.repository.model.RepositoryNode;
@@ -168,7 +179,7 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
             // to do validate after save.
             validateAnalysis(anaItem);
 
-            if (!isConnectedAvailable(anaItem)) {
+            if (!isConnectionAvailable(anaItem)) {
                 return;
             }
 
@@ -275,6 +286,7 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
                             }
 
                         });
+                        JavaSqlFactory.clearPromptContextCache();
                     }
                     displayResultStatus(executed, anaItem);
                     // TODO move this code to the right place
@@ -396,12 +408,60 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
         }
     }
 
+    public boolean isConnectionAvailable(DataManager datamanager, String anaName) {
+        Connection copyConnection = prepareConection(datamanager);
+        if (copyConnection == null) {
+            return false;
+        }
+        return ConnectionUtils.checkConnection(copyConnection, anaName);
+    }
+
+    /**
+     * DOC msjian Comment method "prepareConection".
+     * @param datamanager
+     * @return
+     */
+    public static Connection prepareConection(DataManager datamanager) {
+        // TDQ-19889 msjian: check whether context confirmation needed popup,
+        // Enabling the prompt to context variables
+        Connection connection = ConnectionUtils.getConnectionFromDatamanager(datamanager);
+        if (!Platform.isRunning() || !connection.isContextMode()) {
+            return connection;
+        }
+        Connection copyConnection = EObjectHelper.deepCopy(connection);
+        JavaSqlFactory.haveSetPromptContextVars = false;
+        ContextItem contextItem = ContextUtils.getContextItemById2(connection.getContextId());
+        for (Object context : contextItem.getContext()) {
+            IContext jobContext =
+                    ContextViewHelper.convert2IContext((ContextType) context, contextItem.getProperty().getId());
+            // only when have context
+            if (jobContext != null) {
+                boolean promptConfirmLauch =
+                        promptConfirmLauch(PlatformUI.getWorkbench().getDisplay().getActiveShell(), jobContext);
+                if (!promptConfirmLauch) {
+                    return null;
+                } else {
+                    // save the input prompt context values to cache
+                    for (IContextParameter param : jobContext.getContextParameterList()) {
+                        JavaSqlFactory.savePromptConVars2Cache(connection, param);
+                    }
+
+                    // set the input values to connection
+                    JavaSqlFactory.setPromptContextValues(copyConnection);
+                }
+            }
+        }
+
+        JavaSqlFactory.haveSetPromptContextVars = true;
+        return copyConnection;
+    }
+
     /**
      * check whether the connection of analysis is available.
      *
      * @return true when the connection is well connected
      */
-    private boolean isConnectedAvailable(TDQAnalysisItem runItem) {
+    private boolean isConnectionAvailable(TDQAnalysisItem runItem) {
         DataManager datamanager = runItem.getAnalysis().getContext().getConnection();
         if (datamanager == null) {
             log.error(DefaultMessagesImpl.getString("ColumnMasterDetailsPage.NoColumnAssigned", runItem.getAnalysis().getName())); //$NON-NLS-1$
@@ -410,7 +470,7 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
                     DefaultMessagesImpl.getString("ColumnMasterDetailsPage.NoColumnAssigned", runItem.getAnalysis().getName()));//$NON-NLS-1$
             return false;
         }
-        return ConnectionUtils.checkConnection(datamanager, runItem.getAnalysis().getName());
+        return isConnectionAvailable(datamanager, runItem.getAnalysis().getName());
     }
 
     /**
@@ -512,4 +572,37 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
         }
     }
 
+    public static boolean promptConfirmLauch(Shell shell, IContext context) {
+        boolean continueLaunch = true;
+
+        int nbValues = 0;
+        Assert.isNotNull(context);
+        // Prompt for context values ?
+        for (IContextParameter parameter : context.getContextParameterList()) {
+            if (parameter.isPromptNeeded()) {
+                nbValues++;
+            }
+        }
+        if (nbValues > 0) {
+            IContext contextCopy = context.clone();
+            PromptDialog promptDialog = new PromptDialog(shell, contextCopy);
+            if (promptDialog.open() == PromptDialog.OK) {
+                for (IContextParameter param : context.getContextParameterList()) {
+                    boolean found = false;
+                    IContextParameter paramCopy = null;
+                    for (int i = 0; i < contextCopy.getContextParameterList().size() & !found; i++) {
+                        paramCopy = contextCopy.getContextParameterList().get(i);
+                        if (param.getName().equals(paramCopy.getName())) {
+                            // param.setValueList(paramCopy.getValueList());
+                            param.setInternalValue(paramCopy.getValue());
+                            found = true;
+                        }
+                    }
+                }
+            } else {
+                continueLaunch = false;
+            }
+        }
+        return continueLaunch;
+    }
 }
