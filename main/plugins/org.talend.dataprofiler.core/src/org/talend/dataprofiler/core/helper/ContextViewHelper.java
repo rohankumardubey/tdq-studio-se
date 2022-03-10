@@ -308,27 +308,7 @@ public final class ContextViewHelper {
         return newCtx;
     }
 
-    public static IContext convert2IContext(ContextType contextType, String repositoryContextId) {
-        if (contextType == null) {
-            return null;
-        }
-        IContext jobContext = new JobContext(contextType.getName());
-        List<ContextParameterType> repoParams = contextType.getContextParameter();
-        for (ContextParameterType repoParam : repoParams) {
-            IContextParameter jobParam = new JobContextParameter();
-            jobParam.setName(repoParam.getName());
-            jobParam.setContext(jobContext);
-            jobParam.setComment(repoParam.getComment());
-            jobParam.setPrompt(repoParam.getPrompt());
-            jobParam.setPromptNeeded(repoParam.isPromptNeeded());
-            jobParam.setSource(repositoryContextId);
-            jobParam.setType(repoParam.getType());
-            jobParam.setValue(repoParam.getValue());
-            jobParam.setInternalId(repoParam.getInternalId());
-            jobContext.getContextParameterList().add(jobParam);
-        }
-        return jobContext;
-    }
+
 
     public static IContext convert2IContextForReport(ContextType contextType) {
         if (contextType == null) {

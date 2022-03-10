@@ -27,11 +27,13 @@ import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.BusinessException;
 import org.talend.commons.utils.platform.PluginChecker;
 import org.talend.core.ITDQRepositoryService;
+import org.talend.core.model.metadata.builder.connection.DelimitedFileConnection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
 import org.talend.cwm.db.connection.DatabaseSQLExecutor;
 import org.talend.cwm.db.connection.DelimitedFileSQLExecutor;
 import org.talend.cwm.db.connection.ISQLExecutor;
 import org.talend.cwm.db.connection.SQLExecutor;
+import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.cwm.relational.TdColumn;
@@ -45,10 +47,13 @@ import org.talend.dataquality.record.linkage.grouping.MatchGroupResultConsumer;
 import org.talend.dq.analysis.match.BlockAndMatchManager;
 import org.talend.dq.analysis.memory.AnalysisThreadMemoryChangeNotifier;
 import org.talend.dq.helper.AnalysisExecutorHelper;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.StoreOnDiskUtils;
 import org.talend.dq.indicators.Evaluator;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
+
+import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -147,10 +152,17 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
         recordMatchingIndicator.reset();
 
         MatchGroupResultConsumer matchResultConsumer = createMatchGroupResultConsumer(recordMatchingIndicator);
+        DataManager connection = analysis.getContext().getConnection();
+        // TDQ-19889 msjian: set Prompt Context Values to connection
+        org.talend.core.model.metadata.builder.connection.Connection con = SwitchHelpers.CONNECTION_SWITCH
+                .doSwitch(connection);
+        DelimitedFileConnection copyConnection =
+                (DelimitedFileConnection) ContextHelper.getPromptContextValuedConnection(con);
+
         if (sqlExecutor.isStoreOnDisk()) {
             // need to execute the query
             try {
-                sqlExecutor.executeQuery(analysis.getContext().getConnection(), analysis.getContext().getAnalysedElements());
+                sqlExecutor.executeQuery(copyConnection, analysis.getContext().getAnalysedElements());
             } catch (SQLException e) {
                 log.error(e, e);
                 rc.setOk(Boolean.FALSE);
@@ -175,7 +187,7 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
         } else {
             // Added TDQ-9320 , use the result set iterator to replace the list of result in the memory.
             try {
-                Iterator<Record> resultSetIterator = sqlExecutor.getResultSetIterator(analysis.getContext().getConnection(),
+                Iterator<Record> resultSetIterator = sqlExecutor.getResultSetIterator(copyConnection,
                         anlayzedElements);
                 BlockAndMatchManager bAndmManager = new BlockAndMatchManager(resultSetIterator, matchResultConsumer, columnMap,
                         recordMatchingIndicator, blockKeyIndicator);

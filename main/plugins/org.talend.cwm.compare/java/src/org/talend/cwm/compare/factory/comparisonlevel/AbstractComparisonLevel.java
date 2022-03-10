@@ -62,6 +62,7 @@ import org.talend.cwm.compare.merge.DQReferenceMerger;
 import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.cwm.relational.TdColumn;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.nodes.foldernode.AbstractDatabaseFolderNode;
 import org.talend.dq.writer.EMFSharedResources;
@@ -219,7 +220,10 @@ public abstract class AbstractComparisonLevel implements IComparisonLevel {
         if (!returnProvider.isOk()) {
             throw new ReloadCompareException(returnProvider.getMessage());
         }
-        tempReloadProvider = upperCaseConnection(returnProvider.getObject());
+        // TDQ-19889 msjian: set prompt context value to connection
+        Connection con = ContextHelper.getPromptContextValuedConnection(returnProvider.getObject());
+        tempReloadProvider = upperCaseConnection(con);
+
         tempReloadProvider.setComponent(oldDataProvider.getComponent());
         // MOD mzhao bug:9012 2009-09-08
         ElementWriterFactory.getInstance().createDataProviderWriter()

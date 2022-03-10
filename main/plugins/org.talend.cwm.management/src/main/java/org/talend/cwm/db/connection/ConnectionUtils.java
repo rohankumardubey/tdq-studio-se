@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.io.FilesUtils;
@@ -44,6 +45,7 @@ import org.talend.core.IRepositoryContextService;
 import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.database.conn.ConnParameterKeys;
 import org.talend.core.database.conn.version.EDatabaseVersion4Drivers;
+import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.metadata.IMetadataConnection;
 import org.talend.core.model.metadata.builder.ConvertionHelper;
 import org.talend.core.model.metadata.builder.connection.Connection;
@@ -56,6 +58,9 @@ import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.metadata.builder.database.PluginConstant;
 import org.talend.core.model.metadata.builder.database.dburl.SupportDBUrlType;
 import org.talend.core.model.metadata.connection.hive.HiveModeInfo;
+import org.talend.core.model.process.IContext;
+import org.talend.core.model.process.IContextParameter;
+import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.properties.DatabaseConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
@@ -78,14 +83,17 @@ import org.talend.cwm.relational.RelationalFactory;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.cwm.relational.TdSqlDataType;
 import org.talend.dataquality.helpers.MetadataHelper;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.dq.CWMPlugin;
 import org.talend.dq.analysis.parameters.DBConnectionParameter;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.helper.PropertyHelper;
 import org.talend.dq.writer.impl.ElementWriterFactory;
 import org.talend.metadata.managment.connection.manager.HiveConnectionManager;
 import org.talend.metadata.managment.model.MetadataFillFactory;
 import org.talend.metadata.managment.repository.ManagerConnection;
+import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
 import org.talend.metadata.managment.ui.utils.DBConnectionContextUtils;
 import org.talend.metadata.managment.utils.DatabaseConstant;
 import org.talend.utils.ProductVersion;
@@ -1406,4 +1414,53 @@ public final class ConnectionUtils {
         }
         return dbService;
     }
+
+    /**
+     * DOC msjian Comment method "prepareConection".
+     * 
+     * @param datamanager
+     * @return
+     */
+    public static Connection prepareConection(DataManager datamanager) {
+        Connection connection = ConnectionUtils.getConnectionFromDatamanager(datamanager);
+        return prepareConection(connection);
+    }
+
+    public static Connection prepareConection(Connection connection) {
+        // TDQ-19889 msjian: check whether context confirmation needed popup,
+        // Enabling the prompt to context variables
+        if (!Platform.isRunning() || !connection.isContextMode()) {
+            return connection;
+        }
+        Connection copyConnection = EObjectHelper.deepCopy(connection);
+        JavaSqlFactory.haveSetPromptContextVars = false;
+        ContextItem contextItem = ContextUtils.getContextItemById2(connection.getContextId());
+        // only consider the connection currently used context
+        ContextType contextType = ContextUtils
+                .getContextTypeByName(contextItem.getContext(), connection.getContextName(),
+                        contextItem.getDefaultContext());
+        IContext jobContext =
+                ContextHelper.convert2IContext(contextType, contextItem.getProperty().getId());
+        // only when have context
+        if (jobContext != null) {
+            boolean promptConfirmLauch =
+                    ConnectionContextHelper.promptConfirmLauch(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+                            jobContext);
+            if (!promptConfirmLauch) {
+                return null;
+            } else {
+                // save the input prompt context values to cache
+                for (IContextParameter param : jobContext.getContextParameterList()) {
+                    JavaSqlFactory.savePromptConVars2Cache(connection, param);
+                }
+
+                // set the input values to connection
+                JavaSqlFactory.setPromptContextValues(copyConnection);
+            }
+        }
+
+        JavaSqlFactory.haveSetPromptContextVars = true;
+        return copyConnection;
+    }
+
 }
