@@ -21,6 +21,7 @@ import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.ISubRepositoryObject;
+import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
@@ -60,7 +61,8 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
     }
 
     public void setConnection(Connection con) {
-        this.connection = con;
+        // TDQ-19889 msjian: Enabling the prompt to context variables
+        this.connection = ConnectionUtils.prepareConection(con);
     }
 
     public Connection getConnection() {
@@ -82,6 +84,9 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
                 connection = ((ConnectionItem) theItem).getConnection();
             }
         }
+        
+        // TDQ-19889 msjian: Enabling the prompt to context variables
+        connection = ConnectionUtils.prepareConection(connection);
     }
 
     /**

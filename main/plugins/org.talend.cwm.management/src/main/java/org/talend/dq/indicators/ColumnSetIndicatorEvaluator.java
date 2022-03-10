@@ -30,6 +30,7 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.EMap;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DelimitedFileConnection;
 import org.talend.core.model.metadata.builder.connection.Escape;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
@@ -38,6 +39,7 @@ import org.talend.cwm.helper.CatalogHelper;
 import org.talend.cwm.helper.ColumnHelper;
 import org.talend.cwm.helper.ModelElementHelper;
 import org.talend.cwm.helper.SchemaHelper;
+import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.cwm.xml.TdXmlSchema;
 import org.talend.dataquality.PluginConstant;
@@ -55,6 +57,7 @@ import org.talend.dataquality.indicators.columnset.AllMatchIndicator;
 import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
 import org.talend.dataquality.indicators.columnset.SimpleStatIndicator;
 import org.talend.dq.helper.AnalysisExecutorHelper;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.FileUtils;
 import org.talend.fileprocess.FileInputDelimited;
 import org.talend.utils.sql.ResultSetUtils;
@@ -63,6 +66,7 @@ import org.talend.utils.sugars.ReturnCode;
 
 import com.talend.csv.CSVReader;
 
+import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.resource.relational.ColumnSet;
@@ -207,7 +211,13 @@ public class ColumnSetIndicatorEvaluator extends Evaluator<String> {
      * @return
      */
     private ReturnCode evaluateByDelimitedFile(String sqlStatement, ReturnCode returnCode) {
-        DelimitedFileConnection fileConnection = (DelimitedFileConnection) analysis.getContext().getConnection();
+        DataManager datamanager = analysis.getContext().getConnection();
+        // TDQ-19889 msjian: set Prompt Context Values to connection
+        org.talend.core.model.metadata.builder.connection.Connection con = SwitchHelpers.CONNECTION_SWITCH
+                .doSwitch(datamanager);
+        DelimitedFileConnection fileConnection =
+                (DelimitedFileConnection) ContextHelper.getPromptContextValuedConnection(con);
+
         String path = JavaSqlFactory.getURL(fileConnection);
 
         String rowSeparator = JavaSqlFactory.getRowSeparatorValue(fileConnection);

@@ -49,6 +49,7 @@ import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.relational.TdColumn;
 import org.talend.cwm.relational.TdTable;
 import org.talend.cwm.relational.TdView;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.writer.EMFSharedResources;
 import org.talend.metadata.managment.model.MetadataFillFactory;
@@ -289,9 +290,14 @@ public final class DQStructureComparer {
         TypedReturnCode<Connection> returnProvider = new TypedReturnCode<Connection>();
         // ~11951
 
+        // TDQ-19889 msjian: check whether context confirmation needed popup,
+        // Enabling the prompt to context variables
+        org.talend.core.model.metadata.builder.connection.Connection copyConnection =
+                ConnectionUtils.prepareConection(prevDataProvider);
+
         // MOD by zshen 2012-07-05 for bug 5074 remove convert about DatabaseParameter instead
         // Connection->DatabaseParameter->ImetadataConnection into Connection->ImetadataConnection
-        IMetadataConnection metadataConnection = ConvertionHelper.convert((DatabaseConnection) prevDataProvider, false,
+        IMetadataConnection metadataConnection = ConvertionHelper.convert(copyConnection, false,
                 prevDataProvider.getContextName());
         Connection copyedConnection = null;
         EDatabaseTypeName currentEDatabaseType = EDatabaseTypeName.getTypeFromDbType(metadataConnection.getDbType());
