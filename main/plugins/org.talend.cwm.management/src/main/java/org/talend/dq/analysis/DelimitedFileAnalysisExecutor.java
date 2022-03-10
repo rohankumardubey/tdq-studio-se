@@ -26,8 +26,11 @@ import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.AnalysisContext;
 import org.talend.dataquality.helpers.RowCountIndicatorsAdapter;
 import org.talend.dataquality.indicators.Indicator;
+import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.DelimitedFileIndicatorEvaluator;
 import org.talend.utils.sugars.ReturnCode;
+
+import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -53,7 +56,13 @@ public class DelimitedFileAnalysisExecutor extends AnalysisExecutor {
     @Override
     protected boolean runAnalysis(Analysis analysis, String sqlStatement) {
         DelimitedFileIndicatorEvaluator eval = createIndicatorEvaluator(analysis);
-        DelimitedFileConnection con = (DelimitedFileConnection) analysis.getContext().getConnection();
+        DataManager datamanager = analysis.getContext().getConnection();
+        // TDQ-19889 msjian: set Prompt Context Values to connection
+        org.talend.core.model.metadata.builder.connection.Connection con = SwitchHelpers.CONNECTION_SWITCH
+                .doSwitch(datamanager);
+        DelimitedFileConnection copyConnection =
+                (DelimitedFileConnection) ContextHelper.getPromptContextValuedConnection(con);
+
         EList<Indicator> indicators = analysis.getResults().getIndicators();
         eval.setMonitor(getMonitor());
         RowCountIndicatorsAdapter.getInstance().clear();
@@ -66,7 +75,7 @@ public class DelimitedFileAnalysisExecutor extends AnalysisExecutor {
             String columnName = mColumn.getLabel();
             eval.storeIndicator(columnName, indicator);
         }
-        eval.setDelimitedFileconnection(con);
+        eval.setDelimitedFileconnection(copyConnection);
         ReturnCode rc = eval.evaluateIndicators(sqlStatement, true);
         if (!rc.isOk()) {
             log.warn(rc.getMessage());

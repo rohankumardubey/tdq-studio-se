@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
+import org.talend.commons.utils.PasswordEncryptUtil;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.context.ContextUtils;
@@ -43,6 +44,7 @@ import org.talend.dataquality.properties.TDQReportItem;
 import org.talend.dataquality.reports.TdReport;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
+import org.talend.utils.security.StudioEncryption;
 
 /**
  * created by xqliu on Jul 24, 2013 Detailled comment
@@ -89,6 +91,13 @@ public final class ContextHelper {
                                     value = JavaSqlFactory
                                             .getReportPromptConValueFromCache(contextGroupName,
                                                     cpt.getRepositoryContextId(), contextVarName);
+                                    if (PasswordEncryptUtil.isPasswordType(cpt.getType())) {
+                                        if (StudioEncryption.hasEncryptionSymbol(value)) {
+                                            value = StudioEncryption
+                                                    .getStudioEncryption(StudioEncryption.EncryptionKeyName.SYSTEM)
+                                                    .decrypt(value);
+                                        }
+                                    }
                                 } else {
                                     value = cpt.getRawValue();
                                 }

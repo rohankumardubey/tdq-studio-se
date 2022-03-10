@@ -431,24 +431,26 @@ public class RunAnalysisAction extends Action implements ICheatSheetAction {
         Connection copyConnection = EObjectHelper.deepCopy(connection);
         JavaSqlFactory.haveSetPromptContextVars = false;
         ContextItem contextItem = ContextUtils.getContextItemById2(connection.getContextId());
-        for (Object context : contextItem.getContext()) {
-            IContext jobContext =
-                    ContextViewHelper.convert2IContext((ContextType) context, contextItem.getProperty().getId());
-            // only when have context
-            if (jobContext != null) {
-                boolean promptConfirmLauch =
-                        promptConfirmLauch(PlatformUI.getWorkbench().getDisplay().getActiveShell(), jobContext);
-                if (!promptConfirmLauch) {
-                    return null;
-                } else {
-                    // save the input prompt context values to cache
-                    for (IContextParameter param : jobContext.getContextParameterList()) {
-                        JavaSqlFactory.savePromptConVars2Cache(connection, param);
-                    }
-
-                    // set the input values to connection
-                    JavaSqlFactory.setPromptContextValues(copyConnection);
+        // only consider the connection currently used context
+        ContextType contextType = ContextUtils
+                .getContextTypeByName(contextItem.getContext(), connection.getContextName(),
+                        contextItem.getDefaultContext());
+        IContext jobContext =
+                ContextViewHelper.convert2IContext(contextType, contextItem.getProperty().getId());
+        // only when have context
+        if (jobContext != null) {
+            boolean promptConfirmLauch =
+                    promptConfirmLauch(PlatformUI.getWorkbench().getDisplay().getActiveShell(), jobContext);
+            if (!promptConfirmLauch) {
+                return null;
+            } else {
+                // save the input prompt context values to cache
+                for (IContextParameter param : jobContext.getContextParameterList()) {
+                    JavaSqlFactory.savePromptConVars2Cache(connection, param);
                 }
+
+                // set the input values to connection
+                JavaSqlFactory.setPromptContextValues(copyConnection);
             }
         }
 
