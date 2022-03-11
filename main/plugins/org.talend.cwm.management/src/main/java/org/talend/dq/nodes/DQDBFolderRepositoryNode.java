@@ -13,9 +13,13 @@
 package org.talend.dq.nodes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.runtime.Platform;
 import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
@@ -48,6 +52,8 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
 
     private Connection connection;
 
+    private static Map<Connection, Connection> contextConnCache = new HashMap<Connection, Connection>();
+
     protected List<IRepositoryNode> children = new ArrayList<IRepositoryNode>();
 
     private boolean reload = false;
@@ -62,7 +68,18 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
 
     public void setConnection(Connection con) {
         // TDQ-19889 msjian: Enabling the prompt to context variables
-        this.connection = ConnectionUtils.prepareConection(con);
+        if (!Platform.isRunning() || !con.isContextMode()) {
+            this.connection = con;
+        } else {
+            // if exist in cache get from it, else save to contextConnCache
+            if (contextConnCache.containsKey(con)) {
+                this.connection = contextConnCache.get(con);
+            } else {
+                Connection prepareConection = ConnectionUtils.prepareConection(con);
+                contextConnCache.put(con, prepareConection);
+                this.connection = prepareConection;
+            }
+        }
     }
 
     public Connection getConnection() {
