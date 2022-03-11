@@ -27,6 +27,7 @@ import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.BusinessException;
 import org.talend.commons.utils.platform.PluginChecker;
 import org.talend.core.ITDQRepositoryService;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DelimitedFileConnection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
 import org.talend.cwm.db.connection.DatabaseSQLExecutor;
@@ -156,8 +157,7 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
         // TDQ-19889 msjian: set Prompt Context Values to connection
         org.talend.core.model.metadata.builder.connection.Connection con = SwitchHelpers.CONNECTION_SWITCH
                 .doSwitch(connection);
-        DelimitedFileConnection copyConnection =
-                (DelimitedFileConnection) ContextHelper.getPromptContextValuedConnection(con);
+        Connection copyConnection = ContextHelper.getPromptContextValuedConnection(con);
 
         if (sqlExecutor.isStoreOnDisk()) {
             // need to execute the query
