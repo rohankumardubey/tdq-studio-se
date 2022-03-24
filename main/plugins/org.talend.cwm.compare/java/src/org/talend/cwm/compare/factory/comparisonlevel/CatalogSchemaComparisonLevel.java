@@ -30,7 +30,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.talend.commons.utils.platform.PluginChecker;
+import org.talend.core.database.EDatabaseTypeName;
 import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.metadata.builder.database.DqRepositoryViewService;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Item;
@@ -327,10 +329,12 @@ public class CatalogSchemaComparisonLevel extends AbstractComparisonLevel {
                 SchemaHelper.addViews(views, schemaObj);
                 columnSetList.addAll(views);
 
-                List<TdTable> calculationView =
+                if (!(oldDataProvider instanceof DatabaseConnection && EDatabaseTypeName.HIVE.getDisplayName().equalsIgnoreCase(((DatabaseConnection)oldDataProvider).getDatabaseType()))) {
+                	List<TdTable> calculationView =
                         DqRepositoryViewService.getCalculationViews(tempReloadProvider, schemaObj, null, true, true);
-                SchemaHelper.addTables(calculationView, schemaObj);
-                columnSetList.addAll(calculationView);
+                	SchemaHelper.addTables(calculationView, schemaObj);
+                	columnSetList.addAll(calculationView);
+                }
 
             } else {
                 List<ModelElement> elementList = catalogObj.getOwnedElement();
