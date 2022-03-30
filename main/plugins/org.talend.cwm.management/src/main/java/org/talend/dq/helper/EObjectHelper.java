@@ -440,8 +440,13 @@ public final class EObjectHelper {
     public static EObject resolveObject(EObject proxy) {
         if (proxy != null && proxy.eIsProxy()) {
             // if it is remote project,xmiRes will be null
-            XmiResourceManager xmiRes = ProxyRepositoryFactory.getInstance().getRepositoryFactoryFromProvider()
-                    .getResourceManager();
+            XmiResourceManager xmiRes = null;
+            try {
+                xmiRes = ProxyRepositoryFactory.getInstance().getRepositoryFactoryFromProvider()
+                        .getResourceManager();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             if (xmiRes != null) {
                 ResourceSet resourceSet = xmiRes.resourceSet;
                 // FIXME the input proxy object should not be changed in this method.
