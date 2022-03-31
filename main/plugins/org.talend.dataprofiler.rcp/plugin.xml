@@ -45,9 +45,8 @@
             context="Hive wizard"
             language="java"
             message="Wizard use for TOP"
-            name="log4j-1.2.16.jar" mvn_uri="mvn:log4j/log4j/1.2.16" 
-            required="true"
-            uripath="platform:/plugin/org.talend.libraries.apache/lib/log4j-1.2.16.jar">
+            name="reload4j-1.2.19.jar" mvn_uri="mvn:ch.qos.reload4j/reload4j/1.2.19" 
+            required="true">
       </libraryNeeded>
       <libraryNeeded
             context="Hive wizard"
@@ -716,9 +715,8 @@
             context="Hive wizard"
             language="java"
             message="Wizard use for TOP"
-            name="log4j-1.2.17.jar" mvn_uri="mvn:log4j/log4j/1.2.17" 
-            required="true"
-            uripath="platform:/plugin/org.talend.libraries.apache/lib/log4j-1.2.17.jar">
+            name="reload4j-1.2.19.jar" mvn_uri="mvn:ch.qos.reload4j/reload4j/1.2.19" 
+            required="true">
       </libraryNeeded>      
       <libraryNeeded
             context="Hive wizard"
@@ -727,14 +725,6 @@
             name="slf4j-api-1.7.5.jar" mvn_uri="mvn:org.talend.libraries/slf4j-api-1.7.5/6.0.0" 
             required="true"
             uripath="platform:/plugin/org.talend.libraries.slf4j/lib/slf4j-api-1.7.5.jar">
-      </libraryNeeded>      
-      <libraryNeeded
-            context="Hive wizard"
-            language="java"
-            message="Wizard use for TOP"
-            name="slf4j-log4j12-1.7.5.jar" mvn_uri="mvn:org.talend.libraries/slf4j-log4j12-1.7.5/6.0.0" 
-            required="true"
-            uripath="platform:/plugin/org.talend.libraries.slf4j/lib/slf4j-log4j12-1.7.5.jar">
       </libraryNeeded>
       <libraryNeeded
             context="Hive wizard"
