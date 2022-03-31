@@ -112,7 +112,10 @@ public enum EDriverName {
          "hive-service-0.9.0.jar", //$NON-NLS-1$
          "libfb303_new.jar", //$NON-NLS-1$
          "hadoop-core-1.0.0.jar", //$NON-NLS-1$
-         "commons-logging-1.0.4.jar", "log4j-1.2.15.jar", "slf4j-api-1.6.1.jar", "slf4j-log4j12-1.6.1.jar") //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            "commons-logging-1.0.4.jar", //$NON-NLS-1$
+            "reload4j-1.2.19.jar", //$NON-NLS-1$
+            "slf4j-api-1.6.1.jar", //$NON-NLS-1$
+            "slf4j-log4j12-1.6.1.jar") //$NON-NLS-1$
     ;
 
     private final String dbKey;

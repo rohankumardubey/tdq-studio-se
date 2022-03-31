@@ -45,9 +45,8 @@
             context="Hive wizard"
             language="java"
             message="Wizard use for TOP"
-            name="log4j-1.2.16.jar" mvn_uri="mvn:log4j/log4j/1.2.16" 
-            required="true"
-            uripath="platform:/plugin/org.talend.libraries.apache/lib/log4j-1.2.16.jar">
+            name="reload4j-1.2.19.jar" mvn_uri="mvn:ch.qos.reload4j/reload4j/1.2.19" 
+            required="true">
       </libraryNeeded>
       <libraryNeeded
             context="Hive wizard"
@@ -769,9 +768,8 @@
             context="Hive wizard"
             language="java"
             message="Wizard use for TOP"
-            name="log4j-1.2.17.jar" mvn_uri="mvn:log4j/log4j/1.2.17" 
-            required="true"
-            uripath="platform:/plugin/org.talend.libraries.apache/lib/log4j-1.2.17.jar">
+            name="reload4j-1.2.19.jar" mvn_uri="mvn:ch.qos.reload4j/reload4j/1.2.19" 
+            required="true">
       </libraryNeeded>      
       <libraryNeeded
             context="Hive wizard"
