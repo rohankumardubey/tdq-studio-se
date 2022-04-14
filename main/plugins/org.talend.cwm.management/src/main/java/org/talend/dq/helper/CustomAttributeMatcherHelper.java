@@ -13,10 +13,13 @@
 package org.talend.dq.helper;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Platform;
 import org.talend.dataquality.record.linkage.utils.CustomAttributeMatcherClassNameConvert;
+import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.resource.ResourceManager;
 
 /**
@@ -39,17 +42,36 @@ public class CustomAttributeMatcherHelper {
     public static String getFullJarPath(String classPathParameter) {
         String returnStr = StringUtils.EMPTY;
         String[] allElements = classPathParameter.split(CustomAttributeMatcherClassNameConvert.REGEXKEY);
-        for (int index = 0; index < allElements.length - 1; index++) {
-            IFile jarFile = ResourceManager.getUDIJarFolder().getFile(allElements[index]);
-            // jarURLs.add(new URL(CustomAttributeMatcherHelper.FILEPROTOCOL, StringUtils.EMPTY, jarFile.getLocation()
-            // .toOSString()));
-            if (index != 0) {
-                returnStr += SEPARATOR;
+        if (Platform.isRunning()) {
+            for (int index = 0; index < allElements.length - 1; index++) {
+                IFile jarFile = ResourceManager.getUDIJarFolder().getFile(allElements[index]);
+                if (index != 0) {
+                    returnStr += SEPARATOR;
+                }
+                returnStr += jarFile.getLocation().toOSString();
             }
-            returnStr += jarFile.getLocation().toOSString();
-
+        } else {// TDQ-19768:get jar for Jobs.
+            String libJarPath = getUDILibPath();
+            for (int index = 0; index < allElements.length - 1; index++) {
+                File newFile = new File(libJarPath + File.separator + allElements[index]);
+                if (index != 0) {
+                    returnStr += SEPARATOR;
+                }
+                if (newFile.exists()) {
+                    returnStr += newFile.getAbsolutePath();
+                }
+            }
         }
         return returnStr;
+    }
+    
+    public static String getUDILibPath() {
+        if (Platform.isRunning()) {
+            return ResourceManager.getUDIJarFolder().getLocation().toString();
+        }
+
+        String tdqLibPath = DefinitionHandler.getInstance().getTdqLibPath();
+        return tdqLibPath + "Indicators" + File.separator + "User Defined Indicators" + File.separator + "lib"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     /**
