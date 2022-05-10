@@ -27,8 +27,6 @@ public class EmfFileResourceUtil {
 
     private ResourceSet resourceSet;
 
-    private static Logger log = Logger.getLogger("EmfFileResourceUtil");
-
     private static EmfFileResourceUtil instance;
 
     public static EmfFileResourceUtil getInstance() {
@@ -50,7 +48,7 @@ public class EmfFileResourceUtil {
         reg.getExtensionToFactoryMap().put("properties", cwmFactory);//$NON-NLS-1$
     }
 
-    public Resource getFileResource(String string) {
+    public synchronized Resource getFileResource(String string) {
         URI uri = URI.createFileURI(new File(string).getAbsolutePath());
         Resource res = resourceSet.getResource(uri, true);
         return res;

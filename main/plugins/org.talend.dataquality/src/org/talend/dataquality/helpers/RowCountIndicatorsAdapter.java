@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.dataquality.helpers;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +30,7 @@ import orgomg.cwm.objectmodel.core.ModelElement;
  */
 public class RowCountIndicatorsAdapter extends RowCountIndicatorImpl {
 
-    private Set<RowCountIndicator> rowCountIndiSet = new HashSet<>();
+    private Set<RowCountIndicator> rowCountIndiSet = Collections.synchronizedSet(new HashSet<>());
 
     private static RowCountIndicatorsAdapter instance = null;
 
