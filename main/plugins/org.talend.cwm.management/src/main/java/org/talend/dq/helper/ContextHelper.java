@@ -23,19 +23,14 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
-import org.talend.commons.utils.PasswordEncryptUtil;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.context.ContextUtils;
-import org.talend.core.model.context.JobContext;
 import org.talend.core.model.context.JobContextManager;
-import org.talend.core.model.context.JobContextParameter;
 import org.talend.core.model.context.link.ContextLinkService;
 import org.talend.core.model.context.link.ItemContextLink;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
-import org.talend.core.model.process.IContext;
-import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.properties.Item;
@@ -48,7 +43,6 @@ import org.talend.dataquality.properties.TDQReportItem;
 import org.talend.dataquality.reports.TdReport;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
-import org.talend.utils.security.StudioEncryption;
 
 /**
  * created by xqliu on Jul 24, 2013 Detailled comment
@@ -95,13 +89,6 @@ public final class ContextHelper {
                                     value = JavaSqlFactory
                                             .getReportPromptConValueFromCache(contextGroupName,
                                                     cpt.getRepositoryContextId(), contextVarName);
-                                    if (PasswordEncryptUtil.isPasswordType(cpt.getType())) {
-                                        if (StudioEncryption.hasEncryptionSymbol(value)) {
-                                            value = StudioEncryption
-                                                    .getStudioEncryption(StudioEncryption.EncryptionKeyName.SYSTEM)
-                                                    .decrypt(value);
-                                        }
-                                    }
                                 } else {
                                     value = cpt.getRawValue();
                                 }
@@ -502,28 +489,6 @@ public final class ContextHelper {
         Connection copyConnection = EObjectHelper.deepCopy(connection);
         JavaSqlFactory.setPromptContextValues(copyConnection);
         return copyConnection;
-    }
-
-    public static IContext convert2IContext(ContextType contextType, String repositoryContextId) {
-        if (contextType == null) {
-            return null;
-        }
-        IContext jobContext = new JobContext(contextType.getName());
-        List<ContextParameterType> repoParams = contextType.getContextParameter();
-        for (ContextParameterType repoParam : repoParams) {
-            IContextParameter jobParam = new JobContextParameter();
-            jobParam.setName(repoParam.getName());
-            jobParam.setContext(jobContext);
-            jobParam.setComment(repoParam.getComment());
-            jobParam.setPrompt(repoParam.getPrompt());
-            jobParam.setPromptNeeded(repoParam.isPromptNeeded());
-            jobParam.setSource(repositoryContextId);
-            jobParam.setType(repoParam.getType());
-            jobParam.setValue(repoParam.getValue());
-            jobParam.setInternalId(repoParam.getInternalId());
-            jobContext.getContextParameterList().add(jobParam);
-        }
-        return jobContext;
     }
 
 }

@@ -116,6 +116,7 @@ import org.talend.dq.nodes.AnalysisRepNode;
 import org.talend.dq.nodes.DBConnectionRepNode;
 import org.talend.dq.nodes.DFConnectionRepNode;
 import org.talend.dq.nodes.ReportAnalysisRepNode;
+import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.utils.sugars.ReturnCode;
@@ -1122,7 +1123,7 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
                 // check if the connection is unavailable, give a warning dialog to user without opening the columns
                 // select dialog
                 Connection conn = (Connection) data;
-                Connection copyConnection = ConnectionUtils.prepareConection(conn);
+                Connection copyConnection = MetadataConnectionUtils.prepareConection(conn);
                 if (ConnectionUtils.checkConnection(copyConnection, getAnalysisHandler().getAnalysis().getName())) {
                     // need to give the new connection to the dialog to show only this new one in the dialog.
                     openColumnsSelectionDialog(copyConnection);

@@ -20,7 +20,6 @@ import org.talend.core.model.metadata.IMetadataConnection;
 import org.talend.core.model.metadata.builder.ConvertionHelper;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
-import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
@@ -49,7 +48,7 @@ public class ResultSetHelper {
             // TDQ-19889 msjian: check whether context confirmation needed popup,
             // Enabling the prompt to context variables
             org.talend.core.model.metadata.builder.connection.Connection copyConnection =
-                    ConnectionUtils.prepareConection(tdDataProvider);
+                    MetadataConnectionUtils.prepareConection(tdDataProvider);
             IMetadataConnection metadataBean = ConvertionHelper.convert(copyConnection);
             TypedReturnCode<java.sql.Connection> createConnection = MetadataConnectionUtils.createConnection(metadataBean, false);
             if (!createConnection.isOk()) {

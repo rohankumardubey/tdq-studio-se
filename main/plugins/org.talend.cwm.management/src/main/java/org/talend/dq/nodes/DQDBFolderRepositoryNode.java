@@ -19,14 +19,13 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
 import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.ISubRepositoryObject;
-import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
@@ -75,7 +74,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             if (contextConnCache.containsKey(con)) {
                 this.connection = contextConnCache.get(con);
             } else {
-                Connection prepareConection = ConnectionUtils.prepareConection(con);
+                Connection prepareConection = MetadataConnectionUtils.prepareConection(con);
                 contextConnCache.put(con, prepareConection);
                 this.connection = prepareConection;
             }
@@ -103,7 +102,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
         }
         
         // TDQ-19889 msjian: Enabling the prompt to context variables
-        connection = ConnectionUtils.prepareConection(connection);
+        connection = MetadataConnectionUtils.prepareConection(connection);
     }
 
     /**
