@@ -283,7 +283,7 @@ public abstract class SupportContextEditor extends CommonFormEditor {
                 // case 12: add new context in current used context group
                 for (ContextType newAddedContext : needAddedContextMap.keySet()) {
                     String newAddedContextSource = needAddedContextMap.get(newAddedContext).get(0);
-                    IContext jobContext = ContextHelper.convert2IContext(newAddedContext, newAddedContextSource);
+                    IContext jobContext = ContextUtils.convert2IContext(newAddedContext, newAddedContextSource);
                     contextManager.getListContext().add(jobContext);
                 }
 
