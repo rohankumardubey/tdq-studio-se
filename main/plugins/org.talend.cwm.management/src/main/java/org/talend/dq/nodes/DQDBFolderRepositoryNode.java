@@ -74,7 +74,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             if (contextConnCache.containsKey(con)) {
                 this.connection = contextConnCache.get(con);
             } else {
-                Connection prepareConection = MetadataConnectionUtils.prepareConection(con);
+                Connection prepareConection = MetadataConnectionUtils.prepareConection(con, true);
                 contextConnCache.put(con, prepareConection);
                 this.connection = prepareConection;
             }
@@ -102,7 +102,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
         }
         
         // TDQ-19889 msjian: Enabling the prompt to context variables
-        connection = MetadataConnectionUtils.prepareConection(connection);
+        connection = MetadataConnectionUtils.prepareConection(connection, true);
     }
 
     /**

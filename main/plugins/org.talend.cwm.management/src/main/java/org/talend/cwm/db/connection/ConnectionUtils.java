@@ -1416,7 +1416,7 @@ public final class ConnectionUtils {
      */
     public static Connection prepareConection(DataManager datamanager) {
         Connection connection = ConnectionUtils.getConnectionFromDatamanager(datamanager);
-        return MetadataConnectionUtils.prepareConection(connection);
+        return MetadataConnectionUtils.prepareConection(connection, true);
     }
 
 }
