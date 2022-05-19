@@ -48,7 +48,7 @@ public class ResultSetHelper {
             // TDQ-19889 msjian: check whether context confirmation needed popup,
             // Enabling the prompt to context variables
             org.talend.core.model.metadata.builder.connection.Connection copyConnection =
-                    MetadataConnectionUtils.prepareConection(tdDataProvider);
+                    MetadataConnectionUtils.prepareConection(tdDataProvider, true);
             IMetadataConnection metadataBean = ConvertionHelper.convert(copyConnection);
             TypedReturnCode<java.sql.Connection> createConnection = MetadataConnectionUtils.createConnection(metadataBean, false);
             if (!createConnection.isOk()) {

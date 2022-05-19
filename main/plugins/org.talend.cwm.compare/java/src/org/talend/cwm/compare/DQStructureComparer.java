@@ -292,7 +292,7 @@ public final class DQStructureComparer {
         // TDQ-19889 msjian: check whether context confirmation needed popup,
         // Enabling the prompt to context variables
         org.talend.core.model.metadata.builder.connection.Connection copyConnection =
-                MetadataConnectionUtils.prepareConection(prevDataProvider);
+                MetadataConnectionUtils.prepareConection(prevDataProvider, true);
 
         // MOD by zshen 2012-07-05 for bug 5074 remove convert about DatabaseParameter instead
         // Connection->DatabaseParameter->ImetadataConnection into Connection->ImetadataConnection
