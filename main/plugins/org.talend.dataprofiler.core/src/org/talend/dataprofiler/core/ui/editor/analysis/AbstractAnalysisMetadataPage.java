@@ -1797,4 +1797,29 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
             redrawWarningLabel();
         }
     }
+    
+    @Override
+    public void dispose() {
+        connCombo.dispose();
+        EventManager.getInstance().unRegister(dataPreviewSection, EventEnum.DQ_SELECT_ELEMENT_AFTER_CREATE_CONNECTION,
+                afterCreateConnectionReceiver);
+        this.dataPreviewSection.dispose();
+        this.dataFilterSection.dispose();
+        analysisParamSection.dispose();
+        this.metadataSection.dispose();
+        this.contextGroupSection.dispose();
+        sampleDataShowWayCombo.dispose();
+        numberOfConnectionsPerAnalysisText.dispose();
+        this.dataTableComp.dispose();
+        this.form.dispose();
+        this.analysisRepNode = null;
+        this.oldConn = null;
+        currentModelElementIndicators = null;
+        this.afterCreateConnectionReceiver = null;
+        this.analysisRepNode =null;
+        this.sampleTable=null;
+        
+        super.dispose();
+    }
+
 }

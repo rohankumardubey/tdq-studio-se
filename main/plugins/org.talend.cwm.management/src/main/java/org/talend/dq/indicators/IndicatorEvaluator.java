@@ -82,6 +82,7 @@ public class IndicatorEvaluator extends Evaluator<String> {
         // feature 0010630 zshen:Make order unify which columns and columnName in the sqlStatement.mssqlOdbc need do
         // this
         List<String> columnlist = sortColumnName(columns, sqlStatement);
+        columns = null;
         if (columnlist.isEmpty()) {
             ok.setReturnCode(Messages.getString("IndicatorEvaluator.DefineAnalyzedColumns"), false); //$NON-NLS-1$
             return ok;
@@ -224,6 +225,8 @@ public class IndicatorEvaluator extends Evaluator<String> {
                                 MapDBUtils.handleDrillDownData(object, inputRowList, indicator);
                             }
                             // ~
+                            inputRowList = null;
+                            valueObjectList = null;
                         } else if (indicator instanceof UniqueCountIndicator
                                 && analysis.getResults().getIndicToRowMap().get(indicator).getData() != null) {
                             List<Object[]> removeValueObjectList = analysis.getResults().getIndicToRowMap().get(indicator)
@@ -253,6 +256,8 @@ public class IndicatorEvaluator extends Evaluator<String> {
         // --- close connection
         getConnection().close();
 
+        columnlist = null;
+        columnlistMap = null;
         return ok;
     }
 
@@ -311,6 +316,8 @@ public class IndicatorEvaluator extends Evaluator<String> {
                 valueObjectList = new ArrayList<Object[]>();
                 valueObjectListMap.put(key, valueObjectList);
             }
+            valueObjectListMap = null;
+
         } else if (indicator.isInValidRow() || indicator.isValidRow()) {
             List<Object> patternData = analyzedDataSet.getPatternData();
             if (patternData == null) {
@@ -332,7 +339,6 @@ public class IndicatorEvaluator extends Evaluator<String> {
             }
 
         }
-
         return valueObjectList;
     }
 
@@ -367,6 +373,7 @@ public class IndicatorEvaluator extends Evaluator<String> {
             columnNameList.add(offset.get(keyArray[i]));
 
         }
+        offset = null;
         return columnNameList;
     }
 

@@ -661,9 +661,11 @@ public class ColumnAnalysisDetailsPage extends DynamicAnalysisMasterPage {
         super.dispose();
         if (this.treeViewer != null) {
             this.treeViewer.removePropertyChangeListener(this);
+            treeViewer = null;
         }
         if (dataFilterComp != null) {
             this.dataFilterComp.removePropertyChangeListener(this);
+            dataFilterComp = null;
         }
         EventManager.getInstance().clearEvent(dataPreviewSection, EventEnum.DQ_SELECT_ELEMENT_AFTER_CREATE_CONNECTION);
         if (AnalysisHelper.isJavaExecutionEngine(getCurrentModelElement())) {
@@ -678,6 +680,10 @@ public class ColumnAnalysisDetailsPage extends DynamicAnalysisMasterPage {
         if (this.getSampleTable().getExistPreviewData() != null) {
             this.getSampleTable().getExistPreviewData().clear();
         }
+        this.drillDownComposite.dispose();
+        this.previewChartCompsites = null;
+        this.uiPagination.dispose();
+        this.form.dispose();
     }
 
     /*

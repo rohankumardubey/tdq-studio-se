@@ -12,7 +12,6 @@
 // ============================================================================
 package org.talend.cwm.db.connection;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,7 +33,6 @@ import org.talend.dataquality.record.linkage.iterator.ResultSetIterator;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.ContextHelper;
-import org.talend.dq.helper.EObjectHelper;
 import org.talend.utils.sql.ResultSetUtils;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
@@ -170,9 +168,7 @@ public class DatabaseSQLExecutor extends SQLExecutor {
             }
             // TDQ-17324: set the connection's catalog for Snowflake specially when not set db parameter
             if (columnListSize > 0) {
-                DatabaseMetaData metadata =
-                        ExtractMetaDataUtils.getInstance().getConnectionMetadata(sqlconnection.getObject());
-                if (org.talend.utils.sql.ConnectionUtils.isSnowflake(metadata)) {
+                if (org.talend.utils.sql.ConnectionUtils.isSnowflake(ExtractMetaDataUtils.getInstance().getConnectionMetadata(sqlconnection.getObject()))) {
                     ModelElement modelElement = analysedElements.get(0);
                     ColumnSet columnOwnerAsColumnSet = ColumnHelper.getColumnOwnerAsColumnSet(modelElement);
                     Schema parentSchema = SchemaHelper.getParentSchema(columnOwnerAsColumnSet);

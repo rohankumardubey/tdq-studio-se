@@ -357,4 +357,12 @@ public abstract class DynamicAnalysisMasterPage extends AbstractAnalysisMetadata
         ((AnalysisEditor) currentEditor).setRunActionButtonState(true);
 
     }
+
+    @Override
+    public void dispose() {
+        this.previewSection.dispose();
+
+        super.dispose();
+    }
+    
 }

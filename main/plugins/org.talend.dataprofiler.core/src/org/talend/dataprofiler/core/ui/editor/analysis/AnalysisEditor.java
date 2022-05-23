@@ -572,6 +572,9 @@ public class AnalysisEditor extends SupportContextEditor {
                     EventEnum.DQ_DYNAMIC_UNREGISTER_DYNAMIC_CHART);
         }// ~
 
+        if(masterPage != null) masterPage.dispose();
+        if(resultPage != null) resultPage.dispose();
+        
         super.dispose();
     }
 }

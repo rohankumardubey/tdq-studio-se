@@ -221,4 +221,11 @@ public abstract class AbstractAnalysisResultPage extends AbstractFormPage implem
         table.setLayoutData(data);
     }
 
+    @Override
+    public void dispose() {
+        this.form.dispose();
+        this.clearListeners();
+        super.dispose();
+    }
+
 }
