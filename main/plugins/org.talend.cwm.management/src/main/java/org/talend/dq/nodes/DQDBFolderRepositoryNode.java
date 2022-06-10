@@ -24,8 +24,8 @@ import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.ISubRepositoryObject;
+import org.talend.cwm.db.connection.ConnectionUtils;
 import org.talend.dq.helper.EObjectHelper;
-import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
@@ -57,6 +57,9 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
 
     private boolean reload = false;
 
+    // if click 'cancel' when pop-up the prompt context dialog
+    private static boolean canclePromptContext = false;
+
     public boolean isReload() {
         return this.reload;
     }
@@ -73,16 +76,20 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             // if exist in cache get from it, else save to contextConnCache
             if (contextConnCache.containsKey(con)) {
                 this.connection = contextConnCache.get(con);
-            } else {
-                Connection prepareConection = MetadataConnectionUtils.prepareConection(con, true);
-                contextConnCache.put(con, prepareConection);
+            } else if (!canclePromptContext) {
+                Connection prepareConection = ConnectionUtils.prepareConection(con);
                 this.connection = prepareConection;
+                if (connection == null) {
+                    canclePromptContext = true;
+                } else {
+                    contextConnCache.put(con, prepareConection);
+                }
             }
         }
     }
 
     public Connection getConnection() {
-        if (this.connection == null) {
+        if (this.connection == null && !canclePromptContext) {
             getConnectionFromViewObject();
         }
         return this.connection;
@@ -102,7 +109,10 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
         }
         
         // TDQ-19889 msjian: Enabling the prompt to context variables
-        connection = MetadataConnectionUtils.prepareConection(connection, true);
+        connection = ConnectionUtils.prepareConection(connection);
+        if (connection == null) {
+            canclePromptContext = true;
+        }
     }
 
     /**
@@ -161,6 +171,17 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
      */
     public void setItem(ConnectionItem item) {
         this.item = item;
+    }
+
+    public boolean isCanclePromptContext() {
+        return canclePromptContext;
+    }
+
+    public static void clearCatchOfPrompContext() {
+        canclePromptContext = false;
+        if (!contextConnCache.isEmpty()) {
+            contextConnCache.clear();
+        }
     }
 
 }

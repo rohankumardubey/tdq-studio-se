@@ -36,6 +36,7 @@ import org.talend.dq.nodes.factory.DQRepNodeCreateFactory;
 import org.talend.dq.nodes.foldernode.IConnectionElementSubFolder;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
+
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
@@ -103,6 +104,9 @@ public class DBViewFolderRepNode extends DQDBFolderRepositoryNode implements ICo
             return filterResultsIfAny(children);
         }
         children.clear();
+        if (isCanclePromptContext()) {
+            return children;
+        }
         IRepositoryViewObject object = this.getParent().getObject();
         createRepositoryNodeViewFolderNode(object);
         // ADD msjian 2011-7-22 22206: fix the note 93101
