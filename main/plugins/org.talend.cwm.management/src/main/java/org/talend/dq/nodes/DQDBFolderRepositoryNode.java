@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
 import org.talend.core.model.metadata.builder.connection.Connection;
-import org.talend.core.model.metadata.builder.database.JavaSqlFactory;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
@@ -58,6 +57,9 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
 
     private boolean reload = false;
 
+    // if click 'cancel' when pop-up the prompt context dialog
+    private static boolean canclePromptContext = false;
+
     public boolean isReload() {
         return this.reload;
     }
@@ -74,16 +76,20 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             // if exist in cache get from it, else save to contextConnCache
             if (contextConnCache.containsKey(con)) {
                 this.connection = contextConnCache.get(con);
-            } else {
+            } else if (!canclePromptContext) {
                 Connection prepareConection = ConnectionUtils.prepareConection(con);
-                contextConnCache.put(con, prepareConection);
                 this.connection = prepareConection;
+                if (connection == null) {
+                    canclePromptContext = true;
+                } else {
+                    contextConnCache.put(con, prepareConection);
+                }
             }
         }
     }
 
     public Connection getConnection() {
-        if (this.connection == null) {
+        if (this.connection == null && !canclePromptContext) {
             getConnectionFromViewObject();
         }
         return this.connection;
@@ -104,6 +110,9 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
         
         // TDQ-19889 msjian: Enabling the prompt to context variables
         connection = ConnectionUtils.prepareConection(connection);
+        if (connection == null) {
+            canclePromptContext = true;
+        }
     }
 
     /**
@@ -162,6 +171,17 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
      */
     public void setItem(ConnectionItem item) {
         this.item = item;
+    }
+
+    public boolean isCanclePromptContext() {
+        return canclePromptContext;
+    }
+
+    public static void clearCatchOfPrompContext() {
+        canclePromptContext = false;
+        if (!contextConnCache.isEmpty()) {
+            contextConnCache.clear();
+        }
     }
 
 }
