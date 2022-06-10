@@ -25,6 +25,7 @@ import org.talend.cwm.helper.CatalogHelper;
 import org.talend.dataquality.PluginConstant;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
+
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
 
@@ -93,17 +94,20 @@ public class DBCatalogRepNode extends DQRepositoryNode {
     public List<IRepositoryNode> getChildren() {
         MetadataCatalogRepositoryObject metadataCatalog = (MetadataCatalogRepositoryObject) getObject();
         List<Schema> schemas = CatalogHelper.getSchemas(metadataCatalog.getCatalog());
+        List<IRepositoryNode> children = null;
         // MOD gdbu 2011-7-1 bug : 22204
         if (schemas != null && schemas.size() > 0) {
-            return filterResultsIfAny(createRepositoryNodeSchema(schemas));
+            children = filterResultsIfAny(createRepositoryNodeSchema(schemas));
         } else {
             // feature 22206 2011-7-12 msjian: fixed its note 91852 issue2
             if (DQRepositoryNode.isUntilSchema()) {
                 return createTableViewFolder(metadataCatalog);
             }
-            return filterResultsIfAny(createTableViewFolder(metadataCatalog));
+            children = filterResultsIfAny(createTableViewFolder(metadataCatalog));
         }
         // ~22204
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
+        return children;
     }
 
     /**

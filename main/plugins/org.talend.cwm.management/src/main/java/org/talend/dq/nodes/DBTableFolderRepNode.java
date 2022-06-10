@@ -109,6 +109,9 @@ public class DBTableFolderRepNode extends DQDBFolderRepositoryNode implements IC
         children.clear();
 
         IRepositoryViewObject object = this.getParent().getObject();
+        if (isCanclePromptContext()) {
+            return children;
+        }
         createRepositoryNodeTableFolderNode(object);
         // ADD msjian 2011-7-22 22206: fix the note 93101
         if (DQRepositoryNode.isUntilSchema()) {
