@@ -25,11 +25,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -37,6 +41,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.commons.emf.FactoriesUtil.EElementEName;
 import org.talend.commons.utils.WorkspaceUtils;
+import org.talend.core.PluginChecker;
+import org.talend.core.model.general.Project;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.properties.Item;
@@ -51,6 +57,7 @@ import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.helper.ContextViewHelper;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.utils.ComparatorsFactory;
+import org.talend.dataprofiler.core.ui.utils.DqFileUtils;
 import org.talend.dataprofiler.core.ui.utils.UDIUtils;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.AnalysisType;
@@ -72,13 +79,18 @@ import org.talend.dataquality.rules.MatchKeyDefinition;
 import org.talend.dataquality.rules.MatchRule;
 import org.talend.dataquality.rules.MatchRuleDefinition;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
+import org.talend.dq.factory.ModelElementFileFactory;
 import org.talend.dq.helper.CustomAttributeMatcherHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.helper.PropertyHelper;
+import org.talend.dq.helper.ProxyRepositoryManager;
 import org.talend.dq.helper.resourcehelper.ContextResourceFileHelper;
 import org.talend.dq.helper.resourcehelper.RepResourceFileHelper;
+import org.talend.model.bridge.ReponsitoryContextBridge;
+import org.talend.repository.ProjectManager;
 import org.talend.resource.EResourceConstant;
 import org.talend.resource.ResourceManager;
+
 import orgomg.cwm.objectmodel.core.Dependency;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.TaggedValue;
@@ -124,6 +136,8 @@ public class ItemRecord {
 
     private Set<File> dependencySet = new HashSet<File>();
 
+    boolean isCheckRefFile = false;
+
     private List<ImportMessage> errors = new ArrayList<ImportMessage>();
 
     private ItemRecord parent;
@@ -136,8 +150,22 @@ public class ItemRecord {
     // we get rootFolder of current project
     private IPath rootFolder = Path.EMPTY;
 
+    private Project project = null;
+
     public ItemRecord(File file) {
         this(file, ResourceManager.getRootProject().getLocation());
+    }
+
+    public ItemRecord(File file, boolean isCheckRefFile) {
+        this(file, ResourceManager.getRootProject().getLocation(), isCheckRefFile);
+    }
+
+    public ItemRecord(File file, IPath rootFolder) {
+        this(file, rootFolder, null);
+    }
+
+    public ItemRecord(File file, IPath rootFolder, boolean isCheckRefFile) {
+        this(file, rootFolder, null, isCheckRefFile);
     }
 
     /**
@@ -145,10 +173,12 @@ public class ItemRecord {
      *
      * @param file the file which we want to import or export
      * @param rootFolder the location which file is come from
+     * @param proj the current file is from which project(main or reference project)
      */
-    public ItemRecord(File file, IPath rootFolder) {
+    public ItemRecord(File file, IPath rootFolder, Project proj, boolean isCheckRefFile) {
         this.file = file;
         this.rootFolder = rootFolder;
+        this.isCheckRefFile = isCheckRefFile;
 
         if (resourceSet == null) {
             // the resourceSet attribute is static so that notice call {@link #clear()} method when next time
@@ -162,7 +192,15 @@ public class ItemRecord {
         if (FILE_ELEMENT_MAP == null) {
             FILE_ELEMENT_MAP = new HashMap<File, ModelElement>();
         }
-
+        if (proj != null) {
+            project = proj;
+        } else if (rootFolder != null) {
+            String lastSegment = rootFolder.lastSegment();
+            project = ProjectManager.getInstance().getProjectFromProjectTechLabel(lastSegment);
+        }
+        if (project == null) {
+            project = ProjectManager.getInstance().getCurrentProject();
+        }
         try {
             initialize();
         } catch (Exception e) {
@@ -171,6 +209,17 @@ public class ItemRecord {
             addError(errorMessage);
             log.error(errorMessage);
         }
+    }
+
+    /**
+     * the resourceSet attribute is static so that notice call {@link #clear()} method when next time
+     *
+     * @param file the file which we want to import or export
+     * @param rootFolder the location which file is come from
+     * @param proj the current file is from which project(main or reference project)
+     */
+    public ItemRecord(File file, IPath rootFolder, Project proj) {
+        this(file, rootFolder, proj, false);
     }
 
     /**
@@ -202,6 +251,10 @@ public class ItemRecord {
 
             allItemRecords.add(this);
         }
+    }
+
+    protected boolean isRefProjectExist() {
+        return project.getProjectReferenceList().size() > 0;
     }
 
     /**
@@ -285,13 +338,17 @@ public class ItemRecord {
                 includeContextDependency((Connection) mElement);
                 return;
             }
-            List<File> dependencyFile = getClintDependencyForExport(mElement);
+            List<File> dependencyFile = getClientDepFromExport(mElement);
             for (File df : dependencyFile) {
                 ModelElement modelElement = getElement(df);
                 if (modelElement != null) {
-                    File depFile = EObjectHelper.modelElement2File(modelElement);
-                    if (depFile != null) {
-                        this.dependencySet.add(depFile);
+                    if (PluginChecker.isRefProjectLoaded() && isRefProjectExist() && isCheckRefFile) {
+                        this.dependencySet.add(df);
+                    } else {
+                        File depFile = EObjectHelper.modelElement2File(modelElement);
+                        if (depFile != null) {
+                            this.dependencySet.add(depFile);
+                        }
                     }
                     // MOD sizhaoliu 2013-04-13 TDQ-7082
                     if (modelElement instanceof IndicatorDefinition) {
@@ -338,6 +395,116 @@ public class ItemRecord {
 
                 if (AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) mElement)) {
                     includeCustomMatcherJarDependencies((Analysis) mElement);
+                }
+            }
+        }
+    }
+
+    private List<File> getClientDepFromExport(ModelElement mElement) {
+        if (PluginChecker.isRefProjectLoaded() && isRefProjectExist() && isCheckRefFile) {
+            return getClintDependencyForExportWithRef(mElement);
+        }
+        return getClintDependencyForExport(mElement);
+    }
+
+    /**
+     * DOC bZhou Comment method "computeDependencies".
+     */
+    private void computeDependenciesWithRef(ModelElement mElement) {
+        if (isJRXml()) {
+            Collection<TdReport> allReports = RepResourceFileHelper.getInstance().getAllElement();
+            for (TdReport report : allReports) {
+                IPath pathRepFile = RepResourceFileHelper.findCorrespondingFile(report).getLocation();
+                IPath pathJrxmlFile = new Path(file.getPath());
+                String path = pathJrxmlFile.makeRelativeTo(pathRepFile).toString();
+
+                for (AnalysisMap anaMap : report.getAnalysisMap()) {
+                    if (StringUtils.equals(path, anaMap.getJrxmlSource())) {
+                        this.dependencySet.add(file);
+                    }
+                }
+            }
+        } else if (mElement != null) {
+            if (mElement instanceof Connection) {
+                includeContextDependency((Connection) mElement);
+                return;
+            }
+            List<File> dependencyFile = getClintDependencyForExportWithRef(mElement);
+            for (File df : dependencyFile) {
+                ModelElement modelElement = getElement(df);
+                if (modelElement != null) {
+                    this.dependencySet.add(df);
+                    if (modelElement instanceof IndicatorDefinition) {
+                        if (modelElement instanceof UDIndicatorDefinition) {
+                            includeJUDIDependencies((IndicatorDefinition) modelElement);
+                        } else {
+                            for (IndicatorDefinition definition : ((IndicatorDefinition) modelElement)
+                                    .getAggregatedDefinitions()) {
+                                includeAggregatedDependencies(definition);
+                            }
+                        }
+                    }
+                }
+            }
+            if (mElement instanceof TdReport) {
+                TdReport rep = (TdReport) mElement;
+                for (AnalysisMap anaMap : rep.getAnalysisMap()) {
+                    ReportType reportType =
+                            ReportHelper.ReportType.getReportType(anaMap.getAnalysis(), anaMap.getReportType());
+                    boolean isUserMade = ReportHelper.ReportType.USER_MADE.equals(reportType);
+                    if (isUserMade) {
+                        traverseFolderAndAddJrxmlDependencies(
+                                getJrxmlFolderFromReport(rep, ResourceManager.getJRXMLFolder()));
+                    }
+                }
+                this.dependencySet.addAll(includeImportedContext(mElement));
+            } else if (mElement instanceof IndicatorDefinition) { // MOD sizhaoliu 2013-04-13 TDQ-7082
+                IndicatorDefinition definition = (IndicatorDefinition) mElement;
+                if (definition instanceof UDIndicatorDefinition) {
+                    includeJUDIDependencies(definition);
+                } else {
+                    for (IndicatorDefinition defInd : definition.getAggregatedDefinitions()) {
+                        includeAggregatedDependencies(defInd);
+                    }
+                }
+                // MatchRule and match Analysis come from different location so that we must recompute the path of jar
+                // folder
+                if (mElement instanceof MatchRuleDefinition) {
+                    includeCustomMatcherJarDependencies((MatchRuleDefinition) mElement);
+                }
+            } else if (mElement instanceof Analysis) {
+                this.dependencySet.addAll(includeImportedContext(mElement));
+
+                if (AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) mElement)) {
+                    includeCustomMatcherJarDependencies((Analysis) mElement);
+                }
+            }
+        }
+    }
+
+    private void handleRefModeWhenBuildJob(TdReport report, List<File> listFile) {
+        EList<Dependency> clientDependency = report.getClientDependency();
+        List<URI> deqAnalysisURIMap = new ArrayList<>();
+        for (Dependency dependency : clientDependency) {
+            EList<ModelElement> supplier = dependency.getSupplier();
+            for (ModelElement modelElement : supplier) {
+                if (modelElement != null && modelElement instanceof Analysis) {
+                    if (!modelElement.eIsProxy() && modelElement.eResource() != null) {
+                        deqAnalysisURIMap.add(modelElement.eResource().getURI());
+                    }
+                }
+            }
+        }
+        List<Analysis> analysesList = ReportHelper.getAnalyses(report);
+        for (Analysis mapAna : analysesList) {
+            URI mapAnaURI = mapAna.eResource().getURI();
+            if (!deqAnalysisURIMap.contains(mapAnaURI)) {
+                IFile modelElementResourceFile = WorkspaceUtils.uriConvert2IFile(mapAnaURI);
+                ModelElement depencyModelElement = ModelElementFileFactory.getModelElement(modelElementResourceFile);
+                File depFile = WorkspaceUtils.ifileToFile(modelElementResourceFile);
+                if (depFile != null && depencyModelElement != null) {
+                    FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                    listFile.add(depFile);
                 }
             }
         }
@@ -407,23 +574,42 @@ public class ItemRecord {
         List<File> result = new ArrayList<File>();
         if (mElement != null) {
             result = iterateClientDependencies(mElement);
-            // current object is analysis case
-            if (mElement instanceof Analysis) {
-                result.addAll(getSystemIndicaotrOfAnalysis(mElement));
-            } else {
-                // if object is report, then the analyses inside reports should be considered. The system indicators of
-                // analyses should be added into the result list too.
-                List<File> tempList = new ArrayList<File>();
-                tempList.addAll(result);
-                for (File tempFile : tempList) {
-                    ModelElement me = getElement(tempFile);
-                    if (me != null && me instanceof Analysis) {
-                        result.addAll(getSystemIndicaotrOfAnalysis(me));
-                    }
+            handleIndicator(mElement, result);
+        }
+        return result;
+    }
+
+    /**
+     * @param mElement
+     * @return SupplierDependency
+     *
+     * getClintDependency here will contain system indicators so only will be used by export case
+     */
+    public List<File> getClintDependencyForExportWithRef(ModelElement mElement) {
+        List<File> result = new ArrayList<File>();
+        if (mElement != null) {
+            result = iterateClientDependenciesWithRef(mElement);
+            handleIndicator(mElement, result);
+        }
+        return result;
+    }
+
+    protected void handleIndicator(ModelElement mElement, List<File> result) {
+        // current object is analysis case
+        if (mElement instanceof Analysis) {
+            result.addAll(getSystemIndicaotrOfAnalysis(mElement));
+        } else {
+            // if object is report, then the analyses inside reports should be considered. The system indicators of
+            // analyses should be added into the result list too.
+            List<File> tempList = new ArrayList<File>();
+            tempList.addAll(result);
+            for (File tempFile : tempList) {
+                ModelElement me = getElement(tempFile);
+                if (me != null && me instanceof Analysis) {
+                    result.addAll(getSystemIndicaotrOfAnalysis(me));
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -477,15 +663,53 @@ public class ItemRecord {
         }
         EList<Dependency> clientDependency = mElement.getClientDependency();
         for (Dependency clienter : clientDependency) {
-            for (ModelElement depencyModelElement : clienter.getSupplier()) {
-                File depFile = EObjectHelper.modelElement2File(depencyModelElement);
-                if (depFile != null) {
-                    FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
-                    listFile.add(depFile);
-                }
-            }
+            handleLocalClient(listFile, clienter);
         }
         return listFile;
+    }
+
+    protected void handleLocalClient(List<File> listFile, Dependency clienter) {
+        for (ModelElement depencyModelElement : clienter.getSupplier()) {
+            File depFile = EObjectHelper.modelElement2File(depencyModelElement);
+            if (depFile != null) {
+                FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                listFile.add(depFile);
+            }
+        }
+    }
+
+    public List<File> getClintDependencyWithRef(ModelElement mElement) {
+        List<File> listFile = new ArrayList<File>();
+        if (mElement == null) {
+            return listFile;
+        }
+        EList<Dependency> clientDependency = mElement.getClientDependency();
+        for (Dependency clienter : clientDependency) {
+            if (clienter != null && clienter.eIsProxy()) {
+                handleRefClient(listFile, clienter);
+            } else {
+                handleLocalClient(listFile, clienter);
+            }
+        }
+        if (mElement instanceof TdReport) {
+            TdReport rep = (TdReport) mElement;
+            handleRefModeWhenBuildJob(rep, listFile);
+        }
+        return listFile;
+    }
+
+    protected void handleRefClient(List<File> listFile, Dependency clienter) {
+        URI fileURI = ((BasicEObjectImpl) clienter).eProxyURI().trimFragment();
+        Resource resource = resourceSet.getResource(fileURI, false);
+        if (resource != null) {
+            IFile modelElementResourceFile = WorkspaceUtils.uriConvert2IFile(fileURI);
+            ModelElement depencyModelElement = ModelElementFileFactory.getModelElement(modelElementResourceFile);
+            File depFile = WorkspaceUtils.ifileToFile(modelElementResourceFile);
+            if (depFile != null && depencyModelElement != null) {
+                FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                listFile.add(depFile);
+            }
+        }
     }
 
     private List<File> iterateClientDependencies(ModelElement mElement) {
@@ -497,6 +721,22 @@ public class ItemRecord {
                     includeContextDependency((Connection) me);
                 } else {
                     returnList.addAll(iterateClientDependencies(me));
+                }
+            }
+            returnList.add(depFile);
+        }
+        return returnList;
+    }
+
+    private List<File> iterateClientDependenciesWithRef(ModelElement mElement) {
+        List<File> returnList = new ArrayList<File>();
+        for (File depFile : getClintDependencyWithRef(mElement)) {
+            ModelElement me = getElement(depFile);
+            if (me != null) {
+                if (me instanceof Connection) {
+                    includeContextDependency((Connection) me);
+                } else {
+                    returnList.addAll(iterateClientDependenciesWithRef(me));
                 }
             }
             returnList.add(depFile);
@@ -794,7 +1034,6 @@ public class ItemRecord {
     public ItemRecord[] getChildern() {
         if (childern == null) {
             List<ItemRecord> recordList = new ArrayList<ItemRecord>();
-
             File[] listFiles = file.listFiles();
             if (listFiles != null) {
                 for (File aFile : listFiles) {
@@ -806,10 +1045,67 @@ public class ItemRecord {
                     }
                 }
             }
+            List<Project> referencedProjects = ProjectManager.getInstance().getReferencedProjects(project);
+            if (org.talend.core.PluginChecker.isRefProjectLoaded() && project.getEmfProject() != null
+                    && referencedProjects.size() > 0) {
+                addRefProjChildToExport(recordList, referencedProjects);
+            }
             childern = recordList.toArray(new ItemRecord[recordList.size()]);
         }
         ComparatorsFactory.sort(childern, ComparatorsFactory.ITEM_RECORD_COMPARATOR_ID);
         return this.childern;
+    }
+
+    private void addRefProjChildToExport(List<ItemRecord> recordList, List<Project> referencedProjects) {
+        boolean isMeredRefProject = ProxyRepositoryManager.getInstance().isMergeRefProject();
+        if (file == null || !file.exists() || referencedProjects.size() == 0) {
+            return;
+        }
+        // merged model for Reference project
+        if (isMeredRefProject && DqFileUtils.isLocalProjectFile(file)) {
+            for (Project refProj : referencedProjects) {
+                findChildrenFromRefFolder(refProj, recordList, file);
+                List<Project> subRefProjs = ProjectManager.getInstance().getReferencedProjects(refProj);
+                if (!subRefProjs.isEmpty()) {
+                    addRefProjChildToExport(recordList, subRefProjs);
+                }
+            }
+        }
+        // none-merged mode for Reference project
+        if (!isMeredRefProject) {
+            // Add a Virtual node "Referenced Project", both file and root folder are workspace root path
+            if (checkFileIsProject()) {
+                ItemRecord itemRecordRefRoot =
+                        new ItemRecord(ResourceManager.getWorskpacePath().toFile(), ResourceManager.getWorskpacePath(),
+                                this.project);
+                recordList.add(itemRecordRefRoot);
+
+            } else if (ResourceManager.getWorskpacePath().toFile().equals(file)
+                    && rootFolder.equals(ResourceManager.getWorskpacePath())) {
+                // Add children under the Reference Virtual root node
+                for (Project refProj : referencedProjects) {
+                    IProject iProject = ReponsitoryContextBridge.findProject(refProj.getTechnicalLabel());
+                    IPath refRootPath = iProject.getLocation();
+                    ItemRecord itemRecordRef = new ItemRecord(refRootPath.toFile(), refRootPath, refProj);
+                    recordList.add(itemRecordRef);
+                }
+
+            }
+        }
+    }
+
+    /**
+     * @Description:Check the current file path if it is a project path
+     * @return
+     */
+    private boolean checkFileIsProject() {
+        if (this.file != null && file.isDirectory()) {
+            IProject checkProject = ResourceManager.getProject(this.file.getName());
+            if (checkProject != null && getFilePath().equals(checkProject.getLocation())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -818,53 +1114,134 @@ public class ItemRecord {
      * @return
      */
     public String getName() {
+        String displayName = null;
         if (property != null) {
             // only internationalization name of SystemIndicator
             ModelElement element = PropertyHelper.getModelElement(property);
             if (element != null && DefinitionPackage.eINSTANCE.getIndicatorDefinition().equals(element.eClass())) {
-                return InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
+                displayName = InternationalizationUtil.getDefinitionInternationalizationLabel(property.getLabel());
+                if (!ResourceManager.getRootProject().getName().equalsIgnoreCase(project.getTechnicalLabel())) {
+                    return displayName + "(@" + project.getLabel() + ")";
+                }
+                return displayName;
             }
-            return property.getDisplayName();
+
+            displayName = property.getDisplayName();
         } else {
             if (file == null) {
                 return StringUtils.EMPTY;
+            }
+            if (ResourceManager.getWorskpacePath().toFile().equals(file)
+                    && rootFolder.equals(ResourceManager.getWorskpacePath())) {
+                return "Referenced project";
+            }
+            String name = file.getName();
+            if (name.equals(EResourceConstant.DATA_PROFILING.getName())
+                    || name.equals(EResourceConstant.LIBRARIES.getName())
+                    || name.equals(EResourceConstant.METADATA.getName())
+                    || name.equals(EResourceConstant.ANALYSIS.getName())
+                    || name.equals(EResourceConstant.REPORTS.getName())
+                    || name.equals(EResourceConstant.CONTEXT.getName())
+                    || name.equals(EResourceConstant.HADOOP_CLUSTER.getName())
+                    || name.equals(EResourceConstant.EXCHANGE.getName())
+                    || name.equals(EResourceConstant.RULES.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS.getName())
+                    || name.equals(EResourceConstant.JRXML_TEMPLATE.getName())
+                    || name.equals(EResourceConstant.USER_DEFINED_INDICATORS.getName())
+                    || name.equals(EResourceConstant.PATTERNS.getName())
+                    || name.equals(EResourceConstant.INDICATORS.getName())
+                    || name.equals(EResourceConstant.FILEDELIMITED.getName())
+                    || name.equals(EResourceConstant.DB_CONNECTIONS.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_TEXT_STATISTICS.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_CORRELATION.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_FRAUDDETECTION.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_FUNCTIONAL_DEPENDENCY.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_PATTERN_FREQUENCY_STATISTICS.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_PATTERN_MATCHING.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_ADVANCED_STATISTICS.getName())
+                    || name.equals(EResourceConstant.SOURCE_FILES.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_ROW_COMPARISON.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_SIMPLE_STATISTICS.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_SUMMARY_STATISTICS.getName())
+                    || name.equals(EResourceConstant.SYSTEM_INDICATORS_BUSINESS_RULES.getName())
+                    || name.equals(EResourceConstant.RULES_PARSER.getName())
+                    || name.equals(EResourceConstant.RULES_MATCHER.getName())) {
+                return Messages.getString("RepositoryNodeHelper." + name.replace(' ', '_'));
+            } else if (name.equals(EResourceConstant.SYSTEM_INDICATORS_PHONENUMBER_STATISTICS.getName())) {
+                return Messages.getString(name.replace(' ', '_'));
             } else {
-                String name = file.getName();
-                if (name.equals(EResourceConstant.DATA_PROFILING.getName())
-                        || name.equals(EResourceConstant.LIBRARIES.getName())
-                        || name.equals(EResourceConstant.METADATA.getName())
-                        || name.equals(EResourceConstant.ANALYSIS.getName())
-                        || name.equals(EResourceConstant.REPORTS.getName())
-                        || name.equals(EResourceConstant.CONTEXT.getName())
-                        || name.equals(EResourceConstant.HADOOP_CLUSTER.getName())
-                        || name.equals(EResourceConstant.EXCHANGE.getName())
-                        || name.equals(EResourceConstant.RULES.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS.getName())
-                        || name.equals(EResourceConstant.JRXML_TEMPLATE.getName())
-                        || name.equals(EResourceConstant.USER_DEFINED_INDICATORS.getName())
-                        || name.equals(EResourceConstant.PATTERNS.getName())
-                        || name.equals(EResourceConstant.INDICATORS.getName())
-                        || name.equals(EResourceConstant.FILEDELIMITED.getName())
-                        || name.equals(EResourceConstant.DB_CONNECTIONS.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_TEXT_STATISTICS.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_CORRELATION.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_FRAUDDETECTION.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_FUNCTIONAL_DEPENDENCY.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_PATTERN_FREQUENCY_STATISTICS.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_PATTERN_MATCHING.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_ADVANCED_STATISTICS.getName())
-                        || name.equals(EResourceConstant.SOURCE_FILES.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_ROW_COMPARISON.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_SIMPLE_STATISTICS.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_SUMMARY_STATISTICS.getName())
-                        || name.equals(EResourceConstant.SYSTEM_INDICATORS_BUSINESS_RULES.getName())
-                        || name.equals(EResourceConstant.RULES_PARSER.getName())
-                        || name.equals(EResourceConstant.RULES_MATCHER.getName())) {
-                    return Messages.getString("RepositoryNodeHelper." + name.replace(' ', '_'));
-                } else if (name.equals(EResourceConstant.SYSTEM_INDICATORS_PHONENUMBER_STATISTICS.getName())) {
-                    return Messages.getString(name.replace(' ', '_'));
-                } else {
-                    return name;
+                displayName = name;
+            }
+
+        }
+        if (!ResourceManager.getRootProject().getName().equalsIgnoreCase(project.getTechnicalLabel())) {
+            return displayName + "(@" + project.getLabel() + ")";
+        }
+        return displayName;
+    }
+
+
+
+    /**
+     * @Description:
+     * @param iProject
+     * @param recordList
+     * @param fileOrFolder
+     * @return For merge mode,find the related folders in reference project based on the current file name
+     */
+    private void findChildrenFromRefFolder(Project refProj, List<ItemRecord> recordList, File fileOrFolder) {
+        boolean isValidFolder = fileOrFolder != null && fileOrFolder.exists() && fileOrFolder.isDirectory();
+        if (!ProxyRepositoryManager.getInstance().isMergeRefProject() || !isValidFolder) {
+            return;
+        }
+        List<IResource> resources = new ArrayList<>();
+        String name = fileOrFolder.getName();
+        IProject iProject = ReponsitoryContextBridge.findProject(refProj.getTechnicalLabel());
+        try {
+            for (EResourceConstant eResConst : EResourceConstant.getReferenceNeededConstants()) {
+                IFolder refEResFolder = ResourceManager.getOneFolder(iProject, eResConst);
+                boolean isPatternOrJRXML = eResConst == EResourceConstant.PATTERN_REGEX
+                        || eResConst == EResourceConstant.PATTERN_SQL || eResConst == EResourceConstant.JRXML_TEMPLATE;
+                if (refEResFolder.exists() && fileOrFolder.getPath().contains(eResConst.getPath().replace("/", "\\"))) {
+                    // 1.sub-folder in PatternRegex(like 'address'),PatternSQL,JRMX
+                    // 2.user-defined resources in some reference folders like folder "abc" in "Regex"
+                    if (isPatternOrJRXML) {
+                        if (refEResFolder.getFolder(name).exists()) {// 1
+                            for (IResource res : refEResFolder.getFolder(name).members()) {
+                                resources.add(res);
+                            }
+                            break;
+                        } else if (eResConst.getName().equals(name)) {// 2
+                            for (IResource res : refEResFolder.members()) {
+                                // if not found in Main project,take it as user-defined resource in RefProject
+                                IResource findMemberFromRootProj =
+                                        ResourceManager.getOneFolder(eResConst).findMember(res.getName());
+                                if (findMemberFromRootProj == null || !findMemberFromRootProj.exists()) {
+                                    resources.add(res);
+                                }
+                            }
+                            break;
+                        }
+
+                    } else if (eResConst.getName().equals(name)) {// Analyses,Report,Indicators...
+                        for (IResource res : refEResFolder.members()) {
+                            resources.add(res);
+                        }
+                        break;
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            log.error(e.getMessage());
+        }
+        for (IResource res : resources) {
+            if (res != null && res.exists()) {
+                File refFile = res.getLocation().toFile();
+                if (isValid(refFile)) {
+                    ItemRecord itemRecord = new ItemRecord(refFile, iProject.getLocation());
+                    if (itemRecord.isValid()) {
+                        recordList.add(itemRecord);
+                    }
                 }
             }
         }
@@ -897,7 +1274,8 @@ public class ItemRecord {
         String fileName = f.getName();
         // MOD qiongli 2012-5-14 TDQ-5259.".Talend.properties" exists on 401,need to filter it and ".Talend.definition".
         if ("jasper".equals(path.getFileExtension()) //$NON-NLS-1$
-                || (fileName != null && (fileName.equals(".Talend.definition") || fileName.equals(".Talend.properties")))) {//$NON-NLS-1$ //$NON-NLS-2$
+                || (fileName != null
+                        && (fileName.equals(".Talend.definition") || fileName.equals(".Talend.properties")))) {//$NON-NLS-1$ //$NON-NLS-2$
             return false;
         } else if (path.toString().contains(EResourceConstant.SYSTEM_INDICATORS_PATTERN_FREQUENCY_STATISTICS.getPath())
                 && path.lastSegment().endsWith(".definition")) {
@@ -905,8 +1283,8 @@ public class ItemRecord {
             return !(fileName != null && fileName.startsWith("C"));
         }
 
-        return FactoriesUtil.JAR.equals(path.getFileExtension()) || propPath.toFile().exists()
-                && !propPath.equals(path);
+        return FactoriesUtil.JAR.equals(path.getFileExtension())
+                || propPath.toFile().exists() && !propPath.equals(path);
     }
 
     /**
@@ -1098,9 +1476,8 @@ public class ItemRecord {
     public boolean isInvalidNAMEConflictExist() {
         if (EConflictType.NAME == this.eConflictType) {
             return true;
-        } else if (EConflictType.UUIDBUTNAME == this.eConflictType
-                && !(this.getElement() instanceof Connection || this.getElement() instanceof Analysis || this
-                        .getElement() instanceof Report)) {
+        } else if (EConflictType.UUIDBUTNAME == this.eConflictType && !(this.getElement() instanceof Connection
+                || this.getElement() instanceof Analysis || this.getElement() instanceof Report)) {
             // analysis connection and report do that first then we will do others
             return true;
         }
@@ -1111,12 +1488,12 @@ public class ItemRecord {
      * Judge whether it is the case which need to rename first
      */
     public boolean isNeedToRenameFirst() {
-        if (EConflictType.UUIDBUTNAME == this.eConflictType
-                && (this.getElement() instanceof Connection || this.getElement() instanceof Analysis || this
-                        .getElement() instanceof Report)) {
+        if (EConflictType.UUIDBUTNAME == this.eConflictType && (this.getElement() instanceof Connection
+                || this.getElement() instanceof Analysis || this.getElement() instanceof Report)) {
             // analysis connection and report do that first then we will do others
             return true;
         }
         return false;
     }
+
 }

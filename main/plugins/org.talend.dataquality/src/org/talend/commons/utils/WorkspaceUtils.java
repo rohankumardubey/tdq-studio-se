@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.talend.resource.ResourceManager;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -168,6 +169,10 @@ public final class WorkspaceUtils {
             resourceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(platformResourcePath.toString()));
         }
         return resourceFile;
+    }
+
+    public static IFile uriConvert2IFile(URI uri) {
+        return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(uri.toFileString().toString()));
     }
 
     /**

@@ -16,20 +16,32 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.talend.commons.utils.platform.PluginChecker;
+import org.talend.core.model.general.Project;
 import org.talend.cwm.helper.ResourceHelper;
 import org.talend.dataprofiler.core.migration.helper.IndicatorDefinitionFileHelper;
 import org.talend.dataprofiler.core.ui.imex.model.ItemRecord;
+import org.talend.dataprofiler.core.ui.utils.DqFileUtils;
 import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dataquality.indicators.definition.userdefine.UDIndicatorDefinition;
+import org.talend.dq.helper.ProxyRepositoryManager;
+import org.talend.model.bridge.ReponsitoryContextBridge;
+import org.talend.repository.ProjectManager;
 import org.talend.resource.EResourceConstant;
+import org.talend.resource.ResourceManager;
 
 /**
  * DOC bZhou class global comment. Detailled comment
  */
 public class FileTreeContentProvider implements ITreeContentProvider {
+
+    private Logger log = Logger.getLogger(FileTreeContentProvider.class);
 
     /*
      * (non-Javadoc)
@@ -113,8 +125,35 @@ public class FileTreeContentProvider implements ITreeContentProvider {
      */
     public boolean hasChildren(Object element) {
         if (element instanceof ItemRecord) {
+            ItemRecord record = (ItemRecord) element;
             File[] listFiles = ((ItemRecord) element).getFile().listFiles();
-            return listFiles != null && listFiles.length > 0;
+            if (listFiles != null && listFiles.length > 0) {
+                return true;
+            }
+            File file = record.getFile();
+            // also consider the reference project with merged mode
+            if (DqFileUtils.isLocalProjectFile(file) && ProxyRepositoryManager.getInstance().isMergeRefProject()) {
+                Project currentProject = ProjectManager.getInstance().getCurrentProject();
+                List<Project> referencedProjects = ProjectManager.getInstance().getReferencedProjects(currentProject);
+                boolean hasRefProject = currentProject.getEmfProject() != null && referencedProjects.size() > 0;
+                if (hasRefProject) {
+                    for (Project refProj : referencedProjects) {
+                        IProject iProject = ReponsitoryContextBridge.findProject(refProj.getTechnicalLabel());
+                        if (iProject == null) {
+                            continue;
+                        }
+                        IPath path = new Path(file.getAbsolutePath());
+                        path = path.makeRelativeTo(ResourceManager.getRootProject().getLocation());
+                        File refFile = iProject.getLocation().append(path).toFile();
+                        if (refFile != null && refFile.exists()) {
+                            if (refFile.listFiles() != null && refFile.listFiles().length > 0) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
         }
         return false;
     }
