@@ -33,6 +33,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -40,6 +41,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.talend.commons.emf.FactoriesUtil;
 import org.talend.commons.emf.FactoriesUtil.EElementEName;
 import org.talend.commons.utils.WorkspaceUtils;
+import org.talend.core.PluginChecker;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.properties.ContextItem;
@@ -78,6 +80,7 @@ import org.talend.dataquality.rules.MatchKeyDefinition;
 import org.talend.dataquality.rules.MatchRule;
 import org.talend.dataquality.rules.MatchRuleDefinition;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
+import org.talend.dq.factory.ModelElementFileFactory;
 import org.talend.dq.helper.CustomAttributeMatcherHelper;
 import org.talend.dq.helper.EObjectHelper;
 import org.talend.dq.helper.PropertyHelper;
@@ -134,6 +137,8 @@ public class ItemRecord {
 
     private Set<File> dependencySet = new HashSet<File>();
 
+    boolean isCheckRefFile = false;
+
     private List<ImportMessage> errors = new ArrayList<ImportMessage>();
 
     private ItemRecord parent;
@@ -152,8 +157,16 @@ public class ItemRecord {
         this(file, ResourceManager.getRootProject().getLocation());
     }
 
+    public ItemRecord(File file, boolean isCheckRefFile) {
+        this(file, ResourceManager.getRootProject().getLocation(), isCheckRefFile);
+    }
+
     public ItemRecord(File file, IPath rootFolder) {
         this(file, rootFolder, null);
+    }
+
+    public ItemRecord(File file, IPath rootFolder, boolean isCheckRefFile) {
+        this(file, rootFolder, null, isCheckRefFile);
     }
 
     /**
@@ -163,9 +176,10 @@ public class ItemRecord {
      * @param rootFolder the location which file is come from
      * @param proj the current file is from which project(main or reference project)
      */
-    public ItemRecord(File file, IPath rootFolder, Project proj) {
+    public ItemRecord(File file, IPath rootFolder, Project proj, boolean isCheckRefFile) {
         this.file = file;
         this.rootFolder = rootFolder;
+        this.isCheckRefFile = isCheckRefFile;
 
         if (resourceSet == null) {
             // the resourceSet attribute is static so that notice call {@link #clear()} method when next time
@@ -199,6 +213,17 @@ public class ItemRecord {
     }
 
     /**
+     * the resourceSet attribute is static so that notice call {@link #clear()} method when next time
+     *
+     * @param file the file which we want to import or export
+     * @param rootFolder the location which file is come from
+     * @param proj the current file is from which project(main or reference project)
+     */
+    public ItemRecord(File file, IPath rootFolder, Project proj) {
+        this(file, rootFolder, proj, false);
+    }
+
+    /**
      * DOC bZhou Comment method "initialize".
      */
     private void initialize() {
@@ -221,12 +246,15 @@ public class ItemRecord {
                     }
 
                 }
-
                 computeDependencies(element);
             }
 
             allItemRecords.add(this);
         }
+    }
+
+    protected boolean isRefProjectExist() {
+        return project.getProjectReferenceList().size() > 0;
     }
 
     /**
@@ -310,13 +338,18 @@ public class ItemRecord {
                 includeContextDependency((Connection) mElement);
                 return;
             }
-            List<File> dependencyFile = getClintDependencyForExport(mElement);
+            List<File> dependencyFile = getClientDepFromExport(mElement);
             for (File df : dependencyFile) {
                 ModelElement modelElement = getElement(df);
                 if (modelElement != null) {
-                    File depFile = EObjectHelper.modelElement2File(modelElement);
-                    if (depFile != null) {
-                        this.dependencySet.add(depFile);
+                    if (PluginChecker.isRefProjectLoaded() && isRefProjectExist() && isCheckRefFile) {
+                        this.dependencySet.add(df);
+                    } else {
+                        File depFile = EObjectHelper.modelElement2File(modelElement);
+                        if (depFile != null) {
+                            this.dependencySet.add(depFile);
+                        }
+
                     }
                     // MOD sizhaoliu 2013-04-13 TDQ-7082
                     if (modelElement instanceof IndicatorDefinition) {
@@ -363,6 +396,112 @@ public class ItemRecord {
 
                 if (AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) mElement)) {
                     includeCustomMatcherJarDependencies((Analysis) mElement);
+                }
+            }
+        }
+    }
+
+    private List<File> getClientDepFromExport(ModelElement mElement) {
+        if (PluginChecker.isRefProjectLoaded() && isRefProjectExist() && isCheckRefFile) {
+            return getClintDependencyForExportWithRef(mElement);
+        }
+        return getClintDependencyForExport(mElement);
+    }
+
+    /**
+     * DOC bZhou Comment method "computeDependencies".
+     */
+    private void computeDependenciesWithRef(ModelElement mElement) {
+        if (isJRXml()) {
+            Collection<TdReport> allReports = RepResourceFileHelper.getInstance().getAllElement();
+            for (TdReport report : allReports) {
+                IPath pathRepFile = RepResourceFileHelper.findCorrespondingFile(report).getLocation();
+                IPath pathJrxmlFile = new Path(file.getPath());
+                String path = pathJrxmlFile.makeRelativeTo(pathRepFile).toString();
+
+                for (AnalysisMap anaMap : report.getAnalysisMap()) {
+                    if (StringUtils.equals(path, anaMap.getJrxmlSource())) {
+                        this.dependencySet.add(file);
+                    }
+                }
+            }
+        } else if (mElement != null) {
+            if (mElement instanceof Connection) {
+                includeContextDependency((Connection) mElement);
+                return;
+            }
+            List<File> dependencyFile = getClintDependencyForExportWithRef(mElement);
+            for (File df : dependencyFile) {
+                ModelElement modelElement = getElement(df);
+                if (modelElement != null) {
+                    this.dependencySet.add(df);
+                    if (modelElement instanceof IndicatorDefinition) {
+                        if (modelElement instanceof UDIndicatorDefinition) {
+                            includeJUDIDependencies((IndicatorDefinition) modelElement);
+                        } else {
+                            for (IndicatorDefinition definition : ((IndicatorDefinition) modelElement).getAggregatedDefinitions()) {
+                                includeAggregatedDependencies(definition);
+                            }
+                        }
+                    }
+                }
+            }
+            if (mElement instanceof TdReport) {
+                TdReport rep = (TdReport) mElement;
+                for (AnalysisMap anaMap : rep.getAnalysisMap()) {
+                    ReportType reportType = ReportHelper.ReportType.getReportType(anaMap.getAnalysis(), anaMap.getReportType());
+                    boolean isUserMade = ReportHelper.ReportType.USER_MADE.equals(reportType);
+                    if (isUserMade) {
+                        traverseFolderAndAddJrxmlDependencies(getJrxmlFolderFromReport(rep, ResourceManager.getJRXMLFolder()));
+                    }
+                }
+                this.dependencySet.addAll(includeImportedContext(mElement));
+            } else if (mElement instanceof IndicatorDefinition) { // MOD sizhaoliu 2013-04-13 TDQ-7082
+                IndicatorDefinition definition = (IndicatorDefinition) mElement;
+                if (definition instanceof UDIndicatorDefinition) {
+                    includeJUDIDependencies(definition);
+                } else {
+                    for (IndicatorDefinition defInd : definition.getAggregatedDefinitions()) {
+                        includeAggregatedDependencies(defInd);
+                    }
+                }
+                // MatchRule and match Analysis come from different location so that we must recompute the path of jar
+                // folder
+                if (mElement instanceof MatchRuleDefinition) {
+                    includeCustomMatcherJarDependencies((MatchRuleDefinition) mElement);
+                }
+            } else if (mElement instanceof Analysis) {
+                this.dependencySet.addAll(includeImportedContext(mElement));
+
+                if (AnalysisType.MATCH_ANALYSIS == AnalysisHelper.getAnalysisType((Analysis) mElement)) {
+                    includeCustomMatcherJarDependencies((Analysis) mElement);
+                }
+            }
+        }
+    }
+
+    private void handleRefModeWhenBuildJob(TdReport report, List<File> listFile) {
+        EList<Dependency> clientDependency = report.getClientDependency();
+        List<URI> deqAnalysisURIMap = new ArrayList<>();
+        for (Dependency dependency : clientDependency) {
+            EList<ModelElement> supplier = dependency.getSupplier();
+            for (ModelElement modelElement : supplier) {
+                if (modelElement != null && modelElement instanceof Analysis) {
+                    if (!modelElement.eIsProxy() && modelElement.eResource() != null)
+                        deqAnalysisURIMap.add(modelElement.eResource().getURI());
+                }
+            }
+        }
+        List<Analysis> analysesList = ReportHelper.getAnalyses(report);
+        for (Analysis mapAna : analysesList) {
+            URI mapAnaURI = mapAna.eResource().getURI();
+            if (!deqAnalysisURIMap.contains(mapAnaURI)) {
+                IFile modelElementResourceFile = WorkspaceUtils.uriConvert2IFile(mapAnaURI);
+                ModelElement depencyModelElement = ModelElementFileFactory.getModelElement(modelElementResourceFile);
+                File depFile = WorkspaceUtils.ifileToFile(modelElementResourceFile);
+                if (depFile != null && depencyModelElement != null) {
+                    FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                    listFile.add(depFile);
                 }
             }
         }
@@ -434,23 +573,42 @@ public class ItemRecord {
         List<File> result = new ArrayList<File>();
         if (mElement != null) {
             result = iterateClientDependencies(mElement);
-            // current object is analysis case
-            if (mElement instanceof Analysis) {
-                result.addAll(getSystemIndicaotrOfAnalysis(mElement));
-            } else {
-                // if object is report, then the analyses inside reports should be considered. The system indicators of
-                // analyses should be added into the result list too.
-                List<File> tempList = new ArrayList<File>();
-                tempList.addAll(result);
-                for (File tempFile : tempList) {
-                    ModelElement me = getElement(tempFile);
-                    if (me != null && me instanceof Analysis) {
-                        result.addAll(getSystemIndicaotrOfAnalysis(me));
-                    }
+            handleIndicator(mElement, result);
+        }
+        return result;
+    }
+
+    /**
+     * @param mElement
+     * @return SupplierDependency
+     *
+     * getClintDependency here will contain system indicators so only will be used by export case
+     */
+    public List<File> getClintDependencyForExportWithRef(ModelElement mElement) {
+        List<File> result = new ArrayList<File>();
+        if (mElement != null) {
+            result = iterateClientDependenciesWithRef(mElement);
+            handleIndicator(mElement, result);
+        }
+        return result;
+    }
+
+    protected void handleIndicator(ModelElement mElement, List<File> result) {
+        // current object is analysis case
+        if (mElement instanceof Analysis) {
+            result.addAll(getSystemIndicaotrOfAnalysis(mElement));
+        } else {
+            // if object is report, then the analyses inside reports should be considered. The system indicators of
+            // analyses should be added into the result list too.
+            List<File> tempList = new ArrayList<File>();
+            tempList.addAll(result);
+            for (File tempFile : tempList) {
+                ModelElement me = getElement(tempFile);
+                if (me != null && me instanceof Analysis) {
+                    result.addAll(getSystemIndicaotrOfAnalysis(me));
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -504,15 +662,53 @@ public class ItemRecord {
         }
         EList<Dependency> clientDependency = mElement.getClientDependency();
         for (Dependency clienter : clientDependency) {
-            for (ModelElement depencyModelElement : clienter.getSupplier()) {
-                File depFile = EObjectHelper.modelElement2File(depencyModelElement);
-                if (depFile != null) {
-                    FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
-                    listFile.add(depFile);
-                }
-            }
+            handleLocalClient(listFile, clienter);
         }
         return listFile;
+    }
+
+    protected void handleLocalClient(List<File> listFile, Dependency clienter) {
+        for (ModelElement depencyModelElement : clienter.getSupplier()) {
+            File depFile = EObjectHelper.modelElement2File(depencyModelElement);
+            if (depFile != null) {
+                FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                listFile.add(depFile);
+            }
+        }
+    }
+
+    public List<File> getClintDependencyWithRef(ModelElement mElement) {
+        List<File> listFile = new ArrayList<File>();
+        if (mElement == null) {
+            return listFile;
+        }
+        EList<Dependency> clientDependency = mElement.getClientDependency();
+        for (Dependency clienter : clientDependency) {
+            if (clienter != null && clienter.eIsProxy()) {
+                handleRefClient(listFile, clienter);
+            } else {
+                handleLocalClient(listFile, clienter);
+            }
+        }
+        if (mElement instanceof TdReport) {
+            TdReport rep = (TdReport) mElement;
+            handleRefModeWhenBuildJob(rep, listFile);
+        }
+        return listFile;
+    }
+
+    protected void handleRefClient(List<File> listFile, Dependency clienter) {
+        URI fileURI = ((BasicEObjectImpl) clienter).eProxyURI().trimFragment();
+        Resource resource = resourceSet.getResource(fileURI, false);
+        if (resource != null) {
+            IFile modelElementResourceFile = WorkspaceUtils.uriConvert2IFile(fileURI);
+            ModelElement depencyModelElement = ModelElementFileFactory.getModelElement(modelElementResourceFile);
+            File depFile = WorkspaceUtils.ifileToFile(modelElementResourceFile);
+            if (depFile != null && depencyModelElement != null) {
+                FILE_ELEMENT_MAP.put(depFile, depencyModelElement);
+                listFile.add(depFile);
+            }
+        }
     }
 
     private List<File> iterateClientDependencies(ModelElement mElement) {
@@ -524,6 +720,22 @@ public class ItemRecord {
                     includeContextDependency((Connection) me);
                 } else {
                     returnList.addAll(iterateClientDependencies(me));
+                }
+            }
+            returnList.add(depFile);
+        }
+        return returnList;
+    }
+
+    private List<File> iterateClientDependenciesWithRef(ModelElement mElement) {
+        List<File> returnList = new ArrayList<File>();
+        for (File depFile : getClintDependencyWithRef(mElement)) {
+            ModelElement me = getElement(depFile);
+            if (me != null) {
+                if (me instanceof Connection) {
+                    includeContextDependency((Connection) me);
+                } else {
+                    returnList.addAll(iterateClientDependenciesWithRef(me));
                 }
             }
             returnList.add(depFile);
