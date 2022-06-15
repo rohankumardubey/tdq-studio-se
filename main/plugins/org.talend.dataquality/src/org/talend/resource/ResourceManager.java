@@ -39,6 +39,7 @@ import org.talend.dataquality.helpers.AnalysisHelper;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.properties.TDQJrxmlItem;
 import org.talend.model.bridge.ReponsitoryContextBridge;
+import org.talend.repository.ProjectManager;
 
 /**
  * DOC bZhou class global comment. Detailled comment
@@ -64,8 +65,15 @@ public final class ResourceManager {
      *
      * @return
      */
-
     public static IProject getRootProject() {
+        if (ReponsitoryContextBridge.isDefautProject()) {
+            // when remote project and do migration then the location maybe null so that get project from ProjectManager
+            try {
+                return ReponsitoryContextBridge.findProject(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel());
+            } catch (NullPointerException e) {
+                log.error(e, e);
+            }
+        }
         return ReponsitoryContextBridge.getRootProject();
     }
 
