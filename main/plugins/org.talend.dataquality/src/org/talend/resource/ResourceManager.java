@@ -71,7 +71,7 @@ public final class ResourceManager {
             try {
                 return ReponsitoryContextBridge.findProject(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel());
             } catch (NullPointerException e) {
-                log.error(e, e);
+                log.warn("The project can not get it from Project manager so that use default one", e);
             }
         }
         return ReponsitoryContextBridge.getRootProject();
