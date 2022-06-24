@@ -46,6 +46,8 @@ import org.talend.dataquality.rules.SurvivorshipKeyDefinition;
 import org.talend.dq.analysis.adapter.AnalysisMatchParameterAdapter;
 import org.talend.dq.helper.CustomAttributeMatcherHelper;
 
+import orgomg.cwm.objectmodel.core.ModelElement;
+
 /**
  * used for some utility functions
  */
@@ -92,6 +94,22 @@ public class AnalysisRecordGroupingUtils {
         return columnNameList.toArray(new MetadataColumn[columnNameList.size()]);
     }
 
+    public static String[] getCompleteColumnNames(ModelElement[] columns) {
+        String[] completedCols = new String[columns.length + 7];
+        int i = 0;
+        for (ModelElement col : columns) {
+            completedCols[i++] = col.getName();
+        }
+        completedCols[i++] = MatchAnalysisConstant.BLOCK_KEY;
+        completedCols[i++] = MatchAnalysisConstant.GID;
+        completedCols[i++] = MatchAnalysisConstant.GRP_SIZE;
+        completedCols[i++] = MatchAnalysisConstant.MASTER;
+        completedCols[i++] = MatchAnalysisConstant.SCORE;
+        completedCols[i++] = MatchAnalysisConstant.GRP_QUALITY;
+        completedCols[i++] = MatchAnalysisConstant.ATTRIBUTE_SCORES;
+        return completedCols;
+        
+    }
     /**
      * getCompleteColumnSchema: when refresh match chart by click refresh button
      *

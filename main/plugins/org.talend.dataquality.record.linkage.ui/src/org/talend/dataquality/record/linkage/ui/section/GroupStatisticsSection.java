@@ -17,12 +17,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.talend.cwm.db.connection.SQLExecutor;
+import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
@@ -55,6 +58,9 @@ public class GroupStatisticsSection extends AbstractMatchKeyWithChartTableSectio
         super(form, parent, style, toolkit, analysis);
     }
 
+    public TableViewer getTableViewer() {
+        return groupStatisticsTableViewer;
+    }
     /*
      * (non-Javadoc)
      *

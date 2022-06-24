@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -59,6 +60,9 @@ public class DuplicateRecordStatisticsSection extends AbstractMatchAnaysisTableS
         super(form, parent, style, toolkit, analysis);
     }
 
+    public TableViewer getTableViewer() {
+        return duplicateRecordTableViewer;
+    }
     /**
      * DOC zhao Comment method "setDupRecTableInput".
      */

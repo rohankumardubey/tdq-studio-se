@@ -14,6 +14,8 @@ package org.talend.dataprofiler.core.ui.editor.analysis;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.layout.GridData;
@@ -22,9 +24,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.Section;
+import org.talend.core.model.metadata.builder.connection.MetadataColumn;
+import org.talend.cwm.db.connection.SQLExecutor;
+import org.talend.cwm.helper.TaggedValueHelper;
+import org.talend.dataprofiler.core.ui.editor.preview.model.ChartTableFactory;
+import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
+import org.talend.dataquality.indicators.mapdb.MapDBManager;
+import org.talend.dataquality.record.linkage.ui.composite.utils.MatchRuleAnlaysisUtils;
 import org.talend.dataquality.record.linkage.ui.section.DuplicateRecordStatisticsSection;
 import org.talend.dataquality.record.linkage.ui.section.GroupStatisticsSection;
 import org.talend.dq.analysis.AnalysisHandler;
+import org.talend.dq.analysis.AnalysisRecordGroupingUtils;
+
+import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
  * DOC yyin class global comment. Detailled comment
@@ -110,16 +122,44 @@ public class MatchAnalysisResultPage extends AbstractAnalysisResultPage implemen
 
     @Override
     protected void createResultSection(Composite parent) {
-        duplicateRecordStatisticsSection = new DuplicateRecordStatisticsSection(form, parent, Section.TWISTIE | Section.TITLE_BAR
-                | Section.EXPANDED, toolkit, getAnalysisHandler().getAnalysis());
+        duplicateRecordStatisticsSection =
+                new DuplicateRecordStatisticsSection(form, parent, Section.TWISTIE | Section.TITLE_BAR
+                        | Section.EXPANDED, toolkit, getAnalysisHandler().getAnalysis());
         duplicateRecordStatisticsSection.createContent();
-        duplicateRecordStatisticsSection.getSection().setExpanded(
-                getExpandedStatus(duplicateRecordStatisticsSection.getSection().getText()));
+        duplicateRecordStatisticsSection.getSection()
+                .setExpanded(
+                        getExpandedStatus(duplicateRecordStatisticsSection.getSection().getText()));
 
-        groupStatisticsSection = new GroupStatisticsSection(form, parent, Section.TWISTIE | Section.TITLE_BAR | Section.EXPANDED,
-                toolkit, getAnalysisHandler().getAnalysis());
+        groupStatisticsSection =
+                new GroupStatisticsSection(form, parent, Section.TWISTIE | Section.TITLE_BAR | Section.EXPANDED,
+                        toolkit, getAnalysisHandler().getAnalysis());
         groupStatisticsSection.createContent();
-        groupStatisticsSection.getSection().setExpanded(getExpandedStatus(groupStatisticsSection.getSection().getText()));
+        groupStatisticsSection.getSection()
+                .setExpanded(getExpandedStatus(groupStatisticsSection.getSection().getText()));
+
+        // TDQ-19618 isStoreOndisk & allowDrill down
+        if (TaggedValueHelper.getValueBoolean(SQLExecutor.STORE_ON_DISK_KEY, getAnalysisHandler().getAnalysis()) &
+                TaggedValueHelper.getValueBoolean(SQLExecutor.ALLOW_DRILL_DOWN, getAnalysisHandler().getAnalysis())) {
+            RecordMatchingIndicator recordMatchingIndicator =
+                    MatchRuleAnlaysisUtils.getRecordMatchIndicatorFromAna(getAnalysisHandler().getAnalysis());
+            ChartTableFactory.addMenuAndTipForMatchAnalysis(duplicateRecordStatisticsSection.getTableViewer(),
+                    recordMatchingIndicator, getAnalysisHandler().getAnalysis());
+            ChartTableFactory.addMenuAndTipForMatchAnalysis(groupStatisticsSection.getTableViewer(),
+                    recordMatchingIndicator, getAnalysisHandler().getAnalysis());
+            // init schema if not run
+            if (recordMatchingIndicator.getListRows() == null
+                    || recordMatchingIndicator.getListRows().size() == 0) {
+                initSchema(recordMatchingIndicator);
+            }
+        }
+    }
+
+    private void initSchema(RecordMatchingIndicator recordMatchingIndicator) {
+        String[] completeColumnNames = AnalysisRecordGroupingUtils.getCompleteColumnNames(matchAnalysisMasterPage.getSelectedColumnsFromHandler());
+        
+        List<Object[]> colSchemaString = new ArrayList<Object[]>();
+        colSchemaString.add(completeColumnNames); 
+        recordMatchingIndicator.setListRows(colSchemaString);
     }
 
     /*
@@ -131,6 +171,18 @@ public class MatchAnalysisResultPage extends AbstractAnalysisResultPage implemen
     public void setDirty(boolean isDirty) {
         // no dirty event in this result page.
 
+    }
+
+    @Override
+    public void dispose() {
+        if (form != null) {
+            this.form.dispose();
+        }
+        if (TaggedValueHelper.getValueBoolean(SQLExecutor.STORE_ON_DISK_KEY, getAnalysisHandler().getAnalysis()) &
+                TaggedValueHelper.getValueBoolean(SQLExecutor.ALLOW_DRILL_DOWN, getAnalysisHandler().getAnalysis())) {
+            MapDBManager.getInstance().closeDB(matchAnalysisMasterPage.getCurrentModelElement());
+        }
+        super.dispose();
     }
 
 }

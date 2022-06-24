@@ -37,6 +37,8 @@ public abstract class SQLExecutor implements ISQLExecutor {
     protected Object storeOnDiskHandler = null;
 
     public static final String STORE_ON_DISK_KEY = "STORE_ON_DISK"; //$NON-NLS-1$
+    
+    public static final String ALLOW_DRILL_DOWN = "DRILL_DOWN"; //$NON-NLS-1$
 
     public static final String MAX_BUFFER_SIZE = "MAX_BUFFER_SIZE";//$NON-NLS-1$
 

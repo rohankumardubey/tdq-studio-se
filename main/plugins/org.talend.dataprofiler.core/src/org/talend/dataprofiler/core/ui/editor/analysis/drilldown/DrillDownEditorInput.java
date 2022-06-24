@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
@@ -43,6 +44,7 @@ import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.LengthIndicator;
 import org.talend.dataquality.indicators.RowCountIndicator;
 import org.talend.dataquality.indicators.UniqueCountIndicator;
+import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
 import org.talend.dataquality.indicators.columnset.SimpleStatIndicator;
 import org.talend.dataquality.indicators.mapdb.AbstractDB;
 import org.talend.dataquality.indicators.mapdb.ColumnSetDBMap;
@@ -216,10 +218,18 @@ public class DrillDownEditorInput implements IEditorInput {
         if (AnalysisType.COLUMN_SET == analysisType) {
             Long size = getCurrentIndicatorResultSize();
             if (ColumnSetDBMap.class.isInstance(mapDB)) {
-                return SqlExplorerUtils.getDefault().createMapDBColumnSetDataSet(columnHeader, (ColumnSetDBMap) mapDB, size,
-                        IDataValidationFactory.INSTANCE.createValidation(currIndicator), pageSize);
+                return SqlExplorerUtils.getDefault()
+                        .createMapDBColumnSetDataSet(columnHeader, (ColumnSetDBMap) mapDB, size,
+                                IDataValidationFactory.INSTANCE.createValidation(currIndicator), pageSize);
 
             }
+        } else if (AnalysisType.MATCH_ANALYSIS == analysisType) {
+            ColumnFilter columnFilter = getColumnFilter();
+            Long itemSize = getItemSize(mapDB);
+            return SqlExplorerUtils.getDefault()
+                    .createMapDBObjectDataSet(columnHeader, (DBMap<Object, Object[]>) mapDB, pageSize,
+                            columnFilter, itemSize);
+            
         }
 
         if (DBSet.class.isInstance(mapDB)) {
@@ -227,8 +237,9 @@ public class DrillDownEditorInput implements IEditorInput {
         } else {
             ColumnFilter columnFilter = getColumnFilter();
             Long itemSize = getItemSize(mapDB);
-            return SqlExplorerUtils.getDefault().createMapDBDataSet(columnHeader, (DBMap<Object, List<Object>>) mapDB, pageSize,
-                    columnFilter, itemSize);
+            return SqlExplorerUtils.getDefault()
+                    .createMapDBDataSet(columnHeader, (DBMap<Object, List<Object>>) mapDB, pageSize,
+                            columnFilter, itemSize);
         }
     }
 
@@ -267,7 +278,7 @@ public class DrillDownEditorInput implements IEditorInput {
                     if (newColumnElementList.get(0).length != columnElementList.size()) {
                         continue;
                     }
-                }// ~
+                } // ~
                 columnValue[rowIndex][columnIndex++] = tableValue == null ? "<null>" : tableValue.toString(); //$NON-NLS-1$
             }
             rowIndex++;
@@ -418,7 +429,8 @@ public class DrillDownEditorInput implements IEditorInput {
             // MOD yyi 2011-12-14 TDQ-4166:View rows for Date Pattern Frequency Indicator.
             if (currIndicator instanceof DatePatternFreqIndicator) {
                 for (Object expression : analysisDataSet.getFrequencyData().keySet()) {
-                    if (Pattern.matches(((DatePatternFreqIndicator) currIndicator).getRegex(selectValue), expression.toString())) {
+                    if (Pattern.matches(((DatePatternFreqIndicator) currIndicator).getRegex(selectValue),
+                            expression.toString())) {
                         newColumnElementList.addAll(analysisDataSet.getFrequencyData().get(expression));
                     }
                 }
@@ -432,11 +444,13 @@ public class DrillDownEditorInput implements IEditorInput {
             }
         } else if (analysisDataSet.getPatternData() != null && analysisDataSet.getPatternData().size() > 0) {
             if (DrillDownUtils.judgeMenuType(getMenuType(), DrillDownUtils.MENU_INVALID_TYPE)) {
-                newColumnElementList.addAll(getDesignatedData((List<Object[]>) analysisDataSet.getPatternData().get(
-                        AnalyzedDataSetImpl.INVALID_VALUE)));
+                newColumnElementList.addAll(getDesignatedData((List<Object[]>) analysisDataSet.getPatternData()
+                        .get(
+                                AnalyzedDataSetImpl.INVALID_VALUE)));
             } else if (DrillDownUtils.judgeMenuType(getMenuType(), DrillDownUtils.MENU_VALID_TYPE)) {
-                newColumnElementList.addAll(getDesignatedData((List<Object[]>) analysisDataSet.getPatternData().get(
-                        AnalyzedDataSetImpl.VALID_VALUE)));
+                newColumnElementList.addAll(getDesignatedData((List<Object[]>) analysisDataSet.getPatternData()
+                        .get(
+                                AnalyzedDataSetImpl.VALID_VALUE)));
             }
         }
         return newColumnElementList;
@@ -476,7 +490,7 @@ public class DrillDownEditorInput implements IEditorInput {
                         returnDataList.add(newObj);
                     }
                     return returnDataList;
-                }// ~
+                } // ~
                 for (Object[] obj : dataList) {
                     Object[] newObj = new Object[1];
                     newObj[0] = obj[offset];
@@ -517,14 +531,17 @@ public class DrillDownEditorInput implements IEditorInput {
                 break;
             }
             if (isDelimitedFile) {
-                List<MetadataColumn> columnList = ColumnHelper.getColumnOwnerAsMetadataTable(simpInd.getAnalyzedColumns().get(0))
-                        .getColumns();
+                List<MetadataColumn> columnList =
+                        ColumnHelper.getColumnOwnerAsMetadataTable(simpInd.getAnalyzedColumns().get(0))
+                                .getColumns();
                 for (MetadataColumn mdColumn : columnList) {
                     columnElementList.add(mdColumn.getLabel());
                 }
             } else {
                 List<TdColumn> columnList = TableHelper.getColumns(SwitchHelpers.TABLE_SWITCH.doSwitch((simpInd
-                        .getAnalyzedColumns().get(0).eContainer())));
+                        .getAnalyzedColumns()
+                        .get(0)
+                        .eContainer())));
                 for (TdColumn tdColumn : columnList) {
                     columnElementList.add(tdColumn.getLabel());
                 }
@@ -550,7 +567,8 @@ public class DrillDownEditorInput implements IEditorInput {
         // MOD qiongli 2011-3-3,feature 19192 ,drill down for columnSet with java engine .
         if (analysisElement == null && indicator.eContainer() instanceof SimpleStatIndicator) {
             columnElementList = columnHeaderForColumnSet((SimpleStatIndicator) indicator.eContainer());
-
+        } else if (indicator instanceof RecordMatchingIndicator) {
+            columnElementList = getColumnsForMatch((RecordMatchingIndicator) indicator);
         } else {
             // MOD qiongli 2011-1-9 feature 16796
             if (DrillDownUtils.judgeMenuType(menuType, DrillDownUtils.MENU_VALUE_TYPE)) {
@@ -569,6 +587,14 @@ public class DrillDownEditorInput implements IEditorInput {
             }
         }
 
+        return columnElementList;
+    }
+
+    private List<String> getColumnsForMatch(RecordMatchingIndicator indicator) {
+        List<String> columnElementList = new ArrayList<String>();
+        for (Object column : indicator.getListRows().get(0)) {
+            columnElementList.add((String)column);
+        }
         return columnElementList;
     }
 
@@ -639,7 +665,8 @@ public class DrillDownEditorInput implements IEditorInput {
     }
 
     public boolean isDataSpill() {
-        return analysis.getResults().getIndicToRowMap().get(currIndicator).getDataCount() < Double.parseDouble(getComputeValue());
+        return analysis.getResults().getIndicToRowMap().get(currIndicator).getDataCount() < Double
+                .parseDouble(getComputeValue());
     }
 
 }

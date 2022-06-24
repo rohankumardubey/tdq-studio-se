@@ -61,6 +61,7 @@ import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.indicator.ColumnFilter;
 import org.talend.cwm.indicator.DataValidation;
 import org.talend.dataprofiler.service.ISqlexplorerService;
+import org.talend.dataquality.indicators.mapdb.DBMap;
 import org.talend.metadata.managment.hive.HiveClassLoaderFactory;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 
@@ -916,6 +917,13 @@ public class SqlexplorerService implements ISqlexplorerService {
     @Override
     public Object createMapDBSetDataSet(String[] columnHeader, Object mapDB, int pageSize) {
         return new MapDBSetDataSet(columnHeader, (Set<Object>) mapDB, pageSize);
+    }
+
+    @Override
+    public Object createMapDBObjectDataSet(String[] columnHeader, Object mapDB, int pageSize, Object columnFilter,
+            Long itemSize) {
+        return new MapDBDataSet(columnHeader, (DBMap<Object, Object[]>) mapDB, pageSize, (ColumnFilter) columnFilter,
+                itemSize);
     }
 
     /*

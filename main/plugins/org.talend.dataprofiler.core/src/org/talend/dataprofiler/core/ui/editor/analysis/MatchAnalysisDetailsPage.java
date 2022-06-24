@@ -1279,7 +1279,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
     /**
      * The key sections need to know all columns as: column_index, column_name
      */
-    private Map<MetadataColumn, String> getAllColumnsToKeyMap() {
+    protected Map<MetadataColumn, String> getAllColumnsToKeyMap() {
         // only when open the analysis and match key is not empty
         if (getSelectedColumnsFromHandler() == null || getSelectedColumnsFromHandler().length < 1) {
             return null;
@@ -1475,12 +1475,12 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      *
      * @return
      */
-    private ModelElement[] getSelectedColumnsFromHandler() {
+    protected ModelElement[] getSelectedColumnsFromHandler() {
 
         return resolveModelElements(analysisHandler.getSelectedColumns());
     }
 
-    private ModelElement[] resolveModelElements(ModelElement[] selectedColumns) {
+    protected ModelElement[] resolveModelElements(ModelElement[] selectedColumns) {
         for (int index = 0; index < selectedColumns.length; index++) {
             if (selectedColumns[index].eIsProxy()) {
                 selectedColumns[index] = (ModelElement) EObjectHelper.resolveObject(selectedColumns[index]);

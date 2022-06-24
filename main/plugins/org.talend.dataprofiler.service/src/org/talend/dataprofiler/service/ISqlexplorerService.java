@@ -62,6 +62,8 @@ public interface ISqlexplorerService {
     public Object createMapDBColumnSetDataSet(String[] columnHeader, Object mapDB, Long size, Object currIndicator, int pageSize);
 
     public Object createMapDBSetDataSet(String[] columnHeader, Object mapDB, int pageSize);
+    
+    public Object createMapDBObjectDataSet(String[] columnHeader, Object mapDB, int pageSize, Object columnFilter, Long itemSize);
 
     public Object createMapDBDataSet(String[] columnHeader, Object mapDB, int pageSize, Object columnFilter, Long itemSize);
 
