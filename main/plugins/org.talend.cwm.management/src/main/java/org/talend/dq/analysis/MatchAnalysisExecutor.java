@@ -15,11 +15,14 @@ package org.talend.dq.analysis;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -37,13 +40,18 @@ import org.talend.cwm.helper.SwitchHelpers;
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.cwm.management.i18n.Messages;
 import org.talend.cwm.relational.TdColumn;
+import org.talend.dataquality.PluginConstant;
 import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.analysis.ExecutionInformations;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.columnset.BlockKeyIndicator;
 import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
+import org.talend.dataquality.indicators.columnset.impl.RecordMatchingIndicatorImpl;
+import org.talend.dataquality.indicators.mapdb.DBMap;
+import org.talend.dataquality.indicators.mapdb.StandardDBName;
 import org.talend.dataquality.matchmerge.Record;
 import org.talend.dataquality.record.linkage.grouping.MatchGroupResultConsumer;
+import org.talend.dataquality.rules.MatchRuleDefinition;
 import org.talend.dq.analysis.match.BlockAndMatchManager;
 import org.talend.dq.analysis.memory.AnalysisThreadMemoryChangeNotifier;
 import org.talend.dq.helper.AnalysisExecutorHelper;
@@ -116,8 +124,10 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
 
         // TDQ-9664 msjian: check the store on disk path.
         Boolean isStoreOnDisk = TaggedValueHelper.getValueBoolean(SQLExecutor.STORE_ON_DISK_KEY, analysis);
+        Boolean isAllowDrillDown = false;
         if (isStoreOnDisk) {
             String tempDataPath = TaggedValueHelper.getValueString(SQLExecutor.TEMP_DATA_DIR, analysis);
+            isAllowDrillDown =  TaggedValueHelper.getValueBoolean(SQLExecutor.ALLOW_DRILL_DOWN, analysis);
             File file = new File(tempDataPath);
             if (!file.exists() || !file.isDirectory()) {
                 rc.setOk(Boolean.FALSE);
@@ -151,7 +161,8 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
         recordMatchingIndicator.setMatchRowSchema(colSchemaString);
         recordMatchingIndicator.reset();
 
-        MatchGroupResultConsumer matchResultConsumer = createMatchGroupResultConsumer(recordMatchingIndicator);
+        MatchGroupResultConsumer matchResultConsumer =
+                createMatchGroupResultConsumer(isAllowDrillDown, recordMatchingIndicator);
         DataManager connection = analysis.getContext().getConnection();
         // TDQ-19889 msjian: set Prompt Context Values to connection
         org.talend.core.model.metadata.builder.connection.Connection con = SwitchHelpers.CONNECTION_SWITCH
@@ -171,8 +182,13 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             }
 
             try {
-                TypedReturnCode<Object> result = StoreOnDiskUtils.getDefault().executeWithStoreOnDisk(columnMap,
-                        recordMatchingIndicator, blockKeyIndicator, sqlExecutor.getStoreOnDiskHandler(), matchResultConsumer);
+                TypedReturnCode<Object> result = StoreOnDiskUtils.getDefault()
+                        .executeWithStoreOnDisk(columnMap,
+                                recordMatchingIndicator, blockKeyIndicator, sqlExecutor.getStoreOnDiskHandler(),
+                                matchResultConsumer);
+                if (isAllowDrillDown) {
+                    handleDrillDown(anlayzedElements, recordMatchingIndicator, matchResultConsumer);
+                }
                 if (result != null) {
                     returnCode.setObject((MatchGroupResultConsumer) result.getObject());
                     returnCode.setOk(result.isOk());
@@ -188,8 +204,9 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             try {
                 Iterator<Record> resultSetIterator = sqlExecutor.getResultSetIterator(copyConnection,
                         anlayzedElements);
-                BlockAndMatchManager bAndmManager = new BlockAndMatchManager(resultSetIterator, matchResultConsumer, columnMap,
-                        recordMatchingIndicator, blockKeyIndicator);
+                BlockAndMatchManager bAndmManager =
+                        new BlockAndMatchManager(resultSetIterator, matchResultConsumer, columnMap,
+                                recordMatchingIndicator, blockKeyIndicator);
                 bAndmManager.run();
             } catch (SQLException e) {
                 log.error(e, e);
@@ -238,8 +255,82 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
         return rc;
     }
 
-    private MatchGroupResultConsumer createMatchGroupResultConsumer(final RecordMatchingIndicator recordMatchingIndicator) {
-        MatchGroupResultConsumer matchResultConsumer = new MatchGroupResultConsumer(false) {
+    private void handleDrillDown(List<ModelElement> anlayzedElements, RecordMatchingIndicator recordMatchingIndicator,
+            MatchGroupResultConsumer matchResultConsumer) {
+        // TDQ-19618 support drill down
+        List<Object[]> sortResultByGID = StoreOnDiskUtils.sortResultByGID(getColumnsForMatch(anlayzedElements, recordMatchingIndicator),
+                matchResultConsumer.getFullMatchResult());
+        List<String> matchRowSchemaList = Arrays.asList(recordMatchingIndicator.getMatchRowSchema());
+        int groupSizeColumnIndex = matchRowSchemaList.indexOf(PluginConstant.GRP_SIZE);
+        int masterColumnIndex = matchRowSchemaList.indexOf(PluginConstant.MASTER);
+        int groupQualityColumnIndex = matchRowSchemaList.indexOf(PluginConstant.GRP_QUALITY);
+
+        String mapDBName = StandardDBName.drillDown.name();
+        DBMap<Object, Object[]> oneGroupDBMap = null;
+        DBMap<Object, Object[]> matchGroupDBMap =
+                (DBMap<Object, Object[]>) ((RecordMatchingIndicatorImpl) recordMatchingIndicator)
+                        .getMapDB(mapDBName + "Matched");
+        DBMap<Object, Object[]> suspectGroupDBMap =
+                (DBMap<Object, Object[]>) ((RecordMatchingIndicatorImpl) recordMatchingIndicator)
+                        .getMapDB(mapDBName + "Suspect");
+        Long index = Long.valueOf(0l);
+        Long matchIndex = Long.valueOf(0l);
+        Long suspectIndex = Long.valueOf(0l);
+        boolean isMatch = true;
+        double confidenceThreshold = 0.85;
+        if (recordMatchingIndicator.getBuiltInMatchRuleDefinition() != null) {
+            confidenceThreshold =
+                    ((MatchRuleDefinition) recordMatchingIndicator.getBuiltInMatchRuleDefinition())
+                            .getMatchGroupQualityThreshold();
+        }
+
+        for (Object[] record : sortResultByGID) {
+            int groupSize = StringUtils.isEmpty((String) record[groupSizeColumnIndex]) ? 0
+                    : Integer.valueOf((String) record[groupSizeColumnIndex]);
+
+            // get the group size of the master of one group
+            if (Boolean.valueOf((String) record[masterColumnIndex])) {
+                mapDBName = StandardDBName.drillDown.name() + groupSize;
+                oneGroupDBMap = (DBMap<Object, Object[]>) ((RecordMatchingIndicatorImpl) recordMatchingIndicator)
+                        .getMapDB(mapDBName);
+
+                if (groupSize > 1) {
+                    // Group quality score >= confidence threshold then it's a confident match group
+                    double groupScore = Double.valueOf((String) record[groupQualityColumnIndex]);
+                    if (groupScore >= confidenceThreshold) {
+                        isMatch = true;
+                    } else {
+                        isMatch = false;
+                    }
+                }
+            }
+
+            // put this record into related dbmap;
+            if (groupSize != 1) {
+                if (isMatch) {
+                    matchGroupDBMap.put(matchIndex++, record);
+                } else {
+                    suspectGroupDBMap.put(suspectIndex++, record);
+                }
+            }
+            oneGroupDBMap.put(index++, record);
+        }
+
+    }
+    
+    private String[] getColumnsForMatch(List<ModelElement> anlayzedElements, RecordMatchingIndicator indicator) {
+        String[] completeColumnNames = AnalysisRecordGroupingUtils.getCompleteColumnNames((ModelElement[]) anlayzedElements.toArray());
+
+        List<Object[]> listCols = new ArrayList<Object[]>();
+        listCols.add(completeColumnNames);
+        indicator.setListRows(listCols);
+        
+        return completeColumnNames;
+    }
+
+    private MatchGroupResultConsumer createMatchGroupResultConsumer(boolean allowDrillDown,
+            final RecordMatchingIndicator recordMatchingIndicator) {
+        MatchGroupResultConsumer matchResultConsumer = new MatchGroupResultConsumer(allowDrillDown) {
 
             /*
              * (non-Javadoc)
@@ -249,6 +340,10 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             @Override
             public void handle(Object row) {
                 recordMatchingIndicator.handle(row);
+                // TDQ-19618 support drill down
+                if (this.isKeepDataInMemory) {
+                    addOneRowOfResult(row);
+                }
             }
         };
         return matchResultConsumer;
@@ -300,8 +395,9 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             sqlExecutor = new DelimitedFileSQLExecutor();
         }
         // Tune on store on disk option when needed.
-        Boolean isStoreOnDisk = PluginChecker.isTDQLoaded() ? TaggedValueHelper.getValueBoolean(SQLExecutor.STORE_ON_DISK_KEY,
-                analysis) : Boolean.FALSE;
+        Boolean isStoreOnDisk =
+                PluginChecker.isTDQLoaded() ? TaggedValueHelper.getValueBoolean(SQLExecutor.STORE_ON_DISK_KEY,
+                        analysis) : Boolean.FALSE;
         if (sqlExecutor != null && isStoreOnDisk) {
             sqlExecutor.setStoreOnDisk(Boolean.TRUE);
             sqlExecutor.initStoreOnDiskHandler(analysis, recordMatchingIndicator, columnMap);
@@ -326,7 +422,8 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             keepRunning = false;
         } else if (AnalysisThreadMemoryChangeNotifier.getInstance().isUsageThresholdExceeded()) {
             this.usedMemory = AnalysisThreadMemoryChangeNotifier.convertToMB(ManagementFactory.getMemoryMXBean()
-                    .getHeapMemoryUsage().getUsed());
+                    .getHeapMemoryUsage()
+                    .getUsed());
             this.isLowMemory = true;
             keepRunning = false;
         }

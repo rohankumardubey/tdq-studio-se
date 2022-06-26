@@ -43,7 +43,8 @@ import org.talend.dq.indicators.preview.table.ChartDataEntity;
  */
 public class DrillDownUtils {
 
-    private static final String DRILL_DOWN_EDITOR = "org.talend.dataprofiler.core.ui.editor.analysis.drilldown.drillDownResultEditor"; //$NON-NLS-1$
+    private static final String DRILL_DOWN_EDITOR =
+            "org.talend.dataprofiler.core.ui.editor.analysis.drilldown.drillDownResultEditor"; //$NON-NLS-1$
 
     public static final int MENU_VALUE_TYPE = 1;
 
@@ -58,10 +59,13 @@ public class DrillDownUtils {
      *
      * @return
      */
-    public static AbstractDB<Object> getMapDB(final ChartDataEntity dataEntity, Analysis analysis, MenuItemEntity itemEntitie) {
+    public static AbstractDB<Object> getMapDB(final ChartDataEntity dataEntity, Analysis analysis,
+            MenuItemEntity itemEntitie) {
         AnalysisType analysisType = analysis.getParameters().getAnalysisType();
         if (AnalysisType.COLUMN_SET == analysisType) {
             return getColumnSetAnalysisMapDB(analysis);
+        } else if (AnalysisType.MATCH_ANALYSIS == analysisType) {
+            return getMatchAnalysisMapDB(dataEntity, analysis);
         }
 
         Indicator indicator = dataEntity.getIndicator();
@@ -78,6 +82,11 @@ public class DrillDownUtils {
         // TDQ-10785~
 
         String dbMapName = getDBMapName(analysisType, indicator, selectValue, itemEntitie);
+        return MapDBUtils.getMapDB(dbMapName, dataEntity.getIndicator());
+    }
+
+    private static AbstractDB<Object> getMatchAnalysisMapDB(ChartDataEntity dataEntity, Analysis analysis) {
+        String dbMapName = StandardDBName.drillDown.name() + dataEntity.getValue();
         return MapDBUtils.getMapDB(dbMapName, dataEntity.getIndicator());
     }
 
@@ -106,6 +115,8 @@ public class DrillDownUtils {
             dbMapName = selectValue + selectValueLength;
         } else if (AnalysisType.COLUMN_SET == analysisType) {
             dbMapName = StandardDBName.dataSection.name();
+        } else if (AnalysisType.MATCH_ANALYSIS == analysisType) {
+            dbMapName = StandardDBName.drillDown.name() + selectValue;
         }
 
         return dbMapName;
@@ -191,21 +202,24 @@ public class DrillDownUtils {
      * @param itemEntities
      * @param analysis
      */
-    public static void createDrillDownMenuForJava(final ChartDataEntity dataEntity, Menu menu, MenuItemEntity[] itemEntities,
+    public static void createDrillDownMenuForJava(final ChartDataEntity dataEntity, Menu menu,
+            MenuItemEntity[] itemEntities,
             final Analysis analysis) {
         final Indicator indicator = dataEntity != null ? dataEntity.getIndicator() : null;
         AnalyzedDataSet analyDataSet = analysis.getResults().getIndicToRowMap().get(indicator);
         boolean hasData = analyDataSet != null
                 && (analyDataSet.getData() != null && analyDataSet.getData().size() > 0
-                        || analyDataSet.getFrequencyData() != null && analyDataSet.getFrequencyData().size() > 0 || analyDataSet
-                        .getPatternData() != null && analyDataSet.getPatternData().size() > 0);
+                        || analyDataSet.getFrequencyData() != null && analyDataSet.getFrequencyData().size() > 0
+                        || analyDataSet
+                                .getPatternData() != null && analyDataSet.getPatternData().size() > 0);
 
         if (hasData) {
             createDrillDownMenu(dataEntity, menu, itemEntities, analysis);
         }
     }
 
-    public static void createDrillDownMenuForMapDB(final ChartDataEntity dataEntity, Menu menu, MenuItemEntity[] itemEntities,
+    public static void createDrillDownMenuForMapDB(final ChartDataEntity dataEntity, Menu menu,
+            MenuItemEntity[] itemEntities,
             final Analysis analysis) {
         final Indicator indicator = dataEntity != null ? dataEntity.getIndicator() : null;
         if (dataEntity == null || indicator == null) {
@@ -257,8 +271,9 @@ public class DrillDownUtils {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     if (SqlExplorerUtils.getDefault().getSqlexplorerService() != null) {
-                        CorePlugin.getDefault().openEditor(new DrillDownEditorInput(analysis, dataEntity, itemEntity),
-                                DRILL_DOWN_EDITOR);
+                        CorePlugin.getDefault()
+                                .openEditor(new DrillDownEditorInput(analysis, dataEntity, itemEntity),
+                                        DRILL_DOWN_EDITOR);
                     }
                 }
 
@@ -266,4 +281,9 @@ public class DrillDownUtils {
         }
     }
 
+    public static void createDrillDownMenuForMatchAnalysis(final ChartDataEntity dataEntity, Menu menu,
+            MenuItemEntity[] itemEntities,
+            final Analysis analysis) {
+        createDrillDownMenu(dataEntity, menu, itemEntities, analysis);
+    }
 }

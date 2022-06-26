@@ -276,6 +276,15 @@ public class SqlExplorerUtils extends AbstractOSGIServiceUtils {
         }
         return null;
     }
+    
+    public Object createMapDBObjectDataSet(String[] columnHeader, DBMap<Object, Object[]> mapDB, int pageSize,
+            ColumnFilter columnFilter, Long itemSize) {
+        if (getSqlexplorerService() != null) {
+            return getSqlexplorerService().createMapDBObjectDataSet(columnHeader, mapDB, pageSize, columnFilter, itemSize);
+        }
+        return null;
+    }
+
 
     public Object createMapDBDataSet(String[] columnHeader, DBMap<Object, List<Object>> mapDB, int pageSize,
             ColumnFilter columnFilter, Long itemSize) {

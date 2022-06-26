@@ -59,6 +59,10 @@ public class MatchParameterSection extends AbstractSectionComposite {
 
     private Composite contentComp = null;
 
+    private Composite drillDownComp = null;
+
+    private Boolean allowDrillDown = Boolean.FALSE;
+
     /**
      * DOC zshen MatchParameterSection constructor comment.
      *
@@ -67,7 +71,8 @@ public class MatchParameterSection extends AbstractSectionComposite {
      * @param style
      * @param toolkit
      */
-    public MatchParameterSection(ScrolledForm form, Composite parent, int style, FormToolkit toolkit, Analysis analysis) {
+    public MatchParameterSection(ScrolledForm form, Composite parent, int style, FormToolkit toolkit,
+            Analysis analysis) {
         super(form, parent, style, toolkit);
         section.setText(DefaultMessagesImpl.getString("MatchParameterSection.section.name")); //$NON-NLS-1$
         currAnalysis = analysis;
@@ -78,7 +83,8 @@ public class MatchParameterSection extends AbstractSectionComposite {
      * DOC zshen Comment method "initData".
      */
     private void initData() {
-        TaggedValue taggedValue = TaggedValueHelper.getTaggedValue(SQLExecutor.TEMP_DATA_DIR, currAnalysis.getTaggedValue());
+        TaggedValue taggedValue =
+                TaggedValueHelper.getTaggedValue(SQLExecutor.TEMP_DATA_DIR, currAnalysis.getTaggedValue());
         if (taggedValue != null) {
             tempPath = taggedValue.getValue();
         } else {
@@ -96,7 +102,13 @@ public class MatchParameterSection extends AbstractSectionComposite {
         } else {
             TaggedValueHelper.setTaggedValue(currAnalysis, SQLExecutor.STORE_ON_DISK_KEY, isStoreOnDisk.toString());
         }
-
+        taggedValue = TaggedValueHelper.getTaggedValue(SQLExecutor.ALLOW_DRILL_DOWN, currAnalysis.getTaggedValue());
+        if (taggedValue != null) {
+            allowDrillDown = Boolean.valueOf(taggedValue.getValue());
+        }
+//            else {
+//            TaggedValueHelper.setTaggedValue(currAnalysis, SQLExecutor.ALLOW_DRILL_DOWN, allowDrillDown.toString());
+//        }
     }
 
     public void createParameterCom() {
@@ -122,10 +134,11 @@ public class MatchParameterSection extends AbstractSectionComposite {
 
         contentComp = toolkit.createComposite(storeDiskGroup, SWT.NONE);
 
-        GridLayout gdLayoutFiveCol = new GridLayout(30, false);
-        GridData contentCompGD = new GridData(SWT.FILL, SWT.FILL, true, true);
+        GridLayout gdLayoutFiveCol = new GridLayout(5, false);
+        GridData contentCompGD = new GridData(SWT.LEFT, SWT.FILL, true, true);
         contentComp.setLayoutData(contentCompGD);
         contentComp.setLayout(gdLayoutFiveCol);
+
         changeDisplayStatus();
 
         checkButton.addSelectionListener(new SelectionListener() {
@@ -146,7 +159,8 @@ public class MatchParameterSection extends AbstractSectionComposite {
 
         });
 
-        toolkit.createLabel(contentComp, DefaultMessagesImpl.getString("MatchParameterSection.MaxBuffer"), SWT.NONE); //$NON-NLS-1$
+        toolkit.createLabel(contentComp, "  " + DefaultMessagesImpl.getString("MatchParameterSection.MaxBuffer"), //$NON-NLS-1$
+                SWT.NONE);
         final Text createText = toolkit.createText(contentComp, MaxSize, SWT.BORDER);
         createText.setLayoutData(gd);
         createText.addModifyListener(new ModifyListener() {
@@ -182,8 +196,10 @@ public class MatchParameterSection extends AbstractSectionComposite {
             @Override
             public void modifyText(ModifyEvent e) {
                 String tempText = ((Text) e.widget).getText();
-                String text = StringUtils.isBlank(tempText) ? tempText : tempText.endsWith(File.separator) ? tempText : tempText
-                        + File.separator;
+                String text = StringUtils.isBlank(tempText) ? tempText
+                        : tempText.endsWith(File.separator) ? tempText
+                                : tempText
+                                        + File.separator;
                 TaggedValueHelper.setTaggedValue(currAnalysis, SQLExecutor.TEMP_DATA_DIR, text);
                 listeners.firePropertyChange(MatchAnalysisConstant.ISDIRTY_PROPERTY, true, false);
             }
@@ -204,7 +220,8 @@ public class MatchParameterSection extends AbstractSectionComposite {
 
             @Override
             public void mouseDown(MouseEvent arg0) {
-                DirectoryDialog dd = new DirectoryDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(), SWT.NONE);
+                DirectoryDialog dd =
+                        new DirectoryDialog(PlatformUI.getWorkbench().getDisplay().getActiveShell(), SWT.NONE);
                 String temp = dd.open();
                 if (temp != null && !PluginConstant.EMPTY_STRING.equals(temp.trim())) {
                     outputPathText.setText(temp.trim());
@@ -216,6 +233,38 @@ public class MatchParameterSection extends AbstractSectionComposite {
             public void mouseUp(MouseEvent arg0) {
                 // do nothing here
             }
+        });
+
+        // TDQ-19618 support drill down for match analysis
+        Button drillDownButton = new Button(contentComp, SWT.CHECK);
+        GridData drillData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        drillDownButton.setLayoutData(drillData);
+        drillDownButton.setText(DefaultMessagesImpl.getString("MatchParameterSection.drillDown"));//$NON-NLS-1$
+        drillDownButton.setToolTipText(DefaultMessagesImpl.getString("MatchParameterSection.drillDown"));//$NON-NLS-1$
+        if (TaggedValueHelper.getTaggedValue(SQLExecutor.ALLOW_DRILL_DOWN, currAnalysis.getTaggedValue()) == null) {
+            drillDownButton.setSelection(true);
+            //default = true
+            TaggedValueHelper.setTaggedValue(currAnalysis, SQLExecutor.ALLOW_DRILL_DOWN, "true");
+        } else if (allowDrillDown) {
+            drillDownButton.setSelection(true);
+        }
+
+        drillDownButton.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                allowDrillDown = !allowDrillDown;
+                changeDisplayStatus();
+                TaggedValueHelper.setTaggedValue(currAnalysis, SQLExecutor.ALLOW_DRILL_DOWN, allowDrillDown.toString());
+                listeners.firePropertyChange(MatchAnalysisConstant.ISDIRTY_PROPERTY, true, false);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
         });
 
         section.setClient(mainComp);

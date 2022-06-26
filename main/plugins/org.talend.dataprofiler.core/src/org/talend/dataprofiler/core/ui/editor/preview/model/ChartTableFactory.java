@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -79,10 +80,12 @@ import org.talend.dataquality.indicators.WellFormE164PhoneCountIndicator;
 import org.talend.dataquality.indicators.WellFormIntePhoneCountIndicator;
 import org.talend.dataquality.indicators.WellFormNationalPhoneCountIndicator;
 import org.talend.dataquality.indicators.columnset.AllMatchIndicator;
+import org.talend.dataquality.indicators.columnset.RecordMatchingIndicator;
 import org.talend.dataquality.indicators.columnset.util.ColumnsetSwitch;
 import org.talend.dataquality.indicators.sql.WhereRuleIndicator;
 import org.talend.dataquality.indicators.util.IndicatorsSwitch;
 import org.talend.dataquality.rules.JoinElement;
+import org.talend.dq.analysis.explore.DataExplorer;
 import org.talend.dq.analysis.explore.IDataExplorer;
 import org.talend.dq.analysis.explore.PatternExplorer;
 import org.talend.dq.dbms.DbmsLanguage;
@@ -93,6 +96,8 @@ import org.talend.dq.helper.SqlExplorerUtils;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.indicators.preview.table.WhereRuleChartDataEntity;
 import org.talend.dq.pattern.PatternTransformer;
+import org.talend.dataquality.record.linkage.ui.composite.tableviewer.provider.DuplicateStatisticsRow;
+import org.talend.dataquality.record.linkage.ui.composite.tableviewer.provider.GroupStatisticsRow;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.resource.ResourceManager;
 
@@ -667,7 +672,7 @@ public final class ChartTableFactory {
                 EDatabaseTypeName.ORACLE_OCI.getDisplayName(), EDatabaseTypeName.MSSQL.getDisplayName(),
                 EDatabaseTypeName.MSSQL05_08.getDisplayName(), EDatabaseTypeName.AMAZON_AURORA.getDisplayName(),
                 EDatabaseTypeName.SAPHana.getDisplayName() };
-     // TDQ-18976 msjian: support create job for both table and view.
+        // TDQ-18976 msjian: support create job for both table and view.
         TdTable table = SwitchHelpers.TABLE_SWITCH.doSwitch(indicator.getAnalyzedElement());
         TdView view = SwitchHelpers.VIEW_SWITCH.doSwitch(indicator.getAnalyzedElement());
         if (table == null && view == null) {
@@ -754,6 +759,61 @@ public final class ChartTableFactory {
         };
 
         return iSwitch.doSwitch(indicator) != null;
+    }
+
+    // TDQ-19618 match analysis supports drill down
+    public static void addMenuAndTipForMatchAnalysis(final TableViewer tbViewer,
+            final RecordMatchingIndicator indicator, final Analysis analysis) {
+        final Table table = tbViewer.getTable();
+        table.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+                if (table.getMenu() != null) {
+                    table.getMenu().setVisible(false);
+                }
+
+                if (e.button == 3) {
+
+                    StructuredSelection selection = (StructuredSelection) tbViewer.getSelection();
+                    if (selection.getFirstElement() != null) {
+                        final ChartDataEntity dataEntity = new ChartDataEntity();
+
+                        if (selection.getFirstElement() instanceof GroupStatisticsRow) {
+                            dataEntity.setValue("" +
+                                    ((GroupStatisticsRow) selection.getFirstElement()).getGroupSize());
+                        } else {
+                            String value =
+                                    ((DuplicateStatisticsRow) selection.getFirstElement()).getLabel().split(" ")[0];
+                            if ("Unique".equals(value)) {
+                                dataEntity.setValue("1");
+                            } else if ("Row".equals(value)) {
+                                table.setMenu(null);
+                                return; // no drill down for row count.
+                            } else {
+                                dataEntity.setValue("" + value);
+                            }
+                        }
+                        dataEntity.setIndicator(indicator);
+
+                        Menu menu = new Menu(table.getShell(), SWT.POP_UP);
+                        table.setMenu(menu);
+
+                        MenuItemEntity[] itemEntities = new MenuItemEntity[1];
+                        itemEntities[0] = new MenuItemEntity(DataExplorer.MENU_VIEW_ROWS, null, "");
+
+                        if (analysis.getParameters().isStoreData()) { // if allow drill down
+                            DrillDownUtils.createDrillDownMenuForMatchAnalysis(dataEntity, menu, itemEntities,
+                                    analysis);
+                        }
+                        menu.setVisible(true);
+                    }
+                }
+            }
+        });
+        // add tooltip
+        TableUtils.addTooltipForTable(table);
+        TableUtils.addActionTooltip(table);
     }
 
 }

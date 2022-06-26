@@ -1,5 +1,7 @@
 change logs from talend
 
+2022-06-24 yyin TDQ-19618: add surpport for Object[] in MapDBDataset and related SqlexplorerService. 
+
 2021-09-26 qiongli TDQ-19478: fix preview General Jdbc connection on TOS-DQ
 
 2019-06-28 msjian TDQ-17205: revert some of above

@@ -215,11 +215,13 @@ public final class TableUtils {
                         // TDQ-11529: when hovering over table or charts, change background color
                         item.setBackground(highlightBlue);
                         // show Range tooltip
-                        ChartDataEntity entity = (ChartDataEntity) item.getData();
+                        if (item.getData() instanceof ChartDataEntity) {
+                            ChartDataEntity entity = (ChartDataEntity) item.getData();
 
-                        String rangeAsString = entity.getRangeAsString();
-                        if (rangeAsString != null) {
-                            showRangeTooltip(item, rangeAsString, mousePoint);
+                            String rangeAsString = entity.getRangeAsString();
+                            if (rangeAsString != null) {
+                                showRangeTooltip(item, rangeAsString, mousePoint);
+                            }
                         }
                     }
                 default:
