@@ -274,11 +274,19 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
                 (DBMap<Object, Object[]>) ((RecordMatchingIndicatorImpl) recordMatchingIndicator)
                         .getMapDB(mapDBName + "Suspect");
         Long index = Long.valueOf(0l);
+        Long matchIndex = Long.valueOf(0l);
+        Long suspectIndex = Long.valueOf(0l);
+        boolean isMatch = true;
+        double confidenceThreshold = 0.85;
+        if (recordMatchingIndicator.getBuiltInMatchRuleDefinition() != null) {
+            confidenceThreshold =
+                    ((MatchRuleDefinition) recordMatchingIndicator.getBuiltInMatchRuleDefinition())
+                            .getMatchGroupQualityThreshold();
+        }
 
         for (Object[] record : sortResultByGID) {
             int groupSize = StringUtils.isEmpty((String) record[groupSizeColumnIndex]) ? 0
                     : Integer.valueOf((String) record[groupSizeColumnIndex]);
-            boolean isMatch = true;
 
             // get the group size of the master of one group
             if (Boolean.valueOf((String) record[masterColumnIndex])) {
@@ -286,12 +294,9 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
                 oneGroupDBMap = (DBMap<Object, Object[]>) ((RecordMatchingIndicatorImpl) recordMatchingIndicator)
                         .getMapDB(mapDBName);
 
-                if (recordMatchingIndicator.getBuiltInMatchRuleDefinition() != null && groupSize > 1) {
+                if (groupSize > 1) {
                     // Group quality score >= confidence threshold then it's a confident match group
                     double groupScore = Double.valueOf((String) record[groupQualityColumnIndex]);
-                    double confidenceThreshold =
-                            ((MatchRuleDefinition) recordMatchingIndicator.getBuiltInMatchRuleDefinition())
-                                    .getMatchGroupQualityThreshold();
                     if (groupScore >= confidenceThreshold) {
                         isMatch = true;
                     } else {
@@ -303,9 +308,9 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
             // put this record into related dbmap;
             if (groupSize != 1) {
                 if (isMatch) {
-                    matchGroupDBMap.put(index, record);
+                    matchGroupDBMap.put(matchIndex++, record);
                 } else {
-                    suspectGroupDBMap.put(index, record);
+                    suspectGroupDBMap.put(suspectIndex++, record);
                 }
             }
             oneGroupDBMap.put(index++, record);
