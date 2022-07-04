@@ -13,7 +13,6 @@
 package org.talend.dataprofiler.core.ui.editor.composite;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreePath;
@@ -25,10 +24,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 import org.talend.commons.utils.platform.PluginChecker;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.properties.ConnectionItem;
@@ -45,6 +40,8 @@ import org.talend.dataprofiler.core.service.IJobService;
 import org.talend.dataprofiler.core.ui.action.actions.TdAddTaskAction;
 import org.talend.dataprofiler.core.ui.action.actions.predefined.CreateColumnAnalysisAction;
 import org.talend.dataprofiler.core.ui.action.actions.predefined.PreviewColumnAction;
+import org.talend.dataprofiler.core.ui.editor.indicator.IndicatorDefinitionItemEditorInput;
+import org.talend.dataprofiler.core.ui.editor.indicator.IndicatorEditor;
 import org.talend.dataprofiler.core.ui.editor.pattern.PatternEditor;
 import org.talend.dataprofiler.core.ui.editor.pattern.PatternItemEditorInput;
 import org.talend.dataprofiler.core.ui.editor.preview.ColumnIndicatorUnit;
@@ -61,7 +58,6 @@ import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.helper.SqlExplorerUtils;
-import org.talend.dq.helper.resourcehelper.ResourceFileMap;
 import org.talend.dq.nodes.AnalysisRepNode;
 import org.talend.dq.nodes.ReportAnalysisRepNode;
 import org.talend.repository.model.IRepositoryNode;
@@ -307,14 +303,10 @@ public abstract class ModelElementTreeMenuProvider {
             TreeItem treeItem = selection[0];
             IndicatorUnit indicatorUnit = (IndicatorUnit) treeItem.getData(AbstractColumnDropTree.INDICATOR_UNIT_KEY);
             UserDefIndicator indicator = (UserDefIndicator) indicatorUnit.getIndicator();
-            IFile file = ResourceFileMap.findCorrespondingFile(indicator.getIndicatorDefinition());
-            IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-            try {
-                activePage.openEditor(new FileEditorInput(file),
-                        "org.talend.dataprofiler.core.ui.editor.indicator.IndicatorEditor"); //$NON-NLS-1$
-            } catch (PartInitException e1) {
-                log.error(e1, e1);
-            }
+            RepositoryNode udiNode = RepositoryNodeHelper.recursiveFind(indicator.getIndicatorDefinition());
+            IndicatorDefinitionItemEditorInput indicatorItemEditorInput =
+                    new IndicatorDefinitionItemEditorInput(udiNode);
+            CorePlugin.getDefault().openEditor(indicatorItemEditorInput, IndicatorEditor.class.getName());
         }
     }
 
