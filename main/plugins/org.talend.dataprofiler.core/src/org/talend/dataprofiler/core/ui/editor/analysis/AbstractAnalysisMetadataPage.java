@@ -812,9 +812,10 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
      */
     protected void saveNumberOfConnectionsPerAnalysis() throws DataprofilerCoreException {
         String numberStr = numberOfConnectionsPerAnalysisText.getText().trim();
-        // check whether the field is valid(not blank and not 0).
+        // check whether the field is valid(not blank and not <=0).
+        String analysisContextValue = ContextHelper.getAnalysisContextValue(getCurrentModelElement(), numberStr);
         if (StringUtils.isBlank(numberStr)
-                || Integer.parseInt(ContextHelper.getAnalysisContextValue(getCurrentModelElement(), numberStr)) == 0) {
+                || StringUtils.isBlank(analysisContextValue) || Integer.parseInt(analysisContextValue) <= 0) {
             throw new DataprofilerCoreException(DefaultMessagesImpl.getString(
                     "AbstractAnalysisMetadataPage.connectionPerAnaError", //$NON-NLS-1$
                     DefaultMessagesImpl.getString("AnalysisTuningPreferencePage.NumberOfConnectionsPerAnalysis"))); //$NON-NLS-1$
