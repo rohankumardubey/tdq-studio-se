@@ -258,8 +258,12 @@ public class MatchAnalysisExecutor implements IAnalysisExecutor {
     private void handleDrillDown(List<ModelElement> anlayzedElements, RecordMatchingIndicator recordMatchingIndicator,
             MatchGroupResultConsumer matchResultConsumer) {
         // TDQ-19618 support drill down
+        List<Object[]> resultData =  new ArrayList<>();
+        if (matchResultConsumer.getFullMatchResult() != null) {
+            resultData = matchResultConsumer.getFullMatchResult();
+        }
         List<Object[]> sortResultByGID = StoreOnDiskUtils.sortResultByGID(getColumnsForMatch(anlayzedElements, recordMatchingIndicator),
-                matchResultConsumer.getFullMatchResult());
+                resultData);
         List<String> matchRowSchemaList = Arrays.asList(recordMatchingIndicator.getMatchRowSchema());
         int groupSizeColumnIndex = matchRowSchemaList.indexOf(PluginConstant.GRP_SIZE);
         int masterColumnIndex = matchRowSchemaList.indexOf(PluginConstant.MASTER);

@@ -140,7 +140,8 @@ public class DelimitedFileSQLExecutor extends SQLExecutor {
                     continue;
                 }
 
-                if (limitValue != -1 && currentRecord > limitValue) {
+                // the valid limit value at least > headValue
+                if (limitValue > headValue && currentRecord > limitValue) {
                     break;
                 }
                 // only get the analysed columns' values
