@@ -18,6 +18,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.IImage;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.database.DqRepositoryViewService;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.repository.ERepositoryObjectType;
@@ -104,9 +105,6 @@ public class DBViewFolderRepNode extends DQDBFolderRepositoryNode implements ICo
             return filterResultsIfAny(children);
         }
         children.clear();
-        if (isCanclePromptContext()) {
-            return children;
-        }
         IRepositoryViewObject object = this.getParent().getObject();
         createRepositoryNodeViewFolderNode(object);
         // ADD msjian 2011-7-22 22206: fix the note 93101
@@ -143,14 +141,18 @@ public class DBViewFolderRepNode extends DQDBFolderRepositoryNode implements ICo
                 // MOD TDQ-8718 20140505 yyin --the repository view cares about if use the filter or not, the column
                 // select dialog cares about if connect to DB or not.
                 if (views.isEmpty()) {
-                    if (isCallingFromColumnDialog()) {
-                        views = DqRepositoryViewService.getViews(getConnection(), catalog, null, isLoadDBFromDialog(), true);
-                    } else if (!isOnFilterring()) {
-                        // MOD gdbu 2011-7-21 bug 23220
-                        views = DqRepositoryViewService.getViews(getConnection(), catalog, null, true, true);
-                    }
-                    if (views != null && views.size() > 0) {
-                        ProxyRepositoryFactory.getInstance().save(getItem(), false);
+                    Connection connection = getConnection();
+                    if (connection != null) {
+                        if (isCallingFromColumnDialog()) {
+                            views = DqRepositoryViewService.getViews(connection, catalog, null,
+                                    isLoadDBFromDialog(), true);
+                        } else if (!isOnFilterring()) {
+                            // MOD gdbu 2011-7-21 bug 23220
+                            views = DqRepositoryViewService.getViews(connection, catalog, null, true, true);
+                        }
+                        if (views != null && views.size() > 0) {
+                            ProxyRepositoryFactory.getInstance().save(getItem(), false);
+                        }
                     }
                 }
 

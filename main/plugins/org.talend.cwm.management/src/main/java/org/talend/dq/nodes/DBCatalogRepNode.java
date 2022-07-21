@@ -92,6 +92,7 @@ public class DBCatalogRepNode extends DQRepositoryNode {
      */
     @Override
     public List<IRepositoryNode> getChildren() {
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         MetadataCatalogRepositoryObject metadataCatalog = (MetadataCatalogRepositoryObject) getObject();
         List<Schema> schemas = CatalogHelper.getSchemas(metadataCatalog.getCatalog());
         List<IRepositoryNode> children = null;
@@ -106,7 +107,6 @@ public class DBCatalogRepNode extends DQRepositoryNode {
             children = filterResultsIfAny(createTableViewFolder(metadataCatalog));
         }
         // ~22204
-        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         return children;
     }
 

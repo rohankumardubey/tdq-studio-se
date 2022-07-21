@@ -102,6 +102,7 @@ public class DBViewRepNode extends ColumnSetRepNode {
      */
     @Override
     public List<IRepositoryNode> getChildren() {
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         // MOD gdbu 2011-7-1 bug : 22204
         List<IRepositoryNode> nodes = new ArrayList<IRepositoryNode>();
         DBColumnFolderRepNode columnFolderNode = new DBColumnFolderRepNode(getObject(), this, ENodeType.TDQ_REPOSITORY_ELEMENT,

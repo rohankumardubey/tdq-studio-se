@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.EList;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.IImage;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
 import org.talend.core.model.metadata.builder.database.DqRepositoryViewService;
 import org.talend.core.model.properties.ConnectionItem;
@@ -99,6 +100,7 @@ public class DBColumnFolderRepNode extends DQDBFolderRepositoryNode implements I
 
     @Override
     public List<IRepositoryNode> getChildren() {
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         if (!this.isReload() && !children.isEmpty()) {
             // MOD gdbu 2011-6-29 bug : 22204
             return filterResultsIfAny(children);
@@ -160,14 +162,18 @@ public class DBColumnFolderRepNode extends DQDBFolderRepositoryNode implements I
 
     private List<TdColumn> loadColumns(boolean isLoadDB) {
         List<TdColumn> tdcolumns = null;
+
         try {
-            if (tdTable != null) {
-                tdcolumns = DqRepositoryViewService.getColumns(getConnection(), tdTable, isLoadDB);
-            } else if (tdView != null) {
-                tdcolumns = DqRepositoryViewService.getColumns(getConnection(), tdView, isLoadDB);
-            }
-            if (tdcolumns != null && tdcolumns.size() > 0) {
-                ElementWriterFactory.getInstance().createDataProviderWriter().save(getItem(), false);
+            Connection connection = getConnection();
+            if (connection != null) {
+                if (tdTable != null) {
+                    tdcolumns = DqRepositoryViewService.getColumns(connection, tdTable, isLoadDB);
+                } else if (tdView != null) {
+                    tdcolumns = DqRepositoryViewService.getColumns(connection, tdView, isLoadDB);
+                }
+                if (tdcolumns != null && tdcolumns.size() > 0) {
+                    ElementWriterFactory.getInstance().createDataProviderWriter().save(getItem(), false);
+                }
             }
         } catch (MissingDriverException e) {
             throw e;

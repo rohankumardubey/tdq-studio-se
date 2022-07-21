@@ -104,6 +104,7 @@ public class DBSchemaRepNode extends DQRepositoryNode {
 
     @Override
     public List<IRepositoryNode> getChildren() {
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         IRepositoryViewObject object = getObject();
         // MOD msjian 2011-7-13 feature 22206 : fix note 0091973 issue1
         if (DQRepositoryNode.isUntilSchema()) {

@@ -106,6 +106,7 @@ public class DBTableRepNode extends ColumnSetRepNode {
      */
     @Override
     public List<IRepositoryNode> getChildren() {
+        DQDBFolderRepositoryNode.clearCatchOfPrompContext();
         // MOD klliu TDQ-4332 only initlized sub node(column folder) once time 2012-02-07
         if (!casheChildren.isEmpty()) {
             return filterResultsIfAny(casheChildren);
