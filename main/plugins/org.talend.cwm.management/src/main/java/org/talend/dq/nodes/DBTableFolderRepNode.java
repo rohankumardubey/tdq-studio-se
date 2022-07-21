@@ -18,6 +18,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.IImage;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.database.DqRepositoryViewService;
 import org.talend.core.model.metadata.builder.database.ExtractMetaDataFromDataBase.ETableTypes;
 import org.talend.core.model.properties.ConnectionItem;
@@ -109,9 +110,6 @@ public class DBTableFolderRepNode extends DQDBFolderRepositoryNode implements IC
         children.clear();
 
         IRepositoryViewObject object = this.getParent().getObject();
-        if (isCanclePromptContext()) {
-            return children;
-        }
         createRepositoryNodeTableFolderNode(object);
         // ADD msjian 2011-7-22 22206: fix the note 93101
         if (DQRepositoryNode.isUntilSchema()) {
@@ -119,6 +117,7 @@ public class DBTableFolderRepNode extends DQDBFolderRepositoryNode implements IC
         }
         // ~22206
         this.setReload(false);
+
         return filterResultsIfAny(children);
         // ~22204
     }
@@ -186,7 +185,11 @@ public class DBTableFolderRepNode extends DQDBFolderRepositoryNode implements IC
     }
 
     protected List<TdTable> loadElementWhenEmpty(boolean isLoad, Schema parent) throws Exception {
-        return DqRepositoryViewService.getTables(getConnection(), parent, null, isLoad, true);
+        Connection connection = getConnection();
+        if (connection == null) {
+            return new ArrayList<TdTable>();
+        }
+        return DqRepositoryViewService.getTables(connection, parent, null, isLoad, true);
     }
 
     protected List<TdTable> getExistEmelents(Schema parent) {
@@ -210,14 +213,17 @@ public class DBTableFolderRepNode extends DQDBFolderRepositoryNode implements IC
         // MOD TDQ-8718 20140505 yyin --the repository view cares about if use the filter or not, the column
         // select dialog cares about if connect to DB or not.
         if (tables.isEmpty()) {
-            if (isCallingFromColumnDialog()) {
-                tables = DqRepositoryViewService.getTables(getConnection(), catalog, null, isLoadDBFromDialog(), true);
-            } else if (!isOnFilterring()) {
-                // MOD mzhao 0022204 : when the tree is rendering with a filter, do not loading from db.
-                tables = DqRepositoryViewService.getTables(getConnection(), catalog, null, true, true);
-            }
-            if (tables != null && tables.size() > 0) {
-                ProxyRepositoryFactory.getInstance().save(getItem(), false);
+            Connection connection = getConnection();
+            if (connection != null) {
+                if (isCallingFromColumnDialog()) {
+                    tables = DqRepositoryViewService.getTables(connection, catalog, null, isLoadDBFromDialog(), true);
+                } else if (!isOnFilterring()) {
+                    // MOD mzhao 0022204 : when the tree is rendering with a filter, do not loading from db.
+                    tables = DqRepositoryViewService.getTables(connection, catalog, null, true, true);
+                }
+                if (tables != null && tables.size() > 0) {
+                    ProxyRepositoryFactory.getInstance().save(getItem(), false);
+                }
             }
         }
         return tables;

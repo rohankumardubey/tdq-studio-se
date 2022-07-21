@@ -58,7 +58,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
     private boolean reload = false;
 
     // if click 'cancel' when pop-up the prompt context dialog
-    private static boolean canclePromptContext = false;
+    private static boolean cancelPromptContext = false;
 
     public boolean isReload() {
         return this.reload;
@@ -76,12 +76,13 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             // if exist in cache get from it, else save to contextConnCache
             if (contextConnCache.containsKey(con)) {
                 this.connection = contextConnCache.get(con);
-            } else if (!canclePromptContext) {
+            } else if (!cancelPromptContext) {
                 Connection prepareConection = ConnectionUtils.prepareConection(con);
-                this.connection = prepareConection;
-                if (connection == null) {
-                    canclePromptContext = true;
+                if (prepareConection == null) {
+                    this.connection = con;
+                    cancelPromptContext = true;
                 } else {
+                    this.connection = prepareConection;
                     contextConnCache.put(con, prepareConection);
                 }
             }
@@ -89,7 +90,7 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
     }
 
     public Connection getConnection() {
-        if (this.connection == null && !canclePromptContext) {
+        if (this.connection == null) {// && !cancelPromptContext
             getConnectionFromViewObject();
         }
         return this.connection;
@@ -108,10 +109,16 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
             }
         }
         
-        // TDQ-19889 msjian: Enabling the prompt to context variables
-        connection = ConnectionUtils.prepareConection(connection);
-        if (connection == null) {
-            canclePromptContext = true;
+        if (!cancelPromptContext) {
+            // TDQ-19889 msjian: Enabling the prompt to context variables
+            Connection prepareConection = ConnectionUtils.prepareConection(connection);
+            if (prepareConection == null) {
+                cancelPromptContext = true;
+            } else {
+                // when user click cancel, use the old connection even it will connect fail
+                // else on the column folder cannot show "reload column list" menu
+                connection = prepareConection;
+            }
         }
     }
 
@@ -173,12 +180,12 @@ public class DQDBFolderRepositoryNode extends DQRepositoryNode {
         this.item = item;
     }
 
-    public boolean isCanclePromptContext() {
-        return canclePromptContext;
+    public boolean isCancelPromptContext() {
+        return cancelPromptContext;
     }
 
     public static void clearCatchOfPrompContext() {
-        canclePromptContext = false;
+        cancelPromptContext = false;
         if (!contextConnCache.isEmpty()) {
             contextConnCache.clear();
         }

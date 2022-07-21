@@ -12,9 +12,11 @@
 // ============================================================================
 package org.talend.dq.nodes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.talend.core.model.general.Project;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.database.DqRepositoryViewService;
 import org.talend.core.model.metadata.builder.database.ExtractMetaDataFromDataBase.ETableTypes;
 import org.talend.core.model.repository.IRepositoryViewObject;
@@ -59,7 +61,11 @@ public class DBCalculationViewFolderRepNode extends DBTableFolderRepNode {
 
     @Override
     protected List<TdTable> loadElementWhenEmpty(boolean isLoad, Schema parent) throws Exception {
-        return DqRepositoryViewService.getCalculationViews(getConnection(), parent, null, isLoad, true);
+        Connection connection = getConnection();
+        if (connection == null) {
+            return new ArrayList<TdTable>();
+        }
+        return DqRepositoryViewService.getCalculationViews(connection, parent, null, isLoad, true);
     }
 
     @Override
