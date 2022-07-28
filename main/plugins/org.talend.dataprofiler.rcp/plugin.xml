@@ -60,9 +60,9 @@
             context="Hive wizard"
             language="java"
             message="Wizard use for TOP"
-            name="commons-configuration-1.6.jar" mvn_uri="mvn:commons-configuration/commons-configuration/1.6" 
+            name="commons-configuration2-2.8.0.jar" mvn_uri="mvn:org.apache.commons/commons-configuration2/2.8.0" 
             required="true"
-            uripath="platform:/plugin/org.talend.libraries.apache.common/lib/commons-configuration-1.6.jar">
+            >
       </libraryNeeded>
       <libraryNeeded
             context="Hive wizard"
