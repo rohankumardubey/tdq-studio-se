@@ -65,16 +65,6 @@
 		<module>main/plugins/org.talend.libraries.clearspring.analytics</module>
 		<module>main/plugins/org.talend.rcp.branding.top</module>
 		<module>sample/test.myudi</module>
-		<module>test/features/org.talend.dataquality.se.test.feature</module>
-		<module>test/plugins/org.talend.cwm.compare.test</module>
-		<module>test/plugins/org.talend.cwm.management.test</module>
-		<module>test/plugins/org.talend.dataprofiler.core.test</module>
-		<module>test/plugins/org.talend.dataprofiler.ecos.test</module>
-		<module>test/plugins/org.talend.dataquality.matching.test</module>
-		<!--module>test/plugins/org.talend.dataquality.record.linkage.test</module-->
-		<module>test/plugins/org.talend.dataquality.record.linkage.ui.test</module>
-		<!--module>test/plugins/org.talend.dataquality.standardization.test</module-->
-		<module>test/plugins/org.talend.dataquality.test</module>
 	</modules>
 	<build>
 		<plugins>
@@ -97,4 +87,27 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>junit.p2</id>
+			<activation>
+				<property>
+					<name>junit.product</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<modules>
+				<module>test/features/org.talend.dataquality.se.test.feature</module>
+				<module>test/plugins/org.talend.cwm.compare.test</module>
+				<module>test/plugins/org.talend.cwm.management.test</module>
+				<module>test/plugins/org.talend.dataprofiler.core.test</module>
+				<module>test/plugins/org.talend.dataprofiler.ecos.test</module>
+				<module>test/plugins/org.talend.dataquality.matching.test</module>
+				<!--module>test/plugins/org.talend.dataquality.record.linkage.test</module-->
+				<module>test/plugins/org.talend.dataquality.record.linkage.ui.test</module>
+				<!--module>test/plugins/org.talend.dataquality.standardization.test</module-->
+				<module>test/plugins/org.talend.dataquality.test</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>
