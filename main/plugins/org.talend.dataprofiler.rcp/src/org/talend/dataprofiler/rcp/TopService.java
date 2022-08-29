@@ -32,6 +32,7 @@ import org.talend.core.model.metadata.ColumnNameChanged;
 import org.talend.core.model.metadata.IMetadataTable;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.properties.Item;
+import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.utils.KeywordsValidator;
@@ -471,6 +472,21 @@ public class TopService implements ICoreService {
     public void installComponents(IProgressMonitor monitor) {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public Integer getSignatureVerifyResult(Property property, IPath resourcePath, boolean considerGP) throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getLicenseCustomer() {
+        return null;
+    }
+
+    @Override
+    public boolean isInValidGP() {
+        return true;
     }
 
 }
