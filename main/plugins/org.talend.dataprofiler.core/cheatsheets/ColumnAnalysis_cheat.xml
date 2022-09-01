@@ -34,7 +34,7 @@ Note: <b>Nominal</b> means that the column contains textual values (no order or 
          skip="true"
          title="Add a UDI">
       <description>
-         Click the <b>UDI</b> button for each column you want to set the <b>User Defined Indicator</b> for. In the <b>UDI Selection</b> dialog box, select the check boxes which correspond to the indicators desired.
+         Click the <b>UDI</b> button for each column you want to set the <b>User-defined Indicator</b> for. In the <b>UDI Selection</b> dialog box, select the check boxes which correspond to the indicators desired.
       </description>
    </item>
    <item title="Set the indicator options." dialog="true" skip="true">

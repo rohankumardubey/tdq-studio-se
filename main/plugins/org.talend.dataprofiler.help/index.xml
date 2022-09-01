@@ -55,7 +55,7 @@
         <topic label="Export Pattern" href="$nl$/html/wizard/pattern/exportPattern.html"/>
      </entry>
       
-     <entry keyword="User Defined Indicator (UDI)">
+     <entry keyword="User-defined Indicator (UDI)">
          <entry keyword="New Indicator">
             <topic href="$nl$/html/wizard/user_define_indicator/newUDIndicator.html"/>
          </entry>

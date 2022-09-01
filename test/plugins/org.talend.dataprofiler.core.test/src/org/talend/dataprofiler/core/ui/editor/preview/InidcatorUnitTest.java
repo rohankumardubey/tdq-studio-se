@@ -232,7 +232,7 @@ public class InidcatorUnitTest {
         boolean exsitingForm = colUnit.isExsitingForm();
         // TDQ-10557: Allow set threshold option on UDIs
         Assert.assertEquals("indicator " + IndicatorEnum.UserDefinedIndicatorEnum.getLabel()
-                + " User Defined Count exists Form enum", true, exsitingForm);
+                + " User-defined Count exists Form enum", true, exsitingForm);
     }
 
 }
