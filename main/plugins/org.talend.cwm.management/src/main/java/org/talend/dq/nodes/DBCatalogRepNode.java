@@ -15,16 +15,21 @@ package org.talend.dq.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.repositoryObject.MetadataCatalogRepositoryObject;
 import org.talend.core.repository.model.repositoryObject.MetadataSchemaRepositoryObject;
 import org.talend.cwm.helper.CatalogHelper;
+import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.dataquality.PluginConstant;
+import org.talend.metadata.managment.ui.convert.DbConnectionAdapter;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
+
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
 
@@ -36,7 +41,7 @@ public class DBCatalogRepNode extends DQRepositoryNode {
     private MetadataCatalogRepositoryObject metadataCatalogObject;
 
     private List<IRepositoryNode> schemaChildren;
-
+    
     public Catalog getCatalog() {
         return this.metadataCatalogObject.getCatalog();
     }
@@ -171,6 +176,8 @@ public class DBCatalogRepNode extends DQRepositoryNode {
     public String getDisplayText() {
         // MOD zshen to modify catalog name when connection is ODBC
         String catalogName = getObject().getLabel();
+        catalogName = handleJDBCContextCase(catalogName, TaggedValueHelper.ORIGINAL_SID,
+                TaggedValueHelper.TARGET_SID);
         // MOD qiongli,vertica database is empty string when don't fill Database parameter in the creation wizard.
         if (PluginConstant.EMPTY_STRING.endsWith(catalogName)) {
             catalogName = PluginConstant.DEFAULT_STRING;
@@ -178,6 +185,26 @@ public class DBCatalogRepNode extends DQRepositoryNode {
         IPath catalogPath = new Path(catalogName);
         catalogName = catalogPath.removeFileExtension().lastSegment();
 
+        return catalogName;
+    }
+    
+    protected String handleJDBCContextCase(String catalogName) {
+        if (StringUtils.isEmpty(catalogName)) {
+            return catalogName;
+        }
+        RepositoryNode parentNode = this.getParent();
+        if (parentNode instanceof DBConnectionRepNode) {
+            DatabaseConnection parentConnection = ((DBConnectionRepNode) parentNode).getDatabaseConnection();
+            DbConnectionAdapter dbConnectionAdapter =
+                    new DbConnectionAdapter(parentConnection);
+            if (dbConnectionAdapter.isSwitchWithTaggedValueMode()) {
+                String originalSID = TaggedValueHelper.getValueString(TaggedValueHelper.ORIGINAL_SID, parentConnection);
+                String targetSID = TaggedValueHelper.getValueString(TaggedValueHelper.TARGET_SID, parentConnection);
+                if (catalogName.equals(originalSID)) {
+                    return targetSID;
+                }
+            }
+        }
         return catalogName;
     }
 }

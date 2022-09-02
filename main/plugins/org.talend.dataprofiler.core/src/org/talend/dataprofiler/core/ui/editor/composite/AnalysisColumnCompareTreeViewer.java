@@ -60,6 +60,7 @@ import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
+import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithJDBCConstraintDialog;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectionDialog;
 import org.talend.dataprofiler.core.ui.editor.analysis.AbstractAnalysisMetadataPage;
 import org.talend.dataprofiler.core.ui.editor.analysis.FunctionalDependencyAnalysisDetailsPage;
@@ -71,8 +72,10 @@ import org.talend.dataquality.analysis.Analysis;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.columnset.ColumnDependencyIndicator;
 import org.talend.dataquality.indicators.columnset.RowMatchingIndicator;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.nodes.DBColumnRepNode;
+import org.talend.dq.nodes.DBConnectionRepNode;
 import org.talend.repository.model.RepositoryNode;
 
 import orgomg.cwm.objectmodel.core.ModelElement;
@@ -477,9 +480,21 @@ public class AnalysisColumnCompareTreeViewer extends AbstractPagePart implements
     public void openColumnsSelectionDialog(TableViewer columnsElementViewer, List<RepositoryNode> columnsOfSectionPart,
             boolean isLeftPart) {
         RepositoryNode connNode = masterPage.getConnComboSelectNode();
-        ColumnsSelectionDialog dialog = new ColumnsSelectionDialog(masterPage, null,
-                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnsOfSectionPart, connNode,//$NON-NLS-1$
-                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        ColumnsSelectionDialog dialog = null;
+        if (JDBCSwitchContextUtils.isJDBCContextMode(connNode)) {
+            dialog = new ColumnsSelectWithJDBCConstraintDialog(
+                    masterPage,
+                    null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnsOfSectionPart, //$NON-NLS-1$
+                    (DBConnectionRepNode) connNode, DefaultMessagesImpl
+                            .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        } else {
+
+            dialog = new ColumnsSelectionDialog(masterPage, null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnsOfSectionPart, //$NON-NLS-1$
+                    connNode,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        }
         if (dialog.open() == Window.OK) {
             Object[] columns = dialog.getResult();
             List<RepositoryNode> columnSet = new ArrayList<RepositoryNode>();

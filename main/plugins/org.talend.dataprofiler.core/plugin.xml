@@ -1667,6 +1667,12 @@
            name="Update Regular Expression Matching for Postgresql Task"
            version="8.0.1">
      </workspacetask>
+     <workspacetask
+           class="org.talend.dataprofiler.core.migration.impl.AddTaggedValueJDBCSwitchContextTask"
+           id="org.talend.dataprofiler.core.migration.impl.AddTaggedValueJDBCSwitchContext"
+           name="add tagged value for jdbc connection for switch context"
+           version="8.0.1">
+     </workspacetask>
   </extension>
   
   <extension

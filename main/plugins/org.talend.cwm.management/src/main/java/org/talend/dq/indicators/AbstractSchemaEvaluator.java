@@ -48,6 +48,7 @@ import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.metadata.managment.model.MetadataFillFactory;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
 
@@ -165,7 +166,7 @@ public abstract class AbstractSchemaEvaluator<T> extends Evaluator<T> {
             if (SwitchHelpers.CATALOG_SWITCH.doSwitch(analyzedElement) != null) {
                 quCatalog = dbms().quote(((Catalog) analyzedElement).getName());
             } else if (eContainer != null && SwitchHelpers.CATALOG_SWITCH.doSwitch(eContainer) != null) {
-                quCatalog = dbms().quote(((Catalog) eContainer).getName());
+                quCatalog = dbms().quote(new CatalogAdapter(((Catalog) eContainer)).getName());
             }
         }
         return quCatalog;
@@ -451,7 +452,9 @@ public abstract class AbstractSchemaEvaluator<T> extends Evaluator<T> {
             hasCatalog = true;
             catName = hasCatalog ? tdCatalog.getName() : null;
         }
-        schemaIndic.setAnalyzedElement(hasSchema ? tdSchema : tdCatalog);
+        if (schemaIndic.getAnalyzedElement() == null) {
+            schemaIndic.setAnalyzedElement(hasSchema ? tdSchema : tdCatalog);
+        }
 
         // profile tables
         int tableCount = 0;

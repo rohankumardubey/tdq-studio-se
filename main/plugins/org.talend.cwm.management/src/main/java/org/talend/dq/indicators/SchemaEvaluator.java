@@ -25,6 +25,7 @@ import org.talend.cwm.management.i18n.Messages;
 import org.talend.dataquality.helpers.DataqualitySwitchHelper;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dataquality.indicators.schema.SchemaIndicator;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 import org.talend.utils.sugars.ReturnCode;
 
 import orgomg.cwm.foundation.softwaredeployment.DataProvider;
@@ -74,7 +75,7 @@ public class SchemaEvaluator extends AbstractSchemaEvaluator<Schema> {
             if (schemaIndicator == null) {
                 continue;
             }
-            Schema schema = (Schema) schemaIndicator.getAnalyzedElement();
+            Schema schema = new SchemaAdapter((Schema) schemaIndicator.getAnalyzedElement()).getSchema();
             String catName = schema.getName();
             // MOD yyi 2009-11-30 10187
             if (!checkSchema(schema)) {

@@ -38,8 +38,10 @@ import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
+
 import orgomg.cwm.objectmodel.core.CoreFactory;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.resource.relational.Catalog;
@@ -450,7 +452,7 @@ public class RowMatchingAnalysisExecutor extends ColumnAnalysisSqlExecutor {
                 // try to get catalog above schema
                 final Schema parentSchema = SchemaHelper.getParentSchema(columnSetOwner);
                 final Catalog parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
-                catalogName = parentCatalog != null ? parentCatalog.getName() : null;
+                catalogName = parentCatalog != null ? new CatalogAdapter(parentCatalog).getName() : null;
             }
             analyzedTableName = dbms().toQualifiedName(catalogName, schemaName, table);
         }

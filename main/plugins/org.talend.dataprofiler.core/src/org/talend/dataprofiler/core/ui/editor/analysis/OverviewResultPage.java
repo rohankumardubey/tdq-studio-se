@@ -73,6 +73,7 @@ import org.talend.dataprofiler.core.model.OverviewIndUIElement;
 import org.talend.dataprofiler.core.ui.ColumnSortListener;
 import org.talend.dataprofiler.core.ui.action.actions.AnalyzeColumnSetAction;
 import org.talend.dataprofiler.core.ui.action.actions.OverviewAnalysisAction;
+import org.talend.dataprofiler.core.ui.filters.JDBCActiveElementsFilter;
 import org.talend.dataprofiler.core.ui.utils.TableUtils;
 import org.talend.dataquality.analysis.ExecutionInformations;
 import org.talend.dataquality.indicators.Indicator;
@@ -92,6 +93,7 @@ import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
+import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.ColumnSet;
@@ -267,9 +269,18 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
 
         if (catalogs.size() > 0 && containSubSchema) {
             createCatalogSchemaColumns(catalogTable);
-            provider = new CatalogSchemaViewerProvier();
+            SchemaViewerProvier svProvider = null;
+            boolean withFilter = false;
+            if (catalogs.size() == 1) {
+                provider = new CatalogSchemaViewerProvier();
+                svProvider = new SchemaViewerProvier();
+                withFilter = true;
+            } else {
+                provider = new ConnectionViewerProvier();
+                svProvider = new ConnectionSchemaViewerProvier();
+            }
             addColumnSorters(catalogTableViewer, catalogTable.getColumns(), catalogWithSchemaSorters);
-            createSchemaTableViewer(sectionClient);
+            createSchemaTableViewer(sectionClient, svProvider, withFilter);
             schemaTableViewer.addSelectionChangedListener(new DisplayTableAndViewListener());
             catalogTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -381,7 +392,8 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
         }
     }
 
-    private void createSchemaTableViewer(Composite parent) {
+    private void createSchemaTableViewer(Composite parent, AbstractStatisticalViewerProvider svProvider,
+            boolean withFilter) {
         schemaTableViewer =
                 new TableViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION | SWT.RESIZE);
         Table schemaTable = schemaTableViewer.getTable();
@@ -392,9 +404,11 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
         GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(schemaTable);
         ((GridData) schemaTable.getLayoutData()).heightHint = TABLE_HEIGHTHINT;
         createSchemaTableColumns(schemaTable);
-        SchemaViewerProvier svProvider = new SchemaViewerProvier();
         schemaTableViewer.setLabelProvider(svProvider);
         schemaTableViewer.setContentProvider(svProvider);
+        if (withFilter) {
+            schemaTableViewer.addFilter(new JDBCActiveElementsFilter());
+        }
         schemaTable.setVisible(false);
     }
 
@@ -621,6 +635,34 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
     }
 
     /**
+     * The provider for display the data of catalog table viewer.
+     */
+    class ConnectionViewerProvier extends CatalogSchemaViewerProvier {
+
+        @Override
+        protected String getCatalogName(ModelElement analyzedElement) {
+            return analyzedElement.getName();
+        }
+    }
+
+    /**
+     * The provider for display the data of catalog table viewer.
+     */
+    class ConnectionSchemaViewerProvier extends SchemaViewerProvier {
+
+        @Override
+        protected String getCatalogName(ModelElement analyzedElement) {
+            return analyzedElement.getName();
+        }
+
+        @Override
+        protected String getSchemaName(ModelElement analyzedElement) {
+            return analyzedElement.getName();
+        }
+
+    }
+
+    /**
      *
      * DOC klliu Comment method "displayTableAndViewComp".
      *
@@ -656,6 +698,8 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                 public void mouseDown(MouseEvent e) {
                     if (e.button == 3) {
                         TableItem item = catalogOrSchemaTable.getItem(catalogOrSchemaTable.getSelectionIndex());
+                        final OverviewIndUIElement data = (OverviewIndUIElement) item.getData();
+                        boolean isSCActiveOriginalElement = isSCActiveOriginalElement(data.getNode());
                         // TDQ-11430: show the menu only when there have data and have selected one.
                         if (catalogOrSchemaTable.getItemCount() > 0 && catalogOrSchemaTable.getSelectionIndex() != -1) {
                             final Menu menu = new Menu(catalogOrSchemaTable.getShell(), SWT.POP_UP);
@@ -673,6 +717,7 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                                 }
 
                             });
+                            viewKeyMenuItem.setEnabled(!isSCActiveOriginalElement);
 
                             MenuItem viewIndexMenuItem = new MenuItem(menu, SWT.PUSH);
                             viewIndexMenuItem.setText(DefaultMessagesImpl.getString("AbstractFilterMetadataPage.ViewIndexes")); //$NON-NLS-1$
@@ -685,10 +730,8 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                                 }
 
                             });
+                            viewIndexMenuItem.setEnabled(!isSCActiveOriginalElement);
                             if (!ProxyRepositoryManager.getInstance().isReadOnly()) {
-                                TableItem tableItem =
-                                        catalogOrSchemaTable.getItem(catalogOrSchemaTable.getSelectionIndex());
-                                final OverviewIndUIElement data = (OverviewIndUIElement) tableItem.getData();
                                 MenuItem tableAnalysisMenuItem = new MenuItem(menu, SWT.PUSH);
                                 tableAnalysisMenuItem.setText(DefaultMessagesImpl
                                         .getString("CreateTableAnalysisAction.tableAnalysis")); //$NON-NLS-1$
@@ -702,7 +745,7 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                                     }
 
                                 });
-                                if (data.isVirtualNode()) {
+                                if (data.isVirtualNode() || isSCActiveOriginalElement) {
                                     tableAnalysisMenuItem.setEnabled(false);
                                 }
                             }
@@ -758,7 +801,7 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                                 }
 
                             });
-                            if (data.isVirtualNode()) {
+                            if (data.isVirtualNode() || isSCActiveOriginalElement(data.getNode())) {
                                 tableAnalysisMenuItem.setEnabled(false);
                             }
                         } else {
@@ -968,9 +1011,11 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                 if (overviewObject instanceof OverviewIndUIElement) {
                     OverviewIndUIElement overview = (OverviewIndUIElement) overviewObject;
                     IRepositoryNode node = overview.getNode();
-                    List<IRepositoryNode> nodes = new ArrayList<IRepositoryNode>();
+                    List<IRepositoryNode> nodes = new ArrayList<>();
                     nodes.add(node);
-                    contextMenu.add(new OverviewAnalysisAction(nodes));
+                    OverviewAnalysisAction overviewAnalysisAction = new OverviewAnalysisAction(nodes);
+                    overviewAnalysisAction.setEnabled(!isSCActiveOriginalElement(node));
+                    contextMenu.add(overviewAnalysisAction);
                 }
                 // if (obj instanceof SchemaIndicator) {
                 // SchemaIndicator schemaIndicator = (SchemaIndicator) obj;
@@ -978,9 +1023,14 @@ public class OverviewResultPage extends AbstractAnalysisResultPage implements Pr
                 // schemaIndicator.getAnalyzedElement() }));
                 // }
             }
+
         });
         Menu menu = contextMenu.createContextMenu(viewer.getControl());
         viewer.getControl().setMenu(menu);
+    }
+
+    protected boolean isSCActiveOriginalElement(IRepositoryNode node) {
+        return false;
     }
 
     /**

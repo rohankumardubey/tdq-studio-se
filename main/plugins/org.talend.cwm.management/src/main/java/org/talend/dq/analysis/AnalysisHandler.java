@@ -34,12 +34,17 @@ import org.talend.dq.analysis.connpool.TdqAnalysisConnectionPool;
 import org.talend.dq.analysis.parameters.IParameterConstant;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.PropertyHelper;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
+
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
 import orgomg.cwm.objectmodel.core.TaggedValue;
+import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.ColumnSet;
 import orgomg.cwm.resource.relational.RelationalPackage;
+import orgomg.cwm.resource.relational.Schema;
 import orgomg.cwm.resource.relational.Table;
 import orgomg.cwm.resource.relational.View;
 
@@ -177,15 +182,15 @@ public class AnalysisHandler {
             Package schema = ColumnSetHelper.getParentCatalogOrSchema(columnSet);
             if (schema != null && RelationalPackage.eINSTANCE.getSchema().equals(schema.eClass())) {
                 if (!schemaNames.contains(schema.getName())) {
-                    schemaNames.add(schema.getName());
+                    schemaNames.add(new SchemaAdapter((Schema) schema).getName());
                 }
             }
         }
 
         if (!schemaNames.isEmpty()) {
             StringBuilder strBuilder = new StringBuilder();
-            for (String catalog : schemaNames) {
-                strBuilder.append(catalog);
+            for (String schema : schemaNames) {
+                strBuilder.append(schema);
                 strBuilder.append(PluginConstant.SPACE_STRING);
             }
             return strBuilder.toString();
@@ -210,8 +215,8 @@ public class AnalysisHandler {
                 str = str + schema.getName() + " "; //$NON-NLS-1$
             } else {
                 Package catalog = ColumnSetHelper.getParentCatalogOrSchema(schema);
-                if (catalog != null) {
-                    str = str + catalog.getName() + " "; //$NON-NLS-1$
+                if (catalog != null && catalog instanceof Catalog) {
+                    str = str + new CatalogAdapter((Catalog) catalog).getName() + " "; //$NON-NLS-1$
                 }
             }
         }

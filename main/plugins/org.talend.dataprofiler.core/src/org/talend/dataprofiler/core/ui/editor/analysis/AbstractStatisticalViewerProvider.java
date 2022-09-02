@@ -27,7 +27,12 @@ import org.talend.dataprofiler.core.model.OverviewIndUIElement;
 import org.talend.dataquality.indicators.schema.SchemaIndicator;
 import org.talend.dq.nodes.DBCatalogRepNode;
 import org.talend.dq.nodes.DBSchemaRepNode;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
+import orgomg.cwm.resource.relational.Catalog;
+import orgomg.cwm.resource.relational.Schema;
 
 /**
  * DOC rli class global comment. Detailled comment
@@ -60,6 +65,10 @@ public abstract class AbstractStatisticalViewerProvider extends LabelProvider im
                     if (PluginConstant.EMPTY_STRING.equals(analyzedElement.getName())) {
                         return text = org.talend.dataquality.PluginConstant.DEFAULT_STRING;
                     }
+                    return getCatalogName(analyzedElement);
+                }
+                if (analyzedElement.getClass() == orgomg.cwm.resource.relational.impl.SchemaImpl.class) {
+                    return getSchemaName(analyzedElement);
                 }
                 // ~
                 text = analyzedElement.getName();
@@ -73,6 +82,14 @@ public abstract class AbstractStatisticalViewerProvider extends LabelProvider im
             return getOtherColumnText(columnIndex, indicator);
         }
         return text;
+    }
+
+    protected String getSchemaName(ModelElement analyzedElement) {
+        return new SchemaAdapter((Schema) analyzedElement).getName();
+    }
+
+    protected String getCatalogName(ModelElement analyzedElement) {
+        return new CatalogAdapter((Catalog) analyzedElement).getName();
     }
 
     protected abstract String getOtherColumnText(int columnIndex, SchemaIndicator schemaIndicator);

@@ -68,6 +68,8 @@ import org.talend.dataprofiler.core.CorePlugin;
 import org.talend.dataprofiler.core.ImageLib;
 import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
+import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithConstraintDialog;
+import org.talend.dataprofiler.core.ui.dialog.MetadataAndColumnJDBCSelectionDialog;
 import org.talend.dataprofiler.core.ui.dialog.MetadataAndColumnSelectionDialog;
 import org.talend.dataprofiler.core.ui.events.EventEnum;
 import org.talend.dataprofiler.core.ui.events.EventManager;
@@ -952,7 +954,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      */
     @Override
     public void openColumnsSelectionDialog(DataManager dataManager) {
-        MetadataAndColumnSelectionDialog dialog = null;
+        ColumnsSelectWithConstraintDialog dialog = null;
         List<IRepositoryNode> oldSelectedColumns = findAllSelectedRepositoryNode();
         if (oldSelectedColumns == null || oldSelectedColumns.size() == 0) {
             clearAllKeys();
@@ -966,7 +968,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
                             DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), dataManager, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
         } else {
             dialog =
-                    new MetadataAndColumnSelectionDialog(
+                    new MetadataAndColumnJDBCSelectionDialog(
                             Display.getCurrent().getActiveShell(),
                             DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), oldSelectedColumns, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
         }

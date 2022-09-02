@@ -127,7 +127,7 @@ public class AnalysisEditor extends SupportContextEditor {
             break;
         case CONNECTION:
             masterPage = new ConnectionAnalysisDetailsPage(this, MASTER_PAGE, ANALYSIS_SETTINGS);
-            resultPage = new OverviewResultPage(this, RESULT_PAGE, ANALYSIS_RESULTS);
+            resultPage = new OverviewConnectionResultPage(this, RESULT_PAGE, ANALYSIS_RESULTS);
             break;
         case CATALOG:
             masterPage = new CatalogAnalysisDetailsPage(this, MASTER_PAGE, ANALYSIS_SETTINGS);

@@ -58,6 +58,9 @@ import org.talend.dataquality.indicators.definition.CharactersMapping;
 import org.talend.dataquality.indicators.definition.IndicatorDefinition;
 import org.talend.dataquality.indicators.sql.UserDefIndicator;
 import org.talend.dataquality.rules.JoinElement;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.DbConnectionAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 import org.talend.metadata.managment.ui.i18n.Messages;
 import org.talend.utils.ProductVersion;
 import org.talend.utils.sql.Java2SqlType;
@@ -818,8 +821,8 @@ public class DbmsLanguage {
         if (parentSchema != null) {
             parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
         }
-        String schemaName = parentSchema == null ? null : parentSchema.getName();
-        String catalogName = parentCatalog == null ? null : parentCatalog.getName();
+        String schemaName = parentSchema == null ? null : new SchemaAdapter(parentSchema).getName();
+        String catalogName = parentCatalog == null ? null : new CatalogAdapter(parentCatalog).getName();
         String qualifiedName = this.toQualifiedName(catalogName, schemaName, metadataTable.getName());
         Expression queryExpression = CoreFactory.eINSTANCE.createExpression();
         String expressionBody = getQuerySql(getSelectColumnsStr(metadataTable), qualifiedName, where);
@@ -2005,13 +2008,41 @@ public class DbmsLanguage {
 
     protected String getQueryColumnSetWithPrefixFromContext(DatabaseConnection dbConn, String catalogName, String schemaName,
             String tableName) {
-        String catalogNameFromContext = getCatalogNameFromContext(dbConn);
-        String schemaNameFromContext = getSchemaNameFromContext(dbConn);
+        String catalogNameFromContext = getCatalogNameFromContext(dbConn, catalogName);
+        String schemaNameFromContext = getSchemaNameFromContext(dbConn, schemaName);
         String cName = catalogNameFromContext != null && catalogNameFromContext.trim().length() > 0 ? catalogNameFromContext
                 : catalogName;
         String sName = schemaNameFromContext != null && schemaNameFromContext.trim().length() > 0 ? schemaNameFromContext
                 : schemaName;
         return toQualifiedName(cName, sName, tableName);
+    }
+
+    /**
+     * get the catalog name from the context in the DatabaseConnection(the database connection must be context mode).
+     *
+     * @param dbConn
+     * @return catalog name or null
+     */
+    public String getCatalogNameFromContext(DatabaseConnection dbConn, String defaultCatalog) {
+        DbConnectionAdapter dbConnectionAdapter = new DbConnectionAdapter(dbConn);
+        if (dbConnectionAdapter.isSwitchWithTaggedValueMode()) {
+            return dbConnectionAdapter.getSID(defaultCatalog);
+        }
+        return getCatalogNameFromContext(dbConn);
+    }
+
+    /**
+     * get the schema name from the context in the DatabaseConnection(the database connection must be context mode).
+     *
+     * @param dbConn
+     * @return schema name or null
+     */
+    public String getSchemaNameFromContext(DatabaseConnection dbConn, String defaultSchema) {
+        DbConnectionAdapter dbConnectionAdapter = new DbConnectionAdapter(dbConn);
+        if (dbConnectionAdapter.isSwitchWithTaggedValueMode()) {
+            return dbConnectionAdapter.getUISchema(defaultSchema);
+        }
+        return getSchemaNameFromContext(dbConn);
     }
 
     /**

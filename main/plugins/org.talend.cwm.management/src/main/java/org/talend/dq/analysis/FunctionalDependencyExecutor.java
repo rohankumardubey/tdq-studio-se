@@ -37,12 +37,17 @@ import org.talend.dq.dbms.DbmsLanguageFactory;
 import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
+
 import orgomg.cwm.objectmodel.core.CoreFactory;
 import orgomg.cwm.objectmodel.core.Expression;
 import orgomg.cwm.objectmodel.core.Package;
+import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.ColumnSet;
+import orgomg.cwm.resource.relational.Schema;
 
 /**
  * DOC jet class global comment. Detailled comment
@@ -222,15 +227,15 @@ public class FunctionalDependencyExecutor extends ColumnAnalysisSqlExecutor {
             // this is so bad code
             Package pack = ColumnSetHelper.getParentCatalogOrSchema(columnSetOwner);
             if (SwitchHelpers.SCHEMA_SWITCH.doSwitch(pack) != null) {
-                schemaName = pack.getName();
+                schemaName = new SchemaAdapter((Schema) pack).getName();
                 Package catalog = ColumnSetHelper.getParentCatalogOrSchema(pack);
                 // MOD mzhao 2010-02-10 Fix a NEP.
                 if (catalog != null && SwitchHelpers.CATALOG_SWITCH.doSwitch(catalog) != null) {
-                    catalogName = catalog.getName();
+                    catalogName = new CatalogAdapter((Catalog) catalog).getName();
                 }
             }
             if (SwitchHelpers.CATALOG_SWITCH.doSwitch(pack) != null) {
-                catalogName = pack.getName();
+                catalogName = new CatalogAdapter((Catalog) pack).getName();
             }
             return dbms().toQualifiedName(catalogName, schemaName, columnSetOwner.getName());
 

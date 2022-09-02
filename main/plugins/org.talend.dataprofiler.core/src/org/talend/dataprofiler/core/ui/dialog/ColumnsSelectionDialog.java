@@ -74,13 +74,13 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
     protected MultiMap modelElementCheckedMap = null;
 
     // Root node (database/xml/flat file connection)
-    private RepositoryNode connNode = null;
+    protected RepositoryNode connNode = null;
 
     public ColumnsSelectionDialog(AbstractAnalysisMetadataPage metadataFormPage, Shell parent, String title,
             List<? extends IRepositoryNode> checkedRepoNodes, RepositoryNode rootNode, String message) {
         super(metadataFormPage, parent, message);
-        initDialog(title, checkedRepoNodes);
         connNode = rootNode;
+        initDialog(title, checkedRepoNodes);
         setInput(connNode);
     }
 
@@ -96,7 +96,7 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
      * @param title
      * @param checkedRepoNodes
      */
-    private void initDialog(String title, List<? extends IRepositoryNode> checkedRepoNodes) {
+    protected void initDialog(String title, List<? extends IRepositoryNode> checkedRepoNodes) {
         modelElementCheckedMap = new MultiValueMap();
         initCheckedElements(checkedRepoNodes);
         addFilter(new EMFObjFilter());
@@ -186,14 +186,19 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
             // IRepositoryNode parentNode = repNode.getParent().getParent();
             IRepositoryNode parentNode = getParentNode(repNode);
             // Add the parent->children relation to the multi map
-
+            if (nodeIsValid(parentNode)) {
             modelElementCheckedMap.put(parentNode, repNode);
+            }
             // Check the parent element either if any of their columns had already been checked.
             if (!containerList.contains(parentNode)) {
                 containerList.add(parentNode);
             }
         }
         this.setInitialElementSelections(containerList);
+    }
+
+    protected boolean nodeIsValid(IRepositoryNode parentNode) {
+        return true;
     }
 
     /**
@@ -286,7 +291,7 @@ public class ColumnsSelectionDialog extends TwoPartCheckSelectionDialog {
      * Update the status of dailog by select action
      */
     protected void updateStatusBySelection() {
-        Status fCurrStatus = new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK, PluginConstant.EMPTY_STRING, null);
+        fCurrStatus = new Status(IStatus.OK, PlatformUI.PLUGIN_ID, IStatus.OK, PluginConstant.EMPTY_STRING, null);
         // TDQ-12215: filter the tableNodes when it has set column filter, because they are duplicate in the map.
         Set<?> keySet = modelElementCheckedMap.keySet();
         RepositoryNode[] tableNodesFromMap = keySet.toArray(new RepositoryNode[keySet.size()]);

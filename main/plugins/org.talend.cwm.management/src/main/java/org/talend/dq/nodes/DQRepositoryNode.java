@@ -15,13 +15,18 @@ package org.talend.dq.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.graphics.Image;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.IImage;
+import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
+import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.dataquality.PluginConstant;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
+import org.talend.metadata.managment.ui.convert.DbConnectionAdapter;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
@@ -391,5 +396,25 @@ public class DQRepositoryNode extends RepositoryNode {
             return this.getProject().equals(((DQRepositoryNode) obj).getProject());
         }
         return false;
+    }
+
+    protected String handleJDBCContextCase(String packageName, String originalTagName, String targetTagName) {
+        if (StringUtils.isEmpty(packageName)) {
+            return packageName;
+        }
+        DatabaseConnection parentConnection = JDBCSwitchContextUtils.findConnection(this);
+        if (parentConnection == null) {
+            return packageName;
+        }
+        DbConnectionAdapter dbConnectionAdapter =
+                new DbConnectionAdapter(parentConnection);
+        if (dbConnectionAdapter.isSwitchWithTaggedValueMode()) {
+            String originalPackageName = TaggedValueHelper.getValueString(originalTagName, parentConnection);
+            String targetPackageName = TaggedValueHelper.getValueString(targetTagName, parentConnection);
+            if (packageName.equals(originalPackageName)) {
+                return targetPackageName;
+            }
+        }
+        return packageName;
     }
 }

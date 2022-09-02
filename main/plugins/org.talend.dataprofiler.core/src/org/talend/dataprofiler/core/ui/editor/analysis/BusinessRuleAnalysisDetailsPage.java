@@ -59,6 +59,7 @@ import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.TableIndicator;
 import org.talend.dataprofiler.core.model.dynamic.DynamicIndicatorModel;
+import org.talend.dataprofiler.core.ui.dialog.TablesJDBCSelectionDialog;
 import org.talend.dataprofiler.core.ui.editor.analysis.TablesSelectionDialog.TableSelectionType;
 import org.talend.dataprofiler.core.ui.editor.composite.AbstractColumnDropTree;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisTableTreeViewer;
@@ -83,6 +84,7 @@ import org.talend.dataquality.exception.DataprofilerCoreException;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.analysis.TableAnalysisHandler;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
@@ -308,9 +310,19 @@ public class BusinessRuleAnalysisDetailsPage extends DynamicAnalysisMasterPage i
         }
 
         RepositoryNode connComboSelectNode = getConnComboSelectNode();
-        TablesSelectionDialog dialog = new TablesSelectionDialog(this, null,
-                DefaultMessagesImpl.getString("TableMasterDetailsPage.tableSelection"), setList, DefaultMessagesImpl //$NON-NLS-1$
-                        .getString("TableMasterDetailsPage.tableSelections"), connComboSelectNode); //$NON-NLS-1$
+        TablesSelectionDialog dialog = null;
+        if (JDBCSwitchContextUtils.isJDBCContextMode(connComboSelectNode)) {
+            dialog = new TablesJDBCSelectionDialog(this, null,
+                    DefaultMessagesImpl.getString("TableMasterDetailsPage.tableSelection"), setList, DefaultMessagesImpl //$NON-NLS-1$
+                            .getString("TableMasterDetailsPage.tableSelections"), //$NON-NLS-1$
+                    connComboSelectNode);
+        } else {
+
+            dialog = new TablesSelectionDialog(this, null,
+                    DefaultMessagesImpl.getString("TableMasterDetailsPage.tableSelection"), setList, DefaultMessagesImpl //$NON-NLS-1$
+                            .getString("TableMasterDetailsPage.tableSelections"), //$NON-NLS-1$
+                    connComboSelectNode);
+        }
         dialog.setTableType(TableSelectionType.ALL);
         if (dialog.open() == Window.OK) {
             Object[] tables = dialog.getResult();

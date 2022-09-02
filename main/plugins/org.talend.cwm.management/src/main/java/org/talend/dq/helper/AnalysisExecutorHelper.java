@@ -56,7 +56,10 @@ import org.talend.dataquality.rules.JoinElement;
 import org.talend.dataquality.rules.WhereRule;
 import org.talend.dq.dbms.DbmsLanguage;
 import org.talend.fileprocess.FileInputDelimited;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.foundation.softwaredeployment.SoftwaredeploymentPackage;
 import orgomg.cwm.objectmodel.core.ModelElement;
@@ -131,12 +134,12 @@ public final class AnalysisExecutorHelper {
 
     public static String getQuotedCatalogName(ModelElement analyzedElement, DbmsLanguage dbmsLanguage) {
         final Catalog parentCatalog = CatalogHelper.getParentCatalog(analyzedElement);
-        return parentCatalog == null ? null : dbmsLanguage.quote(parentCatalog.getName());
+        return parentCatalog == null ? null : dbmsLanguage.quote(new CatalogAdapter(parentCatalog).getName());
     }
 
     public static String getQuotedSchemaName(ModelElement columnSetOwner, DbmsLanguage dbmsLanguage) {
         final Schema parentSchema = SchemaHelper.getParentSchema(columnSetOwner);
-        return (parentSchema == null) ? null : dbmsLanguage.quote(parentSchema.getName());
+        return (parentSchema == null) ? null : dbmsLanguage.quote(new SchemaAdapter(parentSchema).getName());
     }
 
     public static FileInputDelimited createFileInputDelimited(DelimitedFileConnection delimitedFileconnection)

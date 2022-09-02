@@ -61,6 +61,7 @@ import org.talend.dataprofiler.core.PluginConstant;
 import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.ui.action.actions.RunAnalysisAction;
 import org.talend.dataprofiler.core.ui.chart.jung.JungGraphGenerator;
+import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithJDBCConstraintDialog;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectionDialog;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisColumnNominalIntervalTreeViewer;
 import org.talend.dataprofiler.core.ui.editor.composite.IndicatorsComp;
@@ -81,6 +82,7 @@ import org.talend.dataquality.indicators.columnset.ColumnsetPackage;
 import org.talend.dataquality.indicators.columnset.CountAvgNullIndicator;
 import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.ColumnCorrelationAnalysisHandler;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.dq.indicators.graph.GraphBuilder;
@@ -91,6 +93,7 @@ import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.utils.sql.Java2SqlType;
 import org.talend.utils.sugars.ReturnCode;
+
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -341,10 +344,23 @@ public class CorrelationAnalysisDetailsPage extends AbstractAnalysisMetadataPage
             columnList = new ArrayList<RepositoryNode>();
         }
         RepositoryNode connNode = getConnComboSelectNode();
-        ColumnsSelectionDialog dialog = new ColumnsSelectionDialog(
-                this,
-                /* getEditor().getActiveEditor().getSite().getShell() */null,
-                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, connNode, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
+        ColumnsSelectionDialog dialog = null;
+        if (JDBCSwitchContextUtils.isJDBCContextMode(connNode)) {
+            dialog = new ColumnsSelectWithJDBCConstraintDialog(
+                    this,
+                    null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, //$NON-NLS-1$
+                    (DBConnectionRepNode) connNode, DefaultMessagesImpl
+                            .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        } else {
+
+            dialog = new ColumnsSelectionDialog(
+                    this,
+                    null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, connNode, //$NON-NLS-1$
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        }
+
         if (dialog.open() == Window.OK) {
             Object[] columns = dialog.getResult();
             treeViewer.setInput(columns);

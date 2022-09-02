@@ -54,6 +54,7 @@ import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.IndicatorCommonUtil;
 import org.talend.dq.indicators.IndicatorEvaluator;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.utils.sugars.ReturnCode;
 import org.talend.utils.sugars.TypedReturnCode;
 
@@ -197,7 +198,7 @@ public class TableAnalysisSqlExecutor extends AnalysisExecutor {
             // try to get catalog above schema
             final Schema parentSchema = SchemaHelper.getParentSchema(set);
             final Catalog parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
-            catalogName = parentCatalog != null ? parentCatalog.getName() : null;
+            catalogName = parentCatalog != null ? new CatalogAdapter(parentCatalog).getName() : null;
         }
 
         // --- default case
