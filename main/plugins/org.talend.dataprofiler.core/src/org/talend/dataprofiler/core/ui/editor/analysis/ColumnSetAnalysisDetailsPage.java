@@ -65,6 +65,7 @@ import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataprofiler.core.ui.action.actions.RunAnalysisAction;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithConstraintDialog;
+import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithJDBCConstraintDialog;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectionDialog;
 import org.talend.dataprofiler.core.ui.editor.composite.AbstractColumnDropTree;
 import org.talend.dataprofiler.core.ui.editor.composite.AnalysisColumnSetTreeViewer;
@@ -93,9 +94,11 @@ import org.talend.dataquality.indicators.columnset.SimpleStatIndicator;
 import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.ColumnSetAnalysisHandler;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.dq.indicators.preview.EIndicatorChartType;
+import org.talend.dq.nodes.DBConnectionRepNode;
 import org.talend.dq.nodes.DFColumnFolderRepNode;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.dq.writer.impl.ElementWriterFactory;
@@ -370,10 +373,23 @@ public class ColumnSetAnalysisDetailsPage extends AbstractAnalysisMetadataPage i
             columnList = new ArrayList<IRepositoryNode>();
         }
         RepositoryNode connNode = getConnComboSelectNode();
-        ColumnsSelectionDialog dialog = new ColumnsSelectWithConstraintDialog(
+        ColumnsSelectionDialog dialog =null;
+        if (JDBCSwitchContextUtils.isJDBCContextMode(connNode)) {
+            dialog = new ColumnsSelectWithJDBCConstraintDialog(
+                    this,
+                    null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, //$NON-NLS-1$
+                    (DBConnectionRepNode) connNode, DefaultMessagesImpl
+                            .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        } else {
+
+            dialog = new ColumnsSelectWithConstraintDialog(
                 this,
                 null,
-                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, connNode, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), columnList, connNode, //$NON-NLS-1$
+                    DefaultMessagesImpl
+                        .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        }
         if (dialog.open() == Window.OK) {
             Object[] columns = dialog.getResult();
             setTreeViewInput(columns);

@@ -86,6 +86,7 @@ import org.talend.dq.indicators.IndicatorCommonUtil;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
 import org.talend.metadata.managment.hive.HiveClassLoaderFactory;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.metadata.managment.utils.DatabaseConstant;
 import org.talend.utils.collections.MultiMapHelper;
 import org.talend.utils.sql.Java2SqlType;
@@ -1437,8 +1438,11 @@ public class ColumnAnalysisSqlExecutor extends ColumnAnalysisExecutor {
         if (RelationalPackage.eINSTANCE.getSchema().equals(schema.eClass())) {
             final Catalog parentCatalog = CatalogHelper.getParentCatalog(schema);
             if (parentCatalog != null) {
-                return parentCatalog.getName();
+                return new CatalogAdapter(parentCatalog).getName();
             }
+        }
+        if (RelationalPackage.eINSTANCE.getCatalog().equals(schema.eClass())) {
+            return new CatalogAdapter((Catalog) schema).getName();
         }
         return schema.getName();
     }

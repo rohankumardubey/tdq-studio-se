@@ -56,7 +56,7 @@ public class ColumnsSelectWithConstraintDialog extends ColumnsSelectionDialog {
     protected void updateOKStatus() {
         super.updateOKStatus();
         Button okButton = this.getOkButton();
-        if (okButton != null && !okButton.isDisposed() && okButton.isEnabled()) {
+        if (okButton != null && !okButton.isDisposed() && okButton.isEnabled() && this.fCurrStatus.isOK()) {
             updateStatusBySelection();
         }
     }

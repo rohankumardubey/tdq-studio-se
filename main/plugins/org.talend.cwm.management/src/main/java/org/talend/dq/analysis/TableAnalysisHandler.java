@@ -31,11 +31,14 @@ import org.talend.dataquality.helpers.IndicatorHelper;
 import org.talend.dataquality.indicators.CompositeIndicator;
 import org.talend.dataquality.indicators.Indicator;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.utils.sugars.TypedReturnCode;
+
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.Dependency;
 import orgomg.cwm.objectmodel.core.ModelElement;
 import orgomg.cwm.objectmodel.core.Package;
+import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.ColumnSet;
 import orgomg.cwm.resource.relational.NamedColumnSet;
 import orgomg.cwm.resource.relational.RelationalPackage;
@@ -163,7 +166,7 @@ public class TableAnalysisHandler extends AnalysisHandler {
 
     @Override
     public String getCatalogNames() {
-        List<String> catalogNames = new ArrayList<String>();
+        List<String> catalogNames = new ArrayList<>();
 
         for (ModelElement element : getAnalyzedColumns()) {
             if (element instanceof Table) {
@@ -173,11 +176,12 @@ public class TableAnalysisHandler extends AnalysisHandler {
                     continue;
                 }
                 if (RelationalPackage.eINSTANCE.getCatalog().equals(schema.eClass()) && !catalogNames.contains(schema.getName())) {
-                    catalogNames.add(schema.getName());
+                    catalogNames.add(new CatalogAdapter((Catalog) schema).getName());
                 } else {
                     Package catalog = ColumnSetHelper.getParentCatalogOrSchema(schema);
-                    if (catalog != null && !catalogNames.contains(schema.getName())) {
-                        catalogNames.add(catalog.getName());
+                    if (catalog != null && RelationalPackage.eINSTANCE.getCatalog().equals(catalog.eClass())
+                            && !catalogNames.contains(schema.getName())) {
+                        catalogNames.add(new CatalogAdapter((Catalog) catalog).getName());
                     }
                 }
             }

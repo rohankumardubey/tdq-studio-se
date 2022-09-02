@@ -26,6 +26,8 @@ import org.talend.dataquality.indicators.schema.CatalogIndicator;
 import org.talend.dataquality.indicators.schema.SchemaFactory;
 import org.talend.dataquality.indicators.schema.SchemaIndicator;
 import org.talend.dq.indicators.definitions.DefinitionHandler;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 import org.talend.utils.sugars.ReturnCode;
 
 import orgomg.cwm.foundation.softwaredeployment.DataProvider;
@@ -74,7 +76,7 @@ public class CatalogEvaluator extends AbstractSchemaEvaluator<Catalog> {
             if (catalogIndicator == null) {
                 continue;
             }
-            Catalog catalog = (Catalog) catalogIndicator.getAnalyzedElement();
+            Catalog catalog = new CatalogAdapter((Catalog) catalogIndicator.getAnalyzedElement()).getCatalog();
             String catName = catalog.getName();
             // MOD yyi 2009-11-30 10187
             if (!checkCatalog(catName)) {
@@ -93,11 +95,11 @@ public class CatalogEvaluator extends AbstractSchemaEvaluator<Catalog> {
                 }
             }
 
-            List<Schema> schemas = CatalogHelper.getSchemas(catalog);
+            List<Schema> schemas = SchemaAdapter.findSchemas(CatalogHelper.getSchemas(catalog));
             if (schemas.isEmpty()) { // no schema
                 evalCatalogIndic(catalogIndicator, catalog, ok);
             } else {
-                catalogIndicator.setAnalyzedElement(catalog);
+                catalogIndicator.setAnalyzedElement(catalogIndicator.getAnalyzedElement());
                 catalogIndicator.setSchemaCount(schemas.size());
                 // --- create SchemaIndicator for each pair of catalog schema
                 for (Schema tdSchema : schemas) {

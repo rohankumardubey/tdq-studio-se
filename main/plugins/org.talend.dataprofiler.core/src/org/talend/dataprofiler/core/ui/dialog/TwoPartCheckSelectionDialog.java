@@ -103,7 +103,7 @@ public abstract class TwoPartCheckSelectionDialog extends SelectionStatusDialog 
 
     private String fEmptyListMessage = DefaultMessagesImpl.getString("TwoPartCheckSelectionDialog.noEntriesAvailable"); //$NON-NLS-1$
 
-    private IStatus fCurrStatus = new Status(IStatus.OK, PlatformUI.PLUGIN_ID, 0, "", null); //$NON-NLS-1$
+    protected IStatus fCurrStatus = new Status(IStatus.OK, PlatformUI.PLUGIN_ID, 0, "", null); //$NON-NLS-1$
 
     private List<ViewerFilter> fFilters;
 

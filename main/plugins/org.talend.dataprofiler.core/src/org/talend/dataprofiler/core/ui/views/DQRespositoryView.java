@@ -119,6 +119,7 @@ import org.talend.dataprofiler.core.ui.editor.indicator.IndicatorEditorInput;
 import org.talend.dataprofiler.core.ui.filters.AbstractViewerFilter;
 import org.talend.dataprofiler.core.ui.filters.EMFObjFilter;
 import org.talend.dataprofiler.core.ui.filters.FolderObjFilter;
+import org.talend.dataprofiler.core.ui.filters.JDBCActiveElementsFilter;
 import org.talend.dataprofiler.core.ui.filters.ReportingFilter;
 import org.talend.dataprofiler.core.ui.progress.ProgressUI;
 import org.talend.dataprofiler.core.ui.utils.HadoopClusterUtils;
@@ -392,6 +393,7 @@ public class DQRespositoryView extends CommonNavigator {
         this.addViewerFilter(EMFObjFilter.FILTER_ID);
         this.addViewerFilter(ReportingFilter.FILTER_ID);
         this.addViewerFilter(FolderObjFilter.FILTER_ID);
+        this.addViewerFilter(JDBCActiveElementsFilter.FILTER_ID);
         adjustFilter();
         activateContext();
 
@@ -912,6 +914,10 @@ public class DQRespositoryView extends CommonNavigator {
         case FolderObjFilter.FILTER_ID:
             filter = new FolderObjFilter();
             filterMap.put(String.valueOf(FolderObjFilter.FILTER_ID), filter);
+            break;
+        case JDBCActiveElementsFilter.FILTER_ID:
+            filter = new JDBCActiveElementsFilter();
+            filterMap.put(String.valueOf(JDBCActiveElementsFilter.FILTER_ID), filter);
             break;
         default:
             filter = new ReportingFilter();

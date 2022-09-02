@@ -159,6 +159,7 @@ import org.talend.dq.nodes.UserDefIndicatorFolderRepNode;
 import org.talend.dq.nodes.UserDefIndicatorSubFolderRepNode;
 import org.talend.dq.nodes.hadoopcluster.HiveOfHCConnectionNode;
 import org.talend.dq.writer.EMFSharedResources;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IProxyRepositoryFactory;
@@ -4011,10 +4012,10 @@ public final class RepositoryNodeHelper {
                     nameLs.add(schema.getName());
                     catalog = CatalogHelper.getParentCatalog(schema);
                     if (catalog != null) {
-                        nameLs.add(catalog.getName());
+                        nameLs.add(new CatalogAdapter(catalog).getName());
                     }
                 } else if (catalog != null) {
-                    nameLs.add(catalog.getName());
+                    nameLs.add(new CatalogAdapter(catalog).getName());
                 }
             }
             if (conn != null) {

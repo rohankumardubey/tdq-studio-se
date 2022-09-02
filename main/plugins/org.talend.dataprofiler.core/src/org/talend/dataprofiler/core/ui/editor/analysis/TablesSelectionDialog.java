@@ -61,7 +61,7 @@ import org.talend.repository.model.RepositoryNode;
  */
 public class TablesSelectionDialog extends TwoPartCheckSelectionDialog {
 
-    private Map<RepositoryNodeKey, List<IRepositoryNode>> packageCheckedMap;
+    protected Map<RepositoryNodeKey, List<IRepositoryNode>> packageCheckedMap;
 
     private TableSelectionType tableType;
 
@@ -260,6 +260,7 @@ public class TablesSelectionDialog extends TwoPartCheckSelectionDialog {
                 if (element instanceof DBTableRepNode || element instanceof DBViewRepNode) {
                     handleTableChecked((IRepositoryNode) element, event.getChecked());
                 }
+                updateOKStatus();
             }
         });
     }

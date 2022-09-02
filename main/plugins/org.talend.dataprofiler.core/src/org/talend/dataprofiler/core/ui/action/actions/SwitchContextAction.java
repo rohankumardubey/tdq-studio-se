@@ -62,7 +62,9 @@ public class SwitchContextAction extends Action {
                 CorePlugin.getDefault().closeEditorIfOpened(connItem);
                 // ~
                 String chooseContext = chooseContext(connItem.getConnection());
-
+                if (chooseContext == null) {
+                    return;
+                }
                 boolean isUpdated = SwitchContextGroupNameImpl.getInstance().updateContextGroup(connItem, chooseContext);
 
                  if(isUpdated) {
@@ -112,7 +114,6 @@ public class SwitchContextAction extends Action {
         if (conn != null) {
             String contextId = conn.getContextId();
             ContextItem contextItem = ContextUtils.getContextItemById2(contextId);
-            selectedContext = contextItem.getDefaultContext();
             if (contextItem.getContext().size() > 1) {
                 ContextSetsSelectionDialog setsDialog = new ContextSetsSelectionDialog(contextItem);
                 if (setsDialog.open() == Window.OK) {

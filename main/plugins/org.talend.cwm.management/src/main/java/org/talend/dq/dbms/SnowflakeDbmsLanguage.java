@@ -58,4 +58,9 @@ public class SnowflakeDbmsLanguage extends DbmsLanguage {
         Catalog catalog = super.getCatalog(schema);
         return catalog;
     }
+
+    @Override
+    public String getRandomQuery(String query) {
+        return query + orderBy() + "RANDOM() "; //$NON-NLS-1$
+    }
 }

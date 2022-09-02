@@ -19,6 +19,7 @@ import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.repositoryObject.MetadataCatalogRepositoryObject;
 import org.talend.core.repository.model.repositoryObject.MetadataSchemaRepositoryObject;
 import org.talend.cwm.helper.PackageHelper;
+import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.dq.nodes.factory.DQRepNodeCreateFactory;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
@@ -134,4 +135,13 @@ public class DBSchemaRepNode extends DQRepositoryNode {
         }
         return this.getObject().getLabel();
     }
+
+    @Override
+    public String getDisplayText() {
+        String schemaName = super.getDisplayText();
+        return handleJDBCContextCase(schemaName, TaggedValueHelper.ORIGINAL_UISCHEMA,
+                TaggedValueHelper.TARGET_UISCHEMA);
+    }
+
+
 }

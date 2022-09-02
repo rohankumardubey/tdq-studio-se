@@ -85,6 +85,7 @@ import org.talend.dataprofiler.core.i18n.internal.DefaultMessagesImpl;
 import org.talend.dataprofiler.core.model.ModelElementIndicator;
 import org.talend.dataprofiler.core.ui.IRuningStatusListener;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithConstraintDialog;
+import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectWithJDBCConstraintDialog;
 import org.talend.dataprofiler.core.ui.dialog.ColumnsSelectionDialog;
 import org.talend.dataprofiler.core.ui.editor.AbstractMetadataFormPage;
 import org.talend.dataprofiler.core.ui.editor.SupportContextEditor;
@@ -110,6 +111,7 @@ import org.talend.dq.analysis.AnalysisHandler;
 import org.talend.dq.analysis.connpool.TdqAnalysisConnectionPool;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.helper.resourcehelper.AnaResourceFileHelper;
 import org.talend.dq.nodes.AnalysisRepNode;
@@ -1456,15 +1458,26 @@ public abstract class AbstractAnalysisMetadataPage extends AbstractMetadataFormP
             reloadDataproviderAndFillConnCombo();
         }
         RepositoryNode connNode = getConnComboSelectNode();
-        List<IRepositoryNode> reposViewObjList = new ArrayList<IRepositoryNode>();
+        List<IRepositoryNode> reposViewObjList = new ArrayList<>();
         for (ModelElementIndicator modelElementIndicator : currentModelElementIndicators) {
             reposViewObjList.add(modelElementIndicator.getModelElementRepositoryNode());
         }
-        ColumnsSelectionDialog dialog = new ColumnsSelectWithConstraintDialog(
+        ColumnsSelectionDialog dialog = null;
+        if (JDBCSwitchContextUtils.isJDBCContextMode(connNode)) {
+            dialog = new ColumnsSelectWithJDBCConstraintDialog(
+                    this,
+                    null,
+                    DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), reposViewObjList, //$NON-NLS-1$
+                    (DBConnectionRepNode) connNode, DefaultMessagesImpl
+                            .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        } else {
+
+            dialog = new ColumnsSelectWithConstraintDialog(
                 this,
                 null,
                 DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelection"), reposViewObjList, connNode, DefaultMessagesImpl //$NON-NLS-1$
                         .getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+        }
         if (dialog.open() == Window.OK) {
             Object[] modelElements = dialog.getResult();
             setTreeViewInput(modelElements);

@@ -29,6 +29,7 @@ import org.talend.dataprofiler.core.ui.dialog.provider.DBTablesViewLabelProvider
 import org.talend.dataprofiler.core.ui.filters.DQFolderFilter;
 import org.talend.dataprofiler.core.ui.filters.EMFObjFilter;
 import org.talend.dataprofiler.core.ui.filters.HadoopCLusterFolderNodeFilter;
+import org.talend.dataprofiler.core.ui.filters.JDBCActiveElementsFilter;
 import org.talend.dataprofiler.core.ui.filters.RecycleBinFilter;
 import org.talend.dataprofiler.core.ui.filters.TDQEEConnectionFolderFilter;
 import org.talend.dataprofiler.core.ui.views.provider.ResourceViewContentProvider;
@@ -83,7 +84,7 @@ public abstract class AnalysisDPSelectionPage extends AbstractAnalysisWizardPage
         createMetaDataTree(container);
         setControl(container);
         addFilters(new EMFObjFilter(), new DQFolderFilter(true), new TDQEEConnectionFolderFilter(), new RecycleBinFilter(),
-                new HadoopCLusterFolderNodeFilter());
+                new HadoopCLusterFolderNodeFilter(), new JDBCActiveElementsFilter(null));
         addListeners();
     }
 

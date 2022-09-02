@@ -38,6 +38,8 @@ import org.talend.dq.helper.AnalysisExecutorHelper;
 import org.talend.dq.helper.ContextHelper;
 import org.talend.dq.indicators.preview.table.ChartDataEntity;
 import org.talend.dq.nodes.indicator.type.IndicatorEnum;
+import org.talend.metadata.managment.ui.convert.CatalogAdapter;
+import org.talend.metadata.managment.ui.convert.SchemaAdapter;
 
 import orgomg.cwm.foundation.softwaredeployment.DataManager;
 import orgomg.cwm.objectmodel.core.Expression;
@@ -315,8 +317,8 @@ public abstract class DataExplorer implements IDataExplorer {
             parentCatalog = CatalogHelper.getParentCatalog(parentSchema);
         }
 
-        String schemaName = parentSchema == null ? null : parentSchema.getName();
-        String catalogName = parentCatalog == null ? null : parentCatalog.getName();
+        String schemaName = parentSchema == null ? null : new SchemaAdapter(parentSchema).getName();
+        String catalogName = parentCatalog == null ? null : new CatalogAdapter(parentCatalog).getName();
         return dbmsLanguage.toQualifiedName(catalogName, schemaName, set.getName());
     }
 
