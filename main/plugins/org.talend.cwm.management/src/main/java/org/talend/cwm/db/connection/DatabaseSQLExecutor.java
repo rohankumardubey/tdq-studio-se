@@ -75,15 +75,19 @@ public class DatabaseSQLExecutor extends SQLExecutor {
     }
 
     /**
-     *
-     * createSqlStatement: if has limit, add it, else do not use limit
-     *
+     * Create a sql query for common database or JDBC connection database based on DbmsLanguage
+     * 
      * @param connection
      * @param analysedElements
+     * @param where
+     * @param sqlconnection
+     * @param ignoreLimit if it is true,no Limit
      * @return
+     * @throws SQLException
      */
-    private String createSqlStatement(DataManager connection, List<ModelElement> analysedElements, String where) {
-        DbmsLanguage dbms = DbmsLanguageFactory.createDbmsLanguage(connection);
+    private String createSqlStatement(DataManager connection, List<ModelElement> analysedElements, String where,
+            TypedReturnCode<java.sql.Connection> sqlconnection, boolean ignoreLimit) throws SQLException {
+        DbmsLanguage dbms = createDbmsLanguage(connection, sqlconnection);
         TdColumn col = null;
         StringBuilder sql = new StringBuilder("SELECT ");//$NON-NLS-1$
         final Iterator<ModelElement> iterator = analysedElements.iterator();
@@ -108,14 +112,41 @@ public class DatabaseSQLExecutor extends SQLExecutor {
         if (isShowRandomData()) {
             finalQuery = dbms.getRandomQuery(finalQuery);
         }
-        Connection con = (Connection) connection;
-        // not all database support Limit. only append Limit for non-JDBC type at here.
-        if (getLimit() > 0 && !ConnectionUtils.isTcompJdbc(con) && !ConnectionUtils.isGeneralJdbc(con)) {
-            return dbms.getTopNQuery(finalQuery, getLimit());
-        } else {
-            return finalQuery;
-        }
 
+        if (getLimit() > 0 && !ignoreLimit) {
+            return dbms.getTopNQuery(finalQuery, getLimit());
+        }
+        return finalQuery;
+
+    }
+
+    /**
+     * 
+     * @param connection
+     * @param sqlconnection
+     * @return Create a DbmsLanguage for common database or a jdbc connection, so that can use some corresponds function
+     * @throws SQLException
+     */
+    private DbmsLanguage createDbmsLanguage(DataManager connection, TypedReturnCode<java.sql.Connection> sqlconnection)
+            throws SQLException {
+        DbmsLanguage dbms = null;
+        Connection con = (Connection) connection;
+        String databaseProductName = null;
+        boolean isJdbc = ConnectionUtils.isTcompJdbc(con) && !ConnectionUtils.isGeneralJdbc(con);
+        // if it is JDBC connection, extract the db type from sqlconnection and create correspond DbmsLanguage
+        if (isJdbc) {
+            DatabaseMetaData metadata =
+                    ExtractMetaDataUtils.getInstance().getConnectionMetadata(sqlconnection.getObject());
+            databaseProductName = metadata.getDatabaseProductName();
+            if (databaseProductName != null) {
+                dbms = DbmsLanguageFactory.createDbmsLanguage(databaseProductName,
+                        metadata.getDatabaseProductVersion());
+            }
+        }
+        if (!isJdbc || isJdbc && databaseProductName == null) {
+            dbms = DbmsLanguageFactory.createDbmsLanguage(connection);
+        }
+        return dbms;
     }
 
     /*
@@ -126,8 +157,8 @@ public class DatabaseSQLExecutor extends SQLExecutor {
      * , java.util.List)
      */
     public Iterator<Record> getResultSetIterator(DataManager connection, List<ModelElement> analysedElements) throws SQLException {
-        String sqlString = createSqlStatement(connection, analysedElements, null);
         TypedReturnCode<java.sql.Connection> sqlconnection = getSQLConnection(connection);
+        String sqlString = createSqlStatement(connection, analysedElements, null, sqlconnection, false);
         List<String> elementsName = new ArrayList<String>();
         for (ModelElement element : analysedElements) {
             elementsName.add(element.getName());
@@ -161,9 +192,6 @@ public class DatabaseSQLExecutor extends SQLExecutor {
             // for JDBC type, use 'statement.setMaxRows(limit)' instead of Limit in sql query;
             int limit = getLimit();
             Connection con = (Connection) connection;
-            if (limit > 0 && (ConnectionUtils.isTcompJdbc(con) || ConnectionUtils.isGeneralJdbc(con))) {
-                statement.setMaxRows(limit);
-            }
             // TDQ-17324: set the connection's catalog for Snowflake specially when not set db parameter
             if (columnListSize > 0) {
                 DatabaseMetaData metadata =
@@ -180,11 +208,29 @@ public class DatabaseSQLExecutor extends SQLExecutor {
             }
             // TDQ-17324~
 
-            String query = createSqlStatement(connection, analysedElements, where);
+            // TDQ-20694
+            // Improve performance when'resultSet.next()': Using a Limit keyword like 'LIMIT 50' or others in SQL
+            // 1. create a sql with Limit condition by DbmsLanguage.getTopNQuery(...) even if it is JDBC connection
+            String query = createSqlStatement(connection, analysedElements, where, sqlconnection, false);
             if (log.isInfoEnabled()) {
                 log.info("Executing query: " + query); //$NON-NLS-1$
             }
-            statement.execute(query);
+            try {
+                // 2.execute the query with 'LIMIT' or similar ones
+                statement.executeQuery(query);
+            } catch (SQLException e) {
+                // 3.'getTopNQuery(...)' may not be fit for some JDBC connection,then use original way 'setMaxRows()'
+                // TODO if found the performance issue on this type JDBC Connection, can create a class XXXDbmsLanguage
+                // to implement 'getTopNQuery(...)'
+                if (limit > 0 && (ConnectionUtils.isTcompJdbc(con) || ConnectionUtils.isGeneralJdbc(con))) {
+                    query = createSqlStatement(connection, analysedElements, where, sqlconnection, true);
+                    statement.setMaxRows(limit);
+                    statement.executeQuery(query);
+                } else {
+                    throw new SQLException(e);
+                }
+            }
+            // TDQ-20694~
             resultSet = statement.getResultSet();
 
             while (resultSet.next()) {
