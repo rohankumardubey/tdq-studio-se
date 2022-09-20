@@ -12,8 +12,13 @@
 // ============================================================================
 package org.talend.dq.helper;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
+import org.talend.core.model.properties.DatabaseConnectionItem;
+import org.talend.core.model.properties.Item;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.dq.nodes.DBConnectionRepNode;
 import org.talend.metadata.managment.ui.convert.DbConnectionAdapter;
@@ -33,6 +38,27 @@ public class JDBCSwitchContextUtils {
         DbConnectionAdapter dbConnectionAdapter =
                 new DbConnectionAdapter(dbConn);
         return dbConnectionAdapter.isSwitchWithTaggedValueMode();
+    }
+
+    public static boolean isJDBCContextMode(List<IRepositoryNode> subNodes) {
+        try {
+            if (subNodes == null || subNodes.size() < 1) {
+                return false;
+            }
+            Item item = subNodes.get(0).getObject().getProperty().getItem();
+            if (!(item instanceof DatabaseConnectionItem)) {
+                return false;
+            }
+            Connection dbConn = ((DatabaseConnectionItem) item).getConnection();
+            if (!(dbConn instanceof DatabaseConnection)) {
+                return false;
+            }
+            DbConnectionAdapter dbConnectionAdapter =
+                    new DbConnectionAdapter((DatabaseConnection) dbConn);
+            return dbConnectionAdapter.isSwitchWithTaggedValueMode();
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
     public static DatabaseConnection findConnection(IRepositoryNode parentNode) {
@@ -77,4 +103,5 @@ public class JDBCSwitchContextUtils {
 
         return StringUtils.EMPTY;
     }
+
 }
