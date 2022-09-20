@@ -102,6 +102,7 @@ import org.talend.dataquality.rules.RulesFactory;
 import org.talend.dq.analysis.MatchAnalysisHandler;
 import org.talend.dq.analysis.data.preview.DataPreviewHandler;
 import org.talend.dq.helper.EObjectHelper;
+import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.helper.RepositoryNodeHelper;
 import org.talend.dq.nodes.ColumnRepNode;
 import org.talend.dq.nodes.ColumnSetRepNode;
@@ -496,10 +497,12 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
     private void addListenerForSelectKeyButton() {
         selectBlockKeyBtn.addMouseListener(new MouseListener() {
 
+            @Override
             public void mouseDoubleClick(MouseEvent e) {
                 // no need to implement
             }
 
+            @Override
             public void mouseDown(MouseEvent e) {
                 // every time click the button, change its status
                 selectMatchKeyBtn.setEnabled(isBlockingKeyButtonPushed);
@@ -514,6 +517,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
                 }
             }
 
+            @Override
             public void mouseUp(MouseEvent e) {
                 // no need to implement
             }
@@ -521,10 +525,12 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
 
         selectMatchKeyBtn.addMouseListener(new MouseListener() {
 
+            @Override
             public void mouseDoubleClick(MouseEvent e) {
                 // no need to implement
             }
 
+            @Override
             public void mouseDown(MouseEvent e) {
                 // every time click the button, change its status
                 selectBlockKeyBtn.setEnabled(isMatchingKeyButtonPushed);
@@ -543,6 +549,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
                 }
             }
 
+            @Override
             public void mouseUp(MouseEvent e) {
                 // no need to implement
             }
@@ -773,6 +780,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
         rowLoadedText.setText(analysisHandler.getDefaultLoadedRowCount());
         rowLoadedText.addModifyListener(new ModifyListener() {
 
+            @Override
             public void modifyText(final ModifyEvent e) {
                 setDirty(true);
             }
@@ -789,6 +797,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
         sampleDataShowWayCombo.setText(sampleDataShowWay.getLiteral());
         sampleDataShowWayCombo.addModifyListener(new ModifyListener() {
 
+            @Override
             public void modifyText(final ModifyEvent e) {
                 setDirty(true);
             }
@@ -826,6 +835,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      * 
      * @deprecated replaced by {@link #refreshDataFromConnectionInBackground(boolean)}
      */
+    @Deprecated
     protected void refreshDataFromConnection(boolean refreshDataSample) {
         // execute the query to fetch the data,
         List<Object[]> listOfData = fetchDataForTable();
@@ -932,6 +942,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
             public boolean handle(final Object data) {
                 Display.getDefault().asyncExec(new Runnable() {
 
+                    @Override
                     @SuppressWarnings("unchecked")
                     public void run() {
                         refreshTable((List<Object[]>) data);
@@ -967,10 +978,23 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
                             Display.getCurrent().getActiveShell(),
                             DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), dataManager, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
         } else {
-            dialog =
-                    new MetadataAndColumnJDBCSelectionDialog(
-                            Display.getCurrent().getActiveShell(),
-                            DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), oldSelectedColumns, DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$ //$NON-NLS-2$
+            if (JDBCSwitchContextUtils.isJDBCContextMode(oldSelectedColumns)) {
+
+                dialog =
+                        new MetadataAndColumnJDBCSelectionDialog(
+                                Display.getCurrent().getActiveShell(),
+                                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), //$NON-NLS-1$
+                                oldSelectedColumns,
+                                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+            } else {
+
+                dialog =
+                        new MetadataAndColumnSelectionDialog(
+                                Display.getCurrent().getActiveShell(),
+                                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections"), //$NON-NLS-1$
+                                oldSelectedColumns,
+                                DefaultMessagesImpl.getString("ColumnMasterDetailsPage.columnSelections")); //$NON-NLS-1$
+            }
         }
         if (dialog.open() == Window.OK) {
             Object[] selectedResult = dialog.getResult();
@@ -1423,6 +1447,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      * @deprecated replace by {@link #fetchDataForTable(int, boolean)}
      * @return
      */
+    @Deprecated
     private List<Object[]> fetchDataForTable() {
         // TDQ-8267 when the file is changed, and the columns cleared, the analysis is unloaded
         if (analysisHandler.getAnalysis().eIsProxy()) {
@@ -1525,6 +1550,7 @@ public class MatchAnalysisDetailsPage extends AbstractAnalysisMetadataPage imple
      *
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PluginConstant.ISDIRTY_PROPERTY.equals(evt.getPropertyName())) {
             setDirty(Boolean.TRUE);
