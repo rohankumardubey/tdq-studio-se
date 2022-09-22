@@ -15,19 +15,12 @@ package org.talend.dataprofiler.core.ui.filters;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.Viewer;
-import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.DatabaseConnection;
-import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.TaggedValueHelper;
-import org.talend.dataprofiler.core.model.OverviewIndUIElement;
-import org.talend.dataquality.indicators.schema.SchemaIndicator;
 import org.talend.dq.helper.JDBCSwitchContextUtils;
 import org.talend.dq.nodes.DBCatalogRepNode;
 import org.talend.dq.nodes.DBSchemaRepNode;
 import org.talend.repository.model.IRepositoryNode;
-
-import orgomg.cwm.objectmodel.core.ModelElement;
-import orgomg.cwm.resource.relational.Schema;
 
 public class JDBCActiveElementsFilter extends AbstractViewerFilter {
 
@@ -101,25 +94,6 @@ public class JDBCActiveElementsFilter extends AbstractViewerFilter {
             }
             return compareElementName(parentNode, element, TaggedValueHelper.ORIGINAL_UISCHEMA,
                     ((DBSchemaRepNode) element).getSchema().getName());
-        }
-        // overview analysis table
-        if (element instanceof OverviewIndUIElement) {
-            SchemaIndicator indicator = (SchemaIndicator) ((OverviewIndUIElement) element).getOverviewIndicator();
-            ModelElement analyzedElement = indicator.getAnalyzedElement();
-            if (analyzedElement.getClass() == orgomg.cwm.resource.relational.impl.SchemaImpl.class) {
-                Schema schema = (Schema) analyzedElement;
-                String elementName = schema.getName();
-                Connection dbConn = ConnectionHelper.getConnection(schema);
-                if (dbConn == null) {
-                    return true;
-                }
-                String currentOriginalUISCHEMA =
-                        TaggedValueHelper.getValueString(TaggedValueHelper.ORIGINAL_UISCHEMA, dbConn);
-                if (StringUtils.isEmpty(currentOriginalUISCHEMA)) {
-                    return true;
-                }
-                return currentOriginalUISCHEMA.equals(elementName);
-            }
         }
         return true;
     }
